@@ -1,0 +1,139 @@
+# .gitignore para PROYECTO-ESI-2026
+
+# ===== ARCHIVOS DE SISTEMA =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===== EDITORES =====
+.vscode/
+.idea/
+.sublime-project
+.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# ===== ENTORNO Y CONFIGURACIÓN =====
+.env
+.env.local
+.env.*.local
+.env.backup
+config/database.local.php
+backend/config/database.php
+
+# ===== DEPENDENCIAS =====
+node_modules/
+vendor/
+composer.lock
+package-lock.json
+yarn.lock
+
+# ===== DATOS DE DESARROLLO =====
+backend/data.json
+backend/data.json.backup
+debug.log
+error.log
+*.log
+logs/
+
+# ===== CACHE Y COMPILACIÓN =====
+cache/
+.cache/
+tmp/
+temp/
+build/
+dist/
+.next/
+.nuxt/
+out/
+
+# ===== BD TEMPORAL =====
+*.sql.bak
+*.sqlite
+*.sqlite3
+*.db
+
+# ===== UPLOADS Y ARCHIVOS TEMPORALES =====
+uploads/
+uploads/*
+!uploads/.gitkeep
+temp/
+temp/*
+!temp/.gitkeep
+
+# ===== PRUEBAS =====
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+
+# ===== SISTEMA OPERATIVO =====
+.AppleDouble
+.LSOverride
+*.pid
+*.seed
+*.log.json
+
+# ===== IDE SPECIFICS =====
+.editorconfig
+*.iml
+out/
+
+# ===== ARCHIVOS GENERADOS =====
+*.min.js
+*.min.css
+*.map
+
+# ===== PRODUCCIÓN =====
+.production
+production/
+deploy/
+*.pem
+*.key
+*.crt
+
+# ===== DESARROLLO LOCAL =====
+.local/
+local/
+private/
+secrets/
+
+# ===== DATOS SENSIBLES =====
+*.pem
+*.key
+*.crt
+.ssh/
+credentials.json
+secrets.yml
+.htpasswd
+
+# ===== BACKUPS =====
+*.bak
+*.backup
+*.old
+~*
+*~
+
+# ===== ARCHIVOS LOCK =====
+.lock
+.lockfile
+yarn.lock
+package-lock.json
+
+# ===== DIRECTORIO RAÍZ =====
+# (descomenta si es necesario)
+# dist/
+# build/
+# node_modules/
