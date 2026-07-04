@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camiones - SiGeRU</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <style>
+        #formCamion label{
+            display:block;
+            margin-top:15px;
+            margin-bottom:8px;
+            font-weight:bold;
+        }
+        #formCamion input, #formCamion select{
+            width:100%;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:8px;
+        }
+        #formCamion button{
+            padding:12px 25px;
+            background:#2e7d32;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:15px;
+        }
+        #formCamion button:hover{
+            background:#1b5e20;
+        }
+        #formCamion button[type="button"]{
+            background:#999;
+        }
+        #formCamion button[type="button"]:hover{
+            background:#777;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+
+        <h2>SiGeRU</h2>
+
+        <ul>
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="usuario.html">👥 Usuarios</a></li>
+            <li><a href="contenedores.html">🗑 Contenedores</a></li>
+            <li><a href="camiones.html">🚛 Camiones</a></li>
+            <li><a href="#">⚠ Incidencias</a></li>
+            <li><a href="#">📊 Reportes</a></li>
+            <li><a href="login.html">🚪 Cerrar sesión</a></li>
+        </ul>
+
+    </aside>
+
+    <main class="contenido">
+
+        <header class="topbar">
+            <h1>Gestión de Camiones</h1>
+            <span>👤 Administrador Municipal</span>
+        </header>
+
+        <section class="principal">
+
+            <div class="card-dashboard" style="margin-bottom:30px;">
+
+                <h3 id="tituloFormularioCamion">Nuevo Camión</h3>
+
+                <form id="formCamion">
+
+                    <input type="hidden" id="camionId">
+
+                    <label>Patente</label>
+                    <input type="text" id="patente" placeholder="Ej: STA1234" required>
+
+                    <label>Capacidad (kg)</label>
+                    <input type="number" id="capacidad" placeholder="Ej: 5000" min="1" required>
+
+                    <label>Estado</label>
+                    <select id="estadoCamion" required>
+                        <option value="Disponible">Disponible</option>
+                        <option value="En ruta">En ruta</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                    </select>
+
+                    <div style="display:flex; gap:15px; margin-top:20px;">
+                        <button type="submit">Guardar</button>
+                        <button type="button" onclick="cancelarEdicionCamion()">Cancelar</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="card-dashboard">
+
+                <h3>Camiones Registrados</h3>
+
+                <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:2px solid #eee;">
+                            <th style="padding:10px;">ID</th>
+                            <th style="padding:10px;">Patente</th>
+                            <th style="padding:10px;">Capacidad</th>
+                            <th style="padding:10px;">Estado</th>
+                            <th style="padding:10px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCamiones">
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="js/camiones.js"></script>
+
+</body>
+
+</html>

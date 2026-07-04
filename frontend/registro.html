@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - SiGeRU</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <style>
+        #formRegistro label{
+            display:block;
+            margin-top:15px;
+            margin-bottom:8px;
+            font-weight:bold;
+        }
+        #formRegistro input, #formRegistro select{
+            width:100%;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:8px;
+        }
+        #formRegistro button{
+            width:100%;
+            margin-top:25px;
+            padding:15px;
+            background:#2e7d32;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:17px;
+        }
+        #formRegistro button:hover{
+            background:#1b5e20;
+        }
+    </style>
+</head>
+
+<body class="login-body">
+
+<div class="login-container">
+
+    <div class="login-box">
+
+        <h1>SiGeRU</h1>
+
+        <h2>Solicitar registro de usuario</h2>
+
+        <form id="formRegistro">
+
+            <label>Nombre completo</label>
+            <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+
+            <label>Usuario</label>
+            <input type="text" id="usuario" placeholder="Ej: jperez" required>
+
+            <label>Contraseña</label>
+            <input type="password" id="password" placeholder="Ingrese contraseña" required>
+
+            <label>Rol</label>
+            <select id="rol" required>
+                <option value="">Seleccione un rol</option>
+                <option value="Administrador">Administrador Municipal</option>
+                <option value="Cuadrilla">Cuadrilla de Recolección</option>
+                <option value="Operario">Operario</option>
+                <option value="Vecino">Vecino</option>
+            </select>
+
+            <button type="submit">Registrarme</button>
+
+        </form>
+
+        <p>
+            ¿Ya tenés una cuenta? <a href="login.html">Iniciar sesión</a>
+        </p>
+
+    </div>
+
+</div>
+
+<script src="js/registro.js"></script>
+
+</body>
+
+</html>

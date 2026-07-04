@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contenedores - SiGeRU</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <style>
+        #formContenedor label{
+            display:block;
+            margin-top:15px;
+            margin-bottom:8px;
+            font-weight:bold;
+        }
+        #formContenedor input, #formContenedor select{
+            width:100%;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:8px;
+        }
+        #formContenedor button{
+            padding:12px 25px;
+            background:#2e7d32;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-size:15px;
+        }
+        #formContenedor button:hover{
+            background:#1b5e20;
+        }
+        #formContenedor button[type="button"]{
+            background:#999;
+        }
+        #formContenedor button[type="button"]:hover{
+            background:#777;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+
+        <h2>SiGeRU</h2>
+
+        <ul>
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="usuario.html">👥 Usuarios</a></li>
+            <li><a href="contenedores.html">🗑 Contenedores</a></li>
+            <li><a href="camiones.html">🚛 Camiones</a></li>
+            <li><a href="#">⚠ Incidencias</a></li>
+            <li><a href="#">📊 Reportes</a></li>
+            <li><a href="login.html">🚪 Cerrar sesión</a></li>
+        </ul>
+
+    </aside>
+
+    <main class="contenido">
+
+        <header class="topbar">
+            <h1>Gestión de Contenedores</h1>
+            <span>👤 Administrador Municipal</span>
+        </header>
+
+        <section class="principal">
+
+            <div class="card-dashboard" style="margin-bottom:30px;">
+
+                <h3 id="tituloFormularioContenedor">Nuevo Contenedor</h3>
+
+                <form id="formContenedor">
+
+                    <input type="hidden" id="contenedorId">
+
+                    <label>Ubicación</label>
+                    <input type="text" id="ubicacion" placeholder="Ej: Av. 18 de Julio y Ejido" required>
+
+                    <label>Tipo de residuo</label>
+                    <select id="tipoResiduo" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="Organico">Orgánico</option>
+                        <option value="Reciclable">Reciclable</option>
+                        <option value="General">General</option>
+                        <option value="Vidrio">Vidrio</option>
+                    </select>
+
+                    <label>Estado</label>
+                    <select id="estado" required>
+                        <option value="Funcional">Funcional</option>
+                        <option value="Roto">Roto</option>
+                        <option value="Desbordado">Desbordado</option>
+                    </select>
+
+                    <div style="display:flex; gap:15px; margin-top:20px;">
+                        <button type="submit">Guardar</button>
+                        <button type="button" onclick="cancelarEdicionContenedor()">Cancelar</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="card-dashboard">
+
+                <h3>Contenedores Registrados</h3>
+
+                <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:2px solid #eee;">
+                            <th style="padding:10px;">ID</th>
+                            <th style="padding:10px;">Ubicación</th>
+                            <th style="padding:10px;">Tipo de residuo</th>
+                            <th style="padding:10px;">Estado</th>
+                            <th style="padding:10px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaContenedores">
+                    </tbody>
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="js/contenedores.js"></script>
+
+</body>
+
+</html>
