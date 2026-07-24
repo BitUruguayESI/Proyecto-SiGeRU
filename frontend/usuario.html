@@ -53,13 +53,14 @@
         <h2>SiGeRU</h2>
 
         <ul>
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="usuario.html">👥 Usuarios</a></li>
+            <!-- Agregamos identificadores para controlar las vistas -->
+            <li><a href="dashboard.html" id="btnDashboard">🏠 Dashboard</a></li>
+            <li><a href="usuario.html" id="btnUsuariosAdmin" class="active">👥 Usuarios</a></li>
             <li><a href="contenedores.html">🗑 Contenedores</a></li>
             <li><a href="camiones.html">🚛 Camiones</a></li>
-            <li><a href="#">⚠ Incidencias</a></li>
+            <li><a href="javascript:void(0);" id="btnIncidenciasAdmin">⚠ Incidencias</a></li>
             <li><a href="#">📊 Reportes</a></li>
-            <li><a href="login.html">🚪 Cerrar sesión</a></li>
+            <li><a href="javascript:void(0);" id="btnCerrarSesion" style="color: #ef4444;">🚪 Cerrar sesión</a></li>
         </ul>
 
     </aside>
@@ -68,68 +69,87 @@
     <main class="contenido">
 
         <header class="topbar">
-            <h1>Gestión de Usuarios</h1>
+            <!-- Título dinámico que cambiará si se pasa a Incidencias -->
+            <h1 id="tituloPanel">Gestión de Usuarios</h1>
             <span>👤 Administrador Municipal</span>
         </header>
 
         <section class="principal">
 
-            <!-- Formulario de alta / edición -->
-            <div class="card-dashboard" style="margin-bottom:30px;">
+            <!-- SECCIÓN ORIGINAL: GESTIÓN DE USUARIOS (Encapsulada en una vista) -->
+            <div id="vistaUsuariosGral">
+                <!-- Listado de usuarios -->
+                <div class="card-dashboard">
+                    <h3>Usuarios Registrados</h3>
+                    <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:2px solid #eee;">
+                                <th style="padding:10px;">ID</th>
+                                <th style="padding:10px;">Nombre</th>
+                                <th style="padding:10px;">Usuario</th>
+                                <th style="padding:10px;">Rol</th>
+                                <th style="padding:10px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaUsuarios">
+                            <!-- Las filas se cargan dinámicamente con usuarios.js -->
+                        </tbody>
+                    </table>
+                </div>
+                 <br>
 
-                <h3 id="tituloFormulario">Nuevo Usuario</h3>
+                <!-- Formulario de alta / edición -->
+                <div class="card-dashboard" style="margin-bottom:30px;">
+                    <h3 id="tituloFormulario">Nuevo Usuario</h3>
+                    <form id="formUsuario">
+                        <input type="hidden" id="usuarioId">
 
-                <form id="formUsuario">
+                        <label>Nombre completo</label>
+                        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
 
-                    <input type="hidden" id="usuarioId">
+                        <label>Usuario</label>
+                        <input type="text" id="usuarioLogin" placeholder="Ej: jperez" required>
 
-                    <label>Nombre completo</label>
-                    <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+                        <label>Contraseña</label>
+                        <input type="password" id="passwordUsuario" placeholder="Ingrese contraseña">
 
-                    <label>Usuario</label>
-                    <input type="text" id="usuarioLogin" placeholder="Ej: jperez" required>
+                        <label>Rol</label>
+                        <select id="rol" required>
+                            <option value="" disabled selected hidden>Seleccione un rol</option>
+                            <option value="Administrador">Administrador Municipal</option>
+                            <option value="Cuadrilla">Cuadrilla de Recolección</option>
+                            <option value="Operario">Operario</option>
+                            <option value="Vecino">Vecino</option>
+                        </select>
 
-                    <label>Contraseña</label>
-                    <input type="password" id="passwordUsuario" placeholder="Ingrese contraseña">
-
-                    <label>Rol</label>
-                    <select id="rol" required>
-                        <option value="">Seleccione un rol</option>
-                        <option value="Administrador">Administrador Municipal</option>
-                        <option value="Cuadrilla">Cuadrilla de Recolección</option>
-                        <option value="Operario">Operario</option>
-                        <option value="Vecino">Vecino</option>
-                    </select>
-
-                    <div style="display:flex; gap:15px; margin-top:20px;">
-                        <button type="submit">Guardar</button>
-                        <button type="button" onclick="cancelarEdicion()">Cancelar</button>
-                    </div>
-
-                </form>
-
+                        <div style="display:flex; gap:15px; margin-top:20px;">
+                            <button type="submit">Guardar</button>
+                            <button type="button" onclick="cancelarEdicion()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <!-- Listado de usuarios -->
-            <div class="card-dashboard">
-
-                <h3>Usuarios Registrados</h3>
-
-                <table style="width:100%; border-collapse:collapse; margin-top:15px;">
-                    <thead>
-                        <tr style="text-align:left; border-bottom:2px solid #eee;">
-                            <th style="padding:10px;">ID</th>
-                            <th style="padding:10px;">Nombre</th>
-                            <th style="padding:10px;">Usuario</th>
-                            <th style="padding:10px;">Rol</th>
-                            <th style="padding:10px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaUsuarios">
-                        <!-- Las filas se cargan dinámicamente con usuarios.js -->
-                    </tbody>
-                </table>
-
+            <!-- NUEVA SECCIÓN DE INCIDENCIAS (Oculta por defecto en esta página) -->
+            <div id="vistaIncidenciasAdmin" class="login-box" style="width: 100%; margin-top: 10px; padding: 30px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; display: none;">
+                <h3 style="color: white; margin-bottom: 20px; font-weight: 600;">Control General de Incidencias</h3>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; color: white;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); font-weight: bold;">
+                                <th style="padding: 12px;">Fecha</th>
+                                <th style="padding: 12px;">Tipo de Problema</th>
+                                <th style="padding: 12px;">Dirección</th>
+                                <th style="padding: 12px;">Detalles del Vecino</th>
+                                <th style="padding: 12px;">Estado / Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAdminIncidencias">
+                            <!-- Inyección dinámica -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </section>
@@ -138,8 +158,9 @@
 
 </div>
 
+<!-- Conservamos tu script de usuarios e integramos el manejador general admin.js -->
 <script src="js/usuarios.js"></script>
+<script src="js/admin.js"></script>
 
 </body>
-
 </html>

@@ -4,7 +4,8 @@ const API_USUARIOS = "http://localhost/Proyecto-SiGeRu/backend/api-usuarios/inde
 document.getElementById("formLogin").addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const usuario = document.getElementById("usuario").value;
+    // Capturamos la C.I. y la contraseña del formulario HTML
+    const usuario = document.getElementById("CI").value;
     const password = document.getElementById("password").value;
 
     try {
@@ -12,16 +13,26 @@ document.getElementById("formLogin").addEventListener("submit", async function (
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ usuario, password })
+            body: JSON.stringify({ usuario, password }) // Enviamos la C.I. mapeada como 'usuario'
         });
 
         const data = await respuesta.json();
 
         if (data.exito) {
-            // Guardamos los datos del usuario activo para usarlos en el dashboard
+            // Guardamos los datos del usuario activo en el navegador
             sessionStorage.setItem("usuarioActivo", JSON.stringify(data.usuario));
-            window.location.href = "dashboard.html";
+            
+            // Redirección inteligente según el rol del usuario
+            if (data.usuario.rol === "Administrador") {
+                window.location.href = "dashboard.html"; // Panel global de control
+            } else if (data.usuario.rol === "Vecino") {
+                window.location.href = "panel-vecino.html"; // Panel de reportes para el ciudadano
+            } else {
+                // Por si en el futuro agregas los roles 'Cuadrilla' o 'Operario'
+                window.location.href = "dashboard.html";
+            }
         } else {
+            // Si las credenciales son incorrectas, muestra el mensaje del backend
             alert(data.mensaje);
         }
 

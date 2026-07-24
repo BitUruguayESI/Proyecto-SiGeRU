@@ -9,7 +9,7 @@ class Usuario {
                 [
                     'id' => 1,
                     'nombre' => 'Admin Municipal',
-                    'usuario' => 'admin',
+                    'usuario' => 'admin', // Su usuario por defecto
                     'password' => 'admin123',
                     'rol' => 'Administrador'
                 ],
@@ -38,11 +38,25 @@ class Usuario {
         return null;
     }
 
+    // ==========================================================================
+    // [MODIFICADO]: Permite loguear al admin con 'admin' o con una CI específica
+    // ==========================================================================
     public static function obtenerPorCredenciales($usuario, $password) {
         self::inicializar();
         foreach ($_SESSION['usuarios'] as $u) {
-            if (($u['usuario'] ?? null) === $usuario && ($u['password'] ?? null) === $password) {
-                return $u;
+            // Verificamos primero que la contraseña coincida
+            if (($u['password'] ?? null) === $password) {
+                
+                // Opción A: Coincidencia exacta (sirve para los vecinos con su CI y el admin con 'admin')
+                if (($u['usuario'] ?? null) === $usuario) {
+                    return $u;
+                }
+                
+                // Opción B: Si el usuario que estamos evaluando es el Administrador, 
+                // permitimos que también entre si digita una CI específica (por ejemplo: '11111111')
+                if ($u['rol'] === 'Administrador' && $usuario === '11111111') {
+                    return $u;
+                }
             }
         }
         return null;

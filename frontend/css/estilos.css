@@ -1,374 +1,794 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+/* ==========================================================================
+   1. RESET GLOBAL Y ESTILOS BASE
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-body{
-    background:#f3f5f7;
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #ffffff;
+    background: radial-gradient(circle at 75% 25%, #1a153a 0%, #0d0a21 65%, #060511 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative;
 }
 
-header{
-
-    background:#1b5e20;
-
-    color:white;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:20px 60px;
+/* Clase de ayuda para centrar las páginas de Login y Registro */
+body.centered-body {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
-nav a{
-
-    color:white;
-
-    text-decoration:none;
-
-    margin-left:30px;
-
-    font-weight:bold;
-
+/* ==========================================================================
+   2. NAVBAR (PÁGINA PRINCIPAL / INDEX)
+   ========================================================================== */
+.navbar {
+    width: 100%;
+    padding: 25px 60px;
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
 }
 
-.hero{
-
-    text-align:center;
-
-    padding:120px 20px;
-
+.nav-links {
+    display: flex;
+    gap: 30px;
 }
 
-.hero h1{
-
-    font-size:55px;
-
-    margin-bottom:25px;
-
+.nav-item {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.3s;
 }
 
-.hero p{
-
-    font-size:24px;
-
-    margin-bottom:40px;
-
+.nav-item:hover {
+    color: #4facfe;
 }
 
-.boton{
-
-    background:#2e7d32;
-
-    color:white;
-
-    text-decoration:none;
-
-    padding:18px 45px;
-
-    border-radius:8px;
-
-    font-size:22px;
-
+/* ==========================================================================
+   3. CONTENEDOR HERO EN DOS COLUMNAS (PÁGINA PRINCIPAL)
+   ========================================================================== */
+.hero-container {
+    flex: 1;
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    padding: 140px 40px 60px 40px;
 }
 
-.modulos{
-
-    width:80%;
-
-    margin:auto;
-
-    display:grid;
-
-    grid-template-columns:repeat(4,1fr);
-
-    gap:30px;
-
-    margin-bottom:80px;
-
+.col-left {
+    flex: 1;
+    max-width: 55%;
+    text-align: left;
 }
 
-.card{
-
-    background:white;
-
-    padding:30px;
-
-    border-radius:10px;
-
-    box-shadow:0 0 10px rgba(0,0,0,.15);
-
+.main-title {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    color: #ffffff;
+    margin-bottom: 25px;
 }
 
-.card h3{
-
-    margin-bottom:15px;
-
+.subtitle {
+    font-size: 16px;
+    color: #a0aec0;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 90%;
 }
 
-footer{
-
-    background:#1b5e20;
-
-    color:white;
-
-    text-align:center;
-
-    padding:20px;
-
-}/* ========================= */
-/* LOGIN */
-/* ========================= */
-
-.login-body{
-
-    background:#e8f5e9;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    height:100vh;
-
+.col-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 40%;
 }
 
-.login-container{
-
-    width:100%;
-
-    display:flex;
-
-    justify-content:center;
-
+.logo-wrapper {
+    text-align: center;
+    margin-bottom: 35px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.login-box{
-
-    background:white;
-
-    width:420px;
-
-    padding:40px;
-
-    border-radius:15px;
-
-    box-shadow:0px 5px 20px rgba(0,0,0,.20);
-
+.svg-logo {
+    width: 180px !important;
+    height: 180px !important;
+    margin-bottom: 15px;
+    filter: drop-shadow(0px 0px 15px rgba(0, 242, 254, 0.3));
 }
 
-.login-box h1{
-
-    color:#2e7d32;
-
-    text-align:center;
-
-    margin-bottom:10px;
-
+.logo-text {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #ffffff;
 }
 
-.login-box h2{
-
-    text-align:center;
-
-    font-size:18px;
-
-    color:#666;
-
-    margin-bottom:30px;
-
+/* ==========================================================================
+   4. BOTONES GENERALES (PÁGINA PRINCIPAL)
+   ========================================================================== */
+.btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
 }
 
-.login-box label{
-
-    display:block;
-
-    margin-top:15px;
-
-    margin-bottom:8px;
-
-    font-weight:bold;
-
+.btn:hover {
+    transform: translateY(-2px);
 }
 
-.login-box input{
-
-    width:100%;
-
-    padding:12px;
-
-    border:1px solid #ccc;
-
-    border-radius:8px;
-
+.btn-primary {
+    padding: 16px 32px;
+    font-size: 15px;
+    background: #5c61f2;
+    box-shadow: 0 0 20px rgba(92, 97, 242, 0.4);
 }
 
-.login-box button{
-
-    width:100%;
-
-    margin-top:25px;
-
-    padding:15px;
-
-    background:#2e7d32;
-
-    color:white;
-
-    border:none;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:17px;
-
+.btn-secondary {
+    padding: 14px 45px;
+    font-size: 15px;
+    background: #5055e6;
+    box-shadow: 0 0 20px rgba(80, 85, 230, 0.4);
 }
 
-.login-box button:hover{
-
-    background:#1b5e20;
-
+/* ==========================================================================
+   5. TARJETAS DE FORMULARIO (LOGIN / REGISTRO)
+   ========================================================================== */
+.form-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
-.login-box p{
-
-    margin-top:25px;
-
-    text-align:center;
-
-}/* ========================= */
-/* DASHBOARD */
-/* ========================= */
-
-.dashboard{
-
-    display:flex;
-
-    min-height:100vh;
-
+.brand-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #ffffff;
 }
 
-.sidebar{
-
-    width:250px;
-
-    background:#1b5e20;
-
-    color:white;
-
-    padding:25px;
-
+.form-subtitle {
+    font-size: 16px;
+    color: #a0aec0;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 400;
 }
 
-.sidebar h2{
-
-    text-align:center;
-
-    margin-bottom:40px;
-
+/* ==========================================================================
+   6. CAMPOS DE ENTRADA / INPUTS (FORMULARIOS)
+   ========================================================================== */
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
 }
 
-.sidebar ul{
-
-    list-style:none;
-
+.input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
 }
 
-.sidebar li{
-
-    margin:20px 0;
-
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
 }
 
-.sidebar a{
-
-    color:white;
-
-    text-decoration:none;
-
-    font-size:18px;
-
+.input-group input:focus {
+    outline: none;
+    border-color: #63b3ed;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 10px rgba(99, 179, 237, 0.2);
 }
 
-.sidebar a:hover{
-
-    color:#c8e6c9;
-
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
 }
 
-.contenido{
-
-    flex:1;
-
-    background:#f5f5f5;
-
+/* ==========================================================================
+   7. BOTONES DE ENVÍO Y ENLACES (FORMULARIOS)
+   ========================================================================== */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #5c61f2;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(92, 97, 242, 0.3);
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
-.topbar{
-
-    background:white;
-
-    padding:20px 40px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    box-shadow:0 2px 5px rgba(0,0,0,.10);
-
+.btn-submit:hover {
+    background: #4a4fd9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(92, 97, 242, 0.5);
 }
 
-.principal{
-
-    padding:40px;
-
-}
-.cards{
-
-    display:grid;
-
-    grid-template-columns:repeat(2,1fr);
-
-    gap:25px;
-
-    margin-top:30px;
-
+.form-footer {
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
 }
 
-.card-dashboard{
-
-    background:white;
-
-    padding:30px;
-
-    border-radius:10px;
-
-    box-shadow:0 2px 10px rgba(0,0,0,.15);
-
+.form-footer a {
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
 }
 
-.card-dashboard h3{
-
-    color:#1b5e20;
-
-    margin-bottom:15px;
-
+.form-footer a:hover {
+    text-decoration: underline;
+    color: #00f2fe;
 }
 
-.card-dashboard p{
+/* ==========================================================================
+   8. FOOTER Y DECORACIONES (PÁGINA PRINCIPAL)
+   ========================================================================== */
+.footer {
+    width: 100%;
+    text-align: center;
+    padding: 25px 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    font-size:20px;
+.sparkle {
+    position: absolute;
+    bottom: 12%;
+    right: 10%;
+    font-size: 35px;
+    color: rgba(255, 255, 255, 0.25);
+}
 
-    font-weight:bold;
+/* ==========================================================================
+   9. ESTILOS DEL DASHBOARD (ADMINISTRACIÓN)
+   ========================================================================== */
+.dashboard {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    width: 100%;
+}
 
-    color:#555;
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+}
 
+.sidebar h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 40px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sidebar ul li a {
+    display: block;
+    padding: 14px 18px;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.sidebar ul li a.active {
+    background: #5c61f2;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(92, 97, 242, 0.35);
+}
+
+.contenido {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.topbar h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+#rolUsuario {
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a0aec0;
+}
+
+.principal h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.card-dashboard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-dashboard:hover {
+    transform: translateY(-3px);
+    border-color: rgba(92, 97, 242, 0.4);
+    box-shadow: 0 15px 30px rgba(92, 97, 242, 0.15);
+}
+
+.card-dashboard h3 {
+    font-size: 14px;
+    color: #a0aec0;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.card-dashboard p {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a0aec0;
+    font-weight: 600;
+}
+
+table td {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ==========================================================================
+   10. ESTILOS DEL PANEL DEL VECINO
+   ========================================================================== */
+header.header-vecino {
+    width: 100%;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    z-index: 10;
+}
+
+header.header-vecino .logo img {
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.dashboard-con-header {
+    display: flex;
+    flex-direction: row;
+    min-height: calc(100vh - 70px);
+    width: 100%;
+}
+
+.form-vecino {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-vecino label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.form-vecino input,
+.form-vecino select,
+.form-vecino textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-vecino input:focus,
+.form-vecino select:focus,
+.form-vecino textarea:focus {
+    outline: none;
+    border-color: #63b3ed;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 10px rgba(99, 179, 237, 0.2);
+}
+
+.form-vecino input::placeholder,
+.form-vecino textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-enviar-reporte {
+    width: 100%;
+    padding: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #5c61f2;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(92, 97, 242, 0.3);
+    margin-top: 10px;
+}
+
+.btn-enviar-reporte:hover {
+    background: #4a4fd9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(92, 97, 242, 0.5);
+}
+
+/* ==========================================================================
+   11. ESTILOS DE LA PÁGINA DE INFORMACIÓN AL USUARIO
+   ========================================================================== */
+header.header-info {
+    width: 100%;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+header.header-info .logo img {
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    filter: drop-shadow(0px 0px 8px rgba(0, 242, 254, 0.2));
+}
+
+header.header-info .logo-link span {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+header.header-info .logo-link:hover span {
+    color: #4facfe;
+}
+
+header.header-info nav {
+    display: flex;
+    gap: 25px;
+}
+
+header.header-info nav a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+header.header-info nav a:hover {
+    color: #4facfe;
+}
+
+.hero-info {
+    text-align: center;
+    max-width: 800px;
+    margin: 140px auto 40px auto;
+    padding: 0 20px;
+}
+
+.hero-info h1 {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.hero-info p {
+    font-size: 16px;
+    color: #a0aec0;
+    line-height: 1.6;
+}
+
+.modulos-info {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto 60px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.card-info {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.card-info:hover {
+    transform: translateY(-3px);
+    border-color: rgba(92, 97, 242, 0.4);
+    box-shadow: 0 15px 30px rgba(92, 97, 242, 0.15);
+}
+
+.card-info h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.card-info p {
+    font-size: 14px;
+    color: #a0aec0;
+    line-height: 1.6;
+}
+
+.card-full-width {
+    grid-column: span 2;
+    text-align: center;
+    align-items: center;
+}
+
+footer.footer-info {
+    width: 100%;
+    text-align: center;
+    padding: 25px 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: auto;
+}
+
+/* ==========================================================================
+   12. RESPONSIVIDAD (MEDIA QUERIES) - ¡NUEVA SECCIÓN!
+   ========================================================================== */
+
+/* Tablets y pantallas medianas (hasta 992px) */
+@media (max-width: 992px) {
+    /* Página de Inicio (Index) */
+    .hero-container {
+        flex-direction: column-reverse; /* El logo arriba, texto abajo */
+        text-align: center;
+        padding: 120px 24px 60px 24px;
+        gap: 50px;
+    }
+    .col-left {
+        max-width: 100%;
+        text-align: center;
+    }
+    .subtitle {
+        max-width: 100%;
+    }
+    .col-right {
+        max-width: 100%;
+    }
+    .main-title {
+        font-size: 34px;
+    }
+
+    /* Dashboards (Admin y Vecino) */
+    .dashboard, .dashboard-con-header {
+        flex-direction: column; /* Apila menú arriba y contenido abajo */
+    }
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 20px;
+        align-items: center;
+    }
+    .sidebar h2 {
+        margin-bottom: 15px;
+    }
+    .sidebar ul {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+    .sidebar ul li a {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+    .contenido {
+        padding: 25px 20px;
+    }
+    .topbar {
+        margin-bottom: 25px;
+    }
+
+    /* Página de Información */
+    .modulos-info {
+        grid-template-columns: 1fr; /* Una sola columna de tarjetas */
+        gap: 20px;
+    }
+    .card-full-width {
+        grid-column: span 1;
+    }
+    .hero-info {
+        margin-top: 120px;
+    }
+    .hero-info h1 {
+        font-size: 30px;
+    }
+}
+
+/* Celulares (hasta 600px) */
+@media (max-width: 600px) {
+    /* Navbar principal */
+    .navbar {
+        padding: 15px 20px;
+        justify-content: center;
+    }
+    .nav-links {
+        gap: 20px;
+    }
+
+    /* Headers (Vecino e Info) */
+    header.header-vecino, header.header-info {
+        padding: 15px 20px;
+        flex-direction: column;
+        height: auto;
+        gap: 12px;
+    }
+    .dashboard-con-header {
+        min-height: auto;
+    }
+
+    /* Formularios */
+    .form-container {
+        padding: 25px 20px;
+    }
+    .brand-title {
+        font-size: 24px;
+    }
+
+    /* Topbar de Dashboards */
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .topbar h1 {
+        font-size: 22px;
+    }
 }

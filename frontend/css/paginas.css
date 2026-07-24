@@ -1,0 +1,130 @@
+/* RESET GLOBAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #ffffff;
+    background: radial-gradient(circle at 75% 25%, #1a153a 0%, #0d0a21 65%, #060511 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* TARJETA DEL FORMULARIO */
+.form-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* TÍTULOS */
+.brand-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+
+.form-subtitle {
+    font-size: 16px;
+    color: #a0aec0;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 400;
+}
+
+/* GRUPOS DE INPUTS */
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #63b3ed;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 10px rgba(99, 179, 237, 0.2);
+}
+
+/* Placeholder gris sutil */
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* BOTÓN REGISTRARME */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #5c61f2;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(92, 97, 242, 0.3);
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-submit:hover {
+    background: #4a4fd9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(92, 97, 242, 0.5);
+}
+
+/* ENLACE INFERIOR */
+.form-footer {
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-footer a {
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+    color: #00f2fe;
+}

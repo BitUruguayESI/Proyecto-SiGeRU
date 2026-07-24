@@ -1,87 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - SiGeRU</title>
+    <title>SIGERU - Registro</title>
+    
+    <!-- Tipografía Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
+    <!-- Enlace al CSS unificado -->
     <link rel="stylesheet" href="css/estilos.css">
-
-    <style>
-        #formRegistro label{
-            display:block;
-            margin-top:15px;
-            margin-bottom:8px;
-            font-weight:bold;
-        }
-        #formRegistro input, #formRegistro select{
-            width:100%;
-            padding:12px;
-            border:1px solid #ccc;
-            border-radius:8px;
-        }
-        #formRegistro button{
-            width:100%;
-            margin-top:25px;
-            padding:15px;
-            background:#2e7d32;
-            color:white;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            font-size:17px;
-        }
-        #formRegistro button:hover{
-            background:#1b5e20;
-        }
-    </style>
 </head>
+<body class="centered-body"> <!-- Añadimos centered-body para centrar el formulario -->
 
-<body class="login-body">
+    <main class="form-container">
+        <!-- Encabezado del Formulario -->
+        <h1 class="brand-title">SiGeRU</h1>
+        <p class="form-subtitle">Solicitar registro de usuario</p>
 
-<div class="login-container">
+        <!-- Formulario (Se agregó el id="formRegistro") -->
+        <form id="formRegistro" action="#">
+            <div class="input-group">
+                <label for="nombre">Nombre completo</label>
+                <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+            </div>
 
-    <div class="login-box">
+            <div class="input-group">
+                <label for="CI">C.I.</label>
+                <!-- Se cambió el id a "CI" para que coincida con el JS -->
+                <input type="text" id="CI" placeholder="Ej: 12345678" required>
+            </div>
 
-        <h1>SiGeRU</h1>
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="Ingrese contraseña" required>
+            </div>
 
-        <h2>Solicitar registro de usuario</h2>
-
-        <form id="formRegistro">
-
-            <label>Nombre completo</label>
-            <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
-
-            <label>Usuario</label>
-            <input type="text" id="usuario" placeholder="Ej: jperez" required>
-
-            <label>Contraseña</label>
-            <input type="password" id="password" placeholder="Ingrese contraseña" required>
-
-            <label>Rol</label>
-            <select id="rol" required>
-                <option value="">Seleccione un rol</option>
-                <option value="Administrador">Administrador Municipal</option>
-                <option value="Cuadrilla">Cuadrilla de Recolección</option>
-                <option value="Operario">Operario</option>
-                <option value="Vecino">Vecino</option>
-            </select>
-
-            <button type="submit">Registrarme</button>
-
+            <button type="submit" class="btn-submit">Registrarme</button>
         </form>
 
-        <p>
-            ¿Ya tenés una cuenta? <a href="login.html">Iniciar sesión</a>
-        </p>
+       <!-- Footer del Formulario -->
+        <p class="form-footer">¿Ya tenés una cuenta? <a href="login.html">Iniciar sesión</a></p>
+    </main>
 
-    </div>
-
-</div>
-
-<script src="js/registro.js"></script>
-
+    <!-- VÍNCULO CON TU ARCHIVO JAVASCRIPT DE REGISTRO -->
+    <script src="js/registro.js"></script>
 </body>
-
 </html>

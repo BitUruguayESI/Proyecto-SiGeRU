@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Vecino - SiGeRU</title>
+    
+    <!-- Tipografía Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS Único Unificado -->
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<!-- Header superior adaptado -->
+<header class="header-vecino">
+    <div class="logo">
+        <img src="img/logo.jpeg" alt="Logo">
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <span id="nombreVecino" style="color: #ffffff; font-weight: 600;">Vecino</span>
+        <a href="javascript:void(0);" id="btnCerrarSesion" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 14px;">🚪 Cerrar Sesión</a>
+    </div>
+</header>
+
+<!-- Contenedor principal adaptado para trabajar con el header superior -->
+<main class="dashboard-con-header">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h2 id="saludo">¡Hola!</h2>
+        <ul>
+            <li><a href="#" class="active" id="btnNuevaIncidencia">🏠 Nueva Incidencia</a></li>
+            <li><a href="#" id="btnMisReportes">📋 Mis Reportes</a></li>
+        </ul>
+    </aside>
+
+    <!-- Contenido del Panel -->
+    <section class="contenido">
+        
+        <div class="topbar">
+            <h1 id="tituloSeccion">Reportar Contenedor en Mal Estado o Desbordado</h1>
+            <span id="rolUsuario">📍 Montevideo, Uruguay</span>
+        </div>
+
+        <div class="principal">
+            
+            <!-- VISTA A: Formulario de Reporte con diseño limpio -->
+            <div id="vistaFormulario" class="form-container" style="max-width: 650px; margin: 0 auto;">
+                <form id="formIncidencia" class="form-vecino">
+                    
+                    <div>
+                        <label for="tipo_incidencia">Tipo de Problema</label>
+                        <select id="tipo_incidencia" required style="margin-top: 8px;">
+                            <option value="" disabled selected hidden>Seleccione el inconveniente</option>
+                            <option value="Contenedor Desbordado" style="color: #000; background: #fff;">Contenedor Desbordado / Lleno</option>
+                            <option value="Contenedor Roto" style="color: #000; background: #fff;">Contenedor en Mal Estado (Roto / Sin tapa)</option>
+                            <option value="Vandalismo" style="color: #000; background: #fff;">Vandalismo / Incendio</option>
+                            <option value="Residuos Alrededor" style="color: #000; background: #fff;">Residuos acumulados alrededor</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="direccion">Dirección / Ubicación del Contenedor</label>
+                        <input type="text" id="direccion" placeholder="Ej: Av. 18 de Julio y Ejido" required style="margin-top: 8px;">
+                    </div>
+
+                    <div>
+                        <label for="descripcion">Detalles Adicionales (Opcional)</label>
+                        <textarea id="descripcion" rows="4" placeholder="Describe brevemente la situación para ayudar a las cuadrillas..." style="margin-top: 8px; resize: none;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-enviar-reporte">Enviar Reporte Municipal</button>
+                </form>
+            </div>
+
+            <!-- VISTA B: Tabla de Historial (Oculta por defecto) -->
+            <div id="vistaReportes" class="form-container" style="max-width: 100%; display: none;">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); text-align: left;">
+                                <th style="padding: 12px;">Fecha</th>
+                                <th style="padding: 12px;">Tipo de Problema</th>
+                                <th style="padding: 12px;">Dirección</th>
+                                <th style="padding: 12px;">Comentarios</th>
+                                <th style="padding: 12px;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaReportesCuerpo">
+                            <!-- Inyección dinámica -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<!-- Enlace al JS -->
+<script src="js/dashboard.js"></script>
+</body>
+</html>

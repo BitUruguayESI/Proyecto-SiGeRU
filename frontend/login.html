@@ -1,70 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGERU - Iniciar Sesión</title>
+    
+    <!-- Tipografía Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
-    <title>Login - SiGeRU</title>
-
-    <link rel="stylesheet" href="css/estilos.css">
-
+    <!-- REUTILIZAMOS EL MISMO CSS DE LAS PÁGINAS SECUNDARIAS -->
+    <link rel="stylesheet" href="css/paginas.css">
 </head>
+<body>
 
-<body class="login-body">
+    <main class="form-container">
+        <!-- Encabezado del Login -->
+        <h1 class="brand-title">SiGeRU</h1>
+        <p class="form-subtitle">Sistema de Gestión de Residuos Urbanos</p>
 
-<div class="login-container">
-
-    <div class="login-box">
-
-        <h1>SiGeRU</h1>
-
-        <h2>Sistema de Gestión de Residuos Urbanos</h2>
-
+        <!-- Formulario ordenado en bloques verticales -->
         <form id="formLogin">
+            <div class="input-group">
+                <label for="CI">C.I.</label>
+                <!-- ID corregido a "CI" en mayúsculas para coincidir con login.js -->
+                <input type="text" id="CI" placeholder="Ingrese su C.I. sin puntos ni guiones" required>
+            </div>
 
-            <label>Usuario</label>
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="Ingrese su contraseña" required>
+            </div>
 
-            <input
-                type="text"
-                id="usuario"
-                placeholder="Ingrese su usuario"
-                required
-            >
-
-            <label>Contraseña</label>
-
-            <input
-                type="password"
-                id="password"
-                placeholder="Ingrese su contraseña"
-                required
-            >
-
-            <button type="submit">
-
-                Iniciar sesión
-
-            </button>
-
+            <button type="submit" class="btn-submit">Iniciar sesión</button>
         </form>
 
-        <p>
+        <!-- Footer del Login (dentro del contenedor principal para que no flote) -->
+        <p class="form-footer">¿No posee una cuenta? <a href="registro.html">Solicitar registro</a></p>
+    </main>
 
-            ¿No posee una cuenta?
-
-            <a href="registro.html">Solicitar registro</a>
-
-        </p>
-
-    </div>
-
-</div>
-
-<script src="js/login.js"></script>
-
+    <!-- VÍNCULO CON TU ARCHIVO JAVASCRIPT DE LOGIN (antes de cerrar el body) -->
+    <script src="js/login.js"></script>
 </body>
-
 </html>

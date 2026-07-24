@@ -1,71 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiGeRU - Sistema de Gestión de Residuos Urbanos</title>
+    <title>SIGERU - Gestión de Residuos Urbanos</title>
+    
+    <!-- Tipografía Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
+    <!-- ENLACE AL CSS (Revisa que tu carpeta se llame 'css' y el archivo 'estilos.css') -->
     <link rel="stylesheet" href="css/estilos.css">
 </head>
-
 <body>
 
-<header>
-    <div class="logo">
-        <h2>SiGeRU</h2>
-    </div>
+    <header class="navbar">
+        <div class="nav-links">
+            <a href="registro.html" class="nav-item">Registro</a>
+            <a href="login.html" class="nav-item">Iniciar sesión</a>
+        </div>
+    </header>
 
-    <nav>
-        <a href="index.html">Inicio</a>
-        <a href="login.html">Iniciar sesión</a>
-    </nav>
-</header>
+    <main class="hero-container">
+        
+        <!-- COLUMNA IZQUIERDA -->
+        <section class="col-left">
+            <h1 class="main-title">SISTEMA DE GESTIÓN<br>DE RESIDUOS URBANOS</h1>
+            <p class="subtitle">Plataforma para la administración de usuarios, contenedores, camiones, incidencias y reportes del sistema municipal.</p>
+            <a href="info.html" class="btn btn-primary">Realiza una denuncia o reclamo</a>
+        </section>
 
-<section class="hero">
+        <!-- COLUMNA DERECHA -->
+        <section class="col-right">
+            <div class="logo-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="svg-logo" width="180" height="180">
+                    <defs>
+                        <linearGradient id="gradShield" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#63b3ed;" />
+                            <stop offset="100%" style="stop-color:#7c3aed;" />
+                        </linearGradient>
+                        <linearGradient id="gradLines" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#4facfe;" />
+                            <stop offset="100%" style="stop-color:#00f2fe;" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M50,12 L82,23 L82,55 C82,73 68,85 50,90 C32,85 18,73 18,55 L18,23 Z" fill="none" stroke="url(#gradShield)" stroke-width="4.5" stroke-linejoin="round"/>
+                    <path d="M36,38 L64,38 L60,72 L40,72 Z" fill="none" stroke="url(#gradShield)" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M42,32 L58,32 M46,32 L46,28 L54,28 L54,32" fill="none" stroke="url(#gradShield)" stroke-width="3"/>
+                    <path d="M32,52 L48,52 L52,62 L68,62" fill="none" stroke="url(#gradLines)" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="48" cy="52" r="3" fill="#4facfe"/>
+                    <circle cx="52" cy="62" r="3" fill="#00f2fe"/>
+                </svg>
+                <h2 class="logo-text">SIGERU</h2>
+            </div>
+            <a href="registro.html" class="btn btn-secondary">Registrarse</a>
+        </section>
 
-    <h1>Sistema de Gestión de Residuos Urbanos</h1>
+    </main>
 
-    <p>
-        Plataforma para la administración de usuarios, contenedores,
-        camiones, incidencias y reportes del sistema municipal.
-    </p>
+    <div class="sparkle">✦</div>
 
-    <a href="login.html" class="boton">
-        Ingresar al Sistema
-    </a>
-
-</section>
-
-<section class="modulos">
-
-    <div class="card">
-        <h3>Usuarios</h3>
-        <p>Administración de usuarios y roles.</p>
-    </div>
-
-    <div class="card">
-        <h3>Contenedores</h3>
-        <p>Registro y seguimiento de contenedores.</p>
-    </div>
-
-    <div class="card">
-        <h3>Camiones</h3>
-        <p>Gestión de la flota de recolección.</p>
-    </div>
-
-    <div class="card">
-        <h3>Incidencias</h3>
-        <p>Control de reclamos y seguimiento.</p>
-    </div>
-
-</section>
-
-<footer>
-
-    Proyecto SiGeRU - UTU 2026
-
-</footer>
+    <footer class="footer">
+        Intendencia De Montevideo
+    </footer>
 
 </body>
 </html>

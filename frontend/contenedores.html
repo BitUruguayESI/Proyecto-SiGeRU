@@ -46,18 +46,20 @@
 
 <div class="dashboard">
 
+    <!-- Menú lateral unificado -->
     <aside class="sidebar">
 
         <h2>SiGeRU</h2>
 
         <ul>
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="usuario.html">👥 Usuarios</a></li>
-            <li><a href="contenedores.html">🗑 Contenedores</a></li>
-            <li><a href="camiones.html">🚛 Camiones</a></li>
-            <li><a href="#">⚠ Incidencias</a></li>
+            <!-- Identificadores unificados para el control dinámico desde admin.js -->
+            <li><a href="dashboard.html" id="btnDashboard">🏠 Dashboard</a></li>
+            <li><a href="usuario.html" id="btnUsuariosAdmin">👥 Usuarios</a></li>
+            <li><a href="contenedores.html" id="btnContenedoresAdmin" class="active">🗑 Contenedores</a></li>
+            <li><a href="camiones.html" id="btnCamionesAdmin">🚛 Camiones</a></li>
+            <li><a href="javascript:void(0);" id="btnIncidenciasAdmin">⚠ Incidencias</a></li>
             <li><a href="#">📊 Reportes</a></li>
-            <li><a href="login.html">🚪 Cerrar sesión</a></li>
+            <li><a href="javascript:void(0);" id="btnCerrarSesion" style="color: #ef4444;">🚪 Cerrar sesión</a></li>
         </ul>
 
     </aside>
@@ -65,66 +67,94 @@
     <main class="contenido">
 
         <header class="topbar">
-            <h1>Gestión de Contenedores</h1>
+            <!-- El id permite que el script cambie el título al conmutar a Incidencias -->
+            <h1 id="tituloPanel">Gestión de Contenedores</h1>
             <span>👤 Administrador Municipal</span>
         </header>
 
         <section class="principal">
 
-            <div class="card-dashboard" style="margin-bottom:30px;">
+            <!-- SECCIÓN ORIGINAL: GESTIÓN DE CONTENEDORES (Encapsulada en una vista) -->
+            <div id="vistaContenedoresGral">
+                <div class="card-dashboard">
 
-                <h3 id="tituloFormularioContenedor">Nuevo Contenedor</h3>
+                    <h3>Contenedores Registrados</h3>
 
-                <form id="formContenedor">
+                    <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:2px solid #eee;">
+                                <th style="padding:10px;">ID</th>
+                                <th style="padding:10px;">Ubicación</th>
+                                <th style="padding:10px;">Tipo de residuo</th>
+                                <th style="padding:10px;">Estado</th>
+                                <th style="padding:10px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaContenedores">
+                        </tbody>
+                    </table>
 
-                    <input type="hidden" id="contenedorId">
+                </div>
+                <br>
 
-                    <label>Ubicación</label>
-                    <input type="text" id="ubicacion" placeholder="Ej: Av. 18 de Julio y Ejido" required>
+                <div class="card-dashboard" style="margin-bottom:30px;">
 
-                    <label>Tipo de residuo</label>
-                    <select id="tipoResiduo" required>
-                        <option value="">Seleccione un tipo</option>
-                        <option value="Organico">Orgánico</option>
-                        <option value="Reciclable">Reciclable</option>
-                        <option value="General">General</option>
-                        <option value="Vidrio">Vidrio</option>
-                    </select>
+                    <h3 id="tituloFormularioContenedor">Nuevo Contenedor</h3>
 
-                    <label>Estado</label>
-                    <select id="estado" required>
-                        <option value="Funcional">Funcional</option>
-                        <option value="Roto">Roto</option>
-                        <option value="Desbordado">Desbordado</option>
-                    </select>
+                    <form id="formContenedor">
 
-                    <div style="display:flex; gap:15px; margin-top:20px;">
-                        <button type="submit">Guardar</button>
-                        <button type="button" onclick="cancelarEdicionContenedor()">Cancelar</button>
-                    </div>
+                        <input type="hidden" id="contenedorId">
 
-                </form>
+                        <label>Ubicación</label>
+                        <input type="text" id="ubicacion" placeholder="Ej: Av. 18 de Julio y Ejido" required>
 
+                        <label>Tipo de residuo</label>
+                        <select id="tipoResiduo" required>
+                             <option value="" disabled selected hidden>Seleccione un tipo</option>
+                            <option value="Organico">Orgánico</option>
+                            <option value="Reciclable">Reciclable</option>
+                            <option value="General">General</option>
+                            <option value="Vidrio">Vidrio</option>
+                        </select>
+
+                        <label>Estado</label>
+                        <select id="estado" required>
+                            <option value="" disabled selected hidden>Seleccione un estado</option>
+                            <option value="Funcional">Funcional</option>
+                            <option value="Roto">Roto</option>
+                            <option value="Desbordado">Desbordado</option>
+                        </select>
+
+                        <div style="display:flex; gap:15px; margin-top:20px;">
+                            <button type="submit">Guardar</button>
+                            <button type="button" onclick="cancelarEdicionContenedor()">Cancelar</button>
+                        </div>
+
+                    </form>
+
+                </div>
             </div>
 
-            <div class="card-dashboard">
-
-                <h3>Contenedores Registrados</h3>
-
-                <table style="width:100%; border-collapse:collapse; margin-top:15px;">
-                    <thead>
-                        <tr style="text-align:left; border-bottom:2px solid #eee;">
-                            <th style="padding:10px;">ID</th>
-                            <th style="padding:10px;">Ubicación</th>
-                            <th style="padding:10px;">Tipo de residuo</th>
-                            <th style="padding:10px;">Estado</th>
-                            <th style="padding:10px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaContenedores">
-                    </tbody>
-                </table>
-
+            <!-- SECCIÓN DE INCIDENCIAS (Sincronizada estéticamente con el ecosistema) -->
+            <div id="vistaIncidenciasAdmin" class="login-box" style="width: 100%; margin-top: 10px; padding: 30px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; display: none;">
+                <h3 style="color: white; margin-bottom: 20px; font-weight: 600;">Control General de Incidencias</h3>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; color: white;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); font-weight: bold;">
+                                <th style="padding: 12px;">Fecha</th>
+                                <th style="padding: 12px;">Tipo de Problema</th>
+                                <th style="padding: 12px;">Dirección</th>
+                                <th style="padding: 12px;">Detalles del Vecino</th>
+                                <th style="padding: 12px;">Estado / Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAdminIncidencias">
+                            <!-- Inyección dinámica -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </section>
@@ -133,8 +163,9 @@
 
 </div>
 
+<!-- Enlazamos la lógica original de contenedores y la central de administración -->
 <script src="js/contenedores.js"></script>
+<script src="js/admin.js"></script>
 
 </body>
-
 </html>

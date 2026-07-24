@@ -6,9 +6,10 @@ document.getElementById("formRegistro").addEventListener("submit", async functio
 
     const datos = {
         nombre: document.getElementById("nombre").value,
-        usuario: document.getElementById("usuario").value,
+        usuario: document.getElementById("CI").value,
         password: document.getElementById("password").value,
-        rol: document.getElementById("rol").value
+        rol: "Vecino" // <-- Añade esta línea fija
+        //rol: document.getElementById("rol").value// <--viene directo del formulariio en registro.html
     };
 
     try {
