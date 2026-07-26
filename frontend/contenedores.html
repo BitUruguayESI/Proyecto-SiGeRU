@@ -58,7 +58,7 @@
             <li><a href="contenedores.html" id="btnContenedoresAdmin" class="active">🗑 Contenedores</a></li>
             <li><a href="camiones.html" id="btnCamionesAdmin">🚛 Camiones</a></li>
             <li><a href="javascript:void(0);" id="btnIncidenciasAdmin">⚠ Incidencias</a></li>
-            <li><a href="#">📊 Reportes</a></li>
+            <li><a href="dashboard.html?vista=reportes">📊 Reportes</a></li>
             <li><a href="javascript:void(0);" id="btnCerrarSesion" style="color: #ef4444;">🚪 Cerrar sesión</a></li>
         </ul>
 
@@ -147,7 +147,8 @@
                                 <th style="padding: 12px;">Tipo de Problema</th>
                                 <th style="padding: 12px;">Dirección</th>
                                 <th style="padding: 12px;">Detalles del Vecino</th>
-                                <th style="padding: 12px;">Estado / Acción</th>
+                                <th style="padding: 12px;">Estado</th>
+                                <th style="padding: 12px;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaAdminIncidencias">
@@ -165,7 +166,7 @@
 
 <!-- Enlazamos la lógica original de contenedores y la central de administración -->
 <script src="js/contenedores.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=4"></script>
 
 </body>
 </html>

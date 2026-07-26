@@ -49,26 +49,15 @@ switch ($accion) {
 
     case 'actualizarEstado':
         if ($metodo === 'POST') {
-            // Buscamos la incidencia en la sesión y le cambiamos el estado
             $id = $datos['id'] ?? 0;
             $nuevoEstado = $datos['estado'] ?? '';
-            
-            $actualizado = false;
-            if (isset($_SESSION['incidencias'])) {
-                foreach ($_SESSION['incidencias'] as &$i) {
-                    if ($i['id'] == $id) {
-                        $i['estado'] = $nuevoEstado;
-                        $actualizado = true;
-                        break;
-                    }
-                }
-            }
-            
-            if ($actualizado) {
-                $respuesta = ['exito' => true, 'mensaje' => 'Estado de la incidencia actualizado'];
-            } else {
-                $respuesta = ['exito' => false, 'mensaje' => 'No se encontró la incidencia'];
-            }
+            $respuesta = $controller->actualizarEstado($id, $nuevoEstado);
+        }
+        break;
+
+    case 'eliminar':
+        if ($metodo === 'DELETE' || $metodo === 'POST') {
+            $respuesta = $controller->eliminar($_GET['id'] ?? 0);
         }
         break;
 }
