@@ -1,5 +1,5 @@
 // Cambiá esta URL si tu servidor corre en otra ruta
-const API_GESTION = "http://localhost/Proyecto-SiGeRu/backend/api-gestion/index.php";
+const API_GESTION = "../backend/api-gestion/index.php";
 
 document.addEventListener("DOMContentLoaded", cargarContenedores);
 

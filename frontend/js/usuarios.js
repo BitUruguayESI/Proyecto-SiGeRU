@@ -1,5 +1,5 @@
 // Cambiá esta URL si tu servidor PHP corre en otro puerto o ruta
-const API_USUARIOS = "http://localhost/Proyecto-SiGeRu/backend/api-usuarios/index.php";
+const API_USUARIOS = "../backend/api-usuarios/index.php";
 
 document.addEventListener("DOMContentLoaded", cargarUsuarios);
 

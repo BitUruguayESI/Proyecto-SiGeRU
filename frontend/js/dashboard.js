@@ -1,4 +1,4 @@
-const API_INCIDENCIAS = "http://localhost/Proyecto-SiGeRu/backend/api-incidencias/index.php";
+const API_INCIDENCIAS = "../backend/api-incidencias/index.php";
 
 document.addEventListener("DOMContentLoaded", function () {
     

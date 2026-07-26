@@ -1,5 +1,5 @@
 // Cambiá esta URL si tu servidor corre en otra ruta
-const API_RECOLECCION = "http://localhost/Proyecto-SiGeRu/backend/api-recoleccion/index.php";
+const API_RECOLECCION = "../backend/api-recoleccion/index.php";
 
 document.addEventListener("DOMContentLoaded", cargarCamiones);
 

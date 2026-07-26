@@ -1,5 +1,13 @@
-// Cambiá esta URL si tu servidor corre en otra ruta
-const API_USUARIOS = "http://localhost/Proyecto-SiGeRu/backend/api-usuarios/index.php";
+const PAGINA_XAMPP = "http://localhost/Proyecto-SiGeRU/frontend/registro.html";
+
+// Impide ejecutar la app desde file:// o Live Server, donde PHP no puede atender la API.
+if (window.location.origin !== "http://localhost" ||
+    !window.location.pathname.toLowerCase().endsWith("/proyecto-sigeru/frontend/registro.html")) {
+    window.location.replace(PAGINA_XAMPP);
+}
+
+// Ruta relativa: funciona cuando el proyecto se abre desde Apache/XAMPP.
+const API_USUARIOS = "../backend/api-usuarios/index.php";
 
 document.getElementById("formRegistro").addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -19,6 +27,10 @@ document.getElementById("formRegistro").addEventListener("submit", async functio
             body: JSON.stringify(datos)
         });
 
+        if (!respuesta.ok) {
+            throw new Error(`La API respondió HTTP ${respuesta.status}`);
+        }
+
         const data = await respuesta.json();
         alert(data.mensaje);
 
@@ -27,7 +39,7 @@ document.getElementById("formRegistro").addEventListener("submit", async functio
         }
 
     } catch (error) {
-        alert("No se pudo conectar con el servidor. Verifica que la API este corriendo.");
+        alert("No se pudo registrar. Abrí la aplicación desde XAMPP: " + PAGINA_XAMPP);
         console.error(error);
     }
 });
