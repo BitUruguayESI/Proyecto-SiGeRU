@@ -1,14 +1,16 @@
 # SiGeRU — Backend + Frontend
 
-Módulos funcionales: alta de usuarios (Operario/Administrador) e inicio de
-sesión (api-usuarios), landing page pública con consulta pública (RN21) y
-reporte de incidencias por vecinos (api-incidencias), gestión de
-contenedores/rutas/cuadrillas/camiones/instalaciones (api-gestion),
-asignación diaria + descargas + mantenimiento de camión (api-recoleccion),
-y dashboard + navegación para el personal. Todo sobre la base de datos de
-25 tablas ya creada — los 4 paquetes del backend (api-usuarios, api-gestion,
-api-incidencias, api-recoleccion) del Diagrama de Paquetes ya están
-completos.
+Módulos funcionales: alta y CRUD completo de usuarios (Operario/
+Administrador) e inicio de sesión (api-usuarios), landing page pública con
+consulta pública (RN21) y reporte de incidencias por vecinos
+(api-incidencias), gestión de contenedores/rutas/cuadrillas/camiones/
+instalaciones/maquinaria (api-gestion), asignación diaria + descargas +
+mantenimiento de camión (api-recoleccion), y dashboard + navegación para
+el personal. Todo sobre la base de datos de 25 tablas ya creada, con datos
+de prueba cargados, tests automatizados y Dockerfile/docker-compose para
+levantarlo sin instalar nada a mano — los 4 paquetes del backend
+(api-usuarios, api-gestion, api-incidencias, api-recoleccion) del Diagrama
+de Paquetes ya están completos.
 
 Probado de punta a punta contra base de datos real (MariaDB) y servidor PHP
 real: registro con y sin teléfonos, registro duplicado (rechazado), login
