@@ -26,11 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (resultado.exito) {
         mostrarMensaje(`Bienvenido/a, ${resultado.nombre_completo} (${resultado.tipo_usuario}).`, 'exito');
-        if (resultado.tipo_usuario === 'ADMINISTRADOR') {
-          setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
-        }
-        // TODO: falta un panel propio para el Operario; por ahora se
-        // queda en esta pantalla.
+        const destino = resultado.tipo_usuario === 'ADMINISTRADOR' ? 'dashboard.html' : 'panel_incidencias.html';
+        setTimeout(() => { window.location.href = destino; }, 700);
+        // TODO: cuando exista api-recoleccion, el Operario probablemente
+        // quiera un panel propio en vez de caer directo en incidencias.
       } else {
         mostrarMensaje(resultado.mensaje || 'No se pudo iniciar sesión.', 'error');
       }

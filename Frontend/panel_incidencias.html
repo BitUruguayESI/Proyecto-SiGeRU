@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Incidencias</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="incidencias">
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main class="panel">
+    <h2 style="margin-top:0;">Incidencias</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
+
+    <div class="formulario-alta" style="margin-bottom:18px;">
+      <label for="filtroEstado">Filtrar por estado</label>
+      <select id="filtroEstado" style="max-width:260px;">
+        <option value="">Todas</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="ASIGNADA">Asignada</option>
+        <option value="EN_PROCESO">En proceso</option>
+        <option value="RESUELTA">Resuelta</option>
+        <option value="ESCALADA">Escalada</option>
+      </select>
+    </div>
+
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>ID</th><th>Contenedor</th><th>Tipo</th><th>Descripción</th>
+          <th>Estado</th><th>Cuadrilla</th><th>Registrada</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaIncidencias"></tbody>
+    </table>
+  </main>
+
+  <script src="js/nav_admin.js"></script>
+  <script src="js/panel_incidencias.js"></script>
+</body>
+</html>

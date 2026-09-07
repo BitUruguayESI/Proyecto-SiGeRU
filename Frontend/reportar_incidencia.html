@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Reportar incidencia</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+
+  <main>
+    <h2>Reportar una incidencia</h2>
+    <p style="font-size:14px; color:#555; margin-top:-6px;">
+      No hace falta tener cuenta. Te avisamos las novedades a tu email.
+    </p>
+    <form id="formIncidencia" novalidate>
+      <label for="contenedor">Contenedor afectado</label>
+      <select id="contenedor" required>
+        <option value="">Cargando contenedores...</option>
+      </select>
+
+      <label for="tipo">Tipo de incidencia</label>
+      <select id="tipo" required>
+        <option value="Desborde">Contenedor desbordado</option>
+        <option value="Dañado">Contenedor dañado</option>
+        <option value="Fuera de lugar">Contenedor fuera de lugar</option>
+        <option value="Otro">Otro</option>
+      </select>
+
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" rows="4" required
+        style="width:100%; padding:9px 10px; border:1px solid var(--gris-borde); border-radius:5px; font-size:14px; font-family:inherit;"></textarea>
+
+      <label for="email">Tu email</label>
+      <input type="email" id="email" required>
+
+      <button type="submit" class="principal">Reportar incidencia</button>
+      <div id="mensaje" class="mensaje"></div>
+      <a class="enlace-secundario" href="landing.html">Volver al inicio</a>
+    </form>
+  </main>
+
+  <script src="js/reportar_incidencia.js"></script>
+</body>
+</html>
