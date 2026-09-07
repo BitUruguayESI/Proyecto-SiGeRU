@@ -40,7 +40,8 @@ sigeru/
                         panel_gestion.html, panel_incidencias.html,
                         panel_recoleccion.html, css/, js/
   sql/                  sigeru_schema.sql (25 tablas) y datos_prueba.sql
-  Dockerfile, docker-compose.yml, .dockerignore
+  tests/                tests de integración de la API (ver tests/README.md)
+  Dockerfile, docker-compose.yml, .dockerignore, phpunit.xml, composer.json
 ```
 
 Es un solo proyecto PHP (no microservicios separados): cada paquete del
@@ -125,6 +126,18 @@ tener que dar de alta todo a mano antes de mostrar la app funcionando.
 
 Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 `20000001`-`20000004` Operarios) tienen la contraseña `test1234`.
+
+## Tests automatizados
+
+```
+bash tests/run-tests.sh
+```
+
+13 tests de integración (usuarios, CRUD de contenedores + autorización
+por rol, máquina de estados de incidencias completa) contra una base
+de datos de test separada (`sigeru_test`, nunca toca la de desarrollo).
+Ver `tests/README.md` para el detalle de qué cubren y cómo correrlos
+con PHPUnit real.
 
 ## Notas de diseño
 
