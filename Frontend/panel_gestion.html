@@ -15,12 +15,51 @@
     <div id="mensajeGlobal" class="mensaje"></div>
 
     <nav class="pestanias">
+      <button data-seccion="usuarios">Usuarios</button>
       <button data-seccion="contenedores" class="activa">Contenedores</button>
       <button data-seccion="rutas">Rutas</button>
       <button data-seccion="cuadrillas">Cuadrillas</button>
       <button data-seccion="camiones">Camiones</button>
       <button data-seccion="instalaciones">Instalaciones</button>
     </nav>
+
+    <!-- ===================== USUARIOS ===================== -->
+    <section id="seccion-usuarios" class="seccion-panel">
+      <label>Filtrar por tipo</label>
+      <select id="usu_filtro_tipo" style="max-width:260px; margin-bottom:12px;">
+        <option value="">Todos (Operario y Administrador)</option>
+        <option value="OPERARIO">Operario</option>
+        <option value="ADMINISTRADOR">Administrador</option>
+      </select>
+      <table class="tabla-datos">
+        <thead><tr><th>CI</th><th>Nombre</th><th>Email</th><th>Tipo</th><th>Cargo</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaUsuarios"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3>Editar usuario</h3>
+        <p id="usu_sin_seleccion" style="color:#777;">Elegí "Editar" en un usuario de la tabla para modificarlo acá.</p>
+        <form id="formUsuario" hidden>
+          <input type="hidden" id="usu_ci">
+          <p><strong>CI: <span id="usu_ci_visible"></span></strong></p>
+          <label>Nombre completo</label>
+          <input type="text" id="usu_nombre" required>
+          <label>Email</label>
+          <input type="email" id="usu_email" required>
+          <div id="usu_cargo_contenedor">
+            <label>Cargo</label>
+            <input type="text" id="usu_cargo">
+          </div>
+          <label>Teléfonos (separados por coma, opcional)</label>
+          <input type="text" id="usu_telefonos" placeholder="099123456, 26001122">
+          <label>Nueva contraseña (dejar vacío para no cambiarla)</label>
+          <input type="password" id="usu_contrasena" minlength="8">
+          <div class="fila-doble" style="margin-top:10px;">
+            <button type="submit" class="principal">Guardar cambios</button>
+            <button type="button" id="usu_cancelar" class="secundario">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <!-- ===================== CONTENEDORES ===================== -->
     <section id="seccion-contenedores" class="seccion-panel activa">

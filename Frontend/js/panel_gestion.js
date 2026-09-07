@@ -32,6 +32,117 @@ document.querySelectorAll('.pestanias button').forEach(boton => {
 });
 
 // ---------------------------------------------------------------
+// USUARIOS (CRUD completo: listar todos, editar, dar de baja/reactivar)
+// ---------------------------------------------------------------
+const BASE_USUARIOS = '../api-usuarios';
+const formUsuario = document.getElementById('formUsuario');
+
+async function cargarUsuarios() {
+  const tipo = document.getElementById('usu_filtro_tipo').value;
+  const url = tipo ? `${BASE_USUARIOS}/usuarios.php?tipo_usuario=${tipo}` : `${BASE_USUARIOS}/usuarios.php`;
+  const datos = await llamar(url);
+  const cuerpo = document.getElementById('tablaUsuarios');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  datos.usuarios.forEach(u => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${u.ci}</td><td>${u.nombre_completo}</td><td>${u.email}</td>
+      <td>${u.tipo_usuario}</td><td>${u.cargo || '—'}</td>
+      <td>${u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo'}</td>
+      <td>
+        <button class="chico btn-editar-usuario" data-ci="${u.ci}">Editar</button>
+        ${u.estado === 'ACTIVO'
+          ? `<button class="peligro btn-baja-usuario" data-ci="${u.ci}">Dar de baja</button>`
+          : `<button class="chico btn-reactivar-usuario" data-ci="${u.ci}">Reactivar</button>`}
+      </td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.btn-editar-usuario').forEach(boton => {
+    boton.addEventListener('click', () => abrirEdicionUsuario(boton.dataset.ci));
+  });
+  cuerpo.querySelectorAll('.btn-baja-usuario').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      if (!confirm(`¿Dar de baja al usuario ${boton.dataset.ci}?`)) return;
+      const resultado = await llamar(`${BASE_USUARIOS}/usuarios.php`, {
+        method: 'DELETE',
+        body: JSON.stringify({ ci: boton.dataset.ci }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarUsuarios();
+    });
+  });
+  cuerpo.querySelectorAll('.btn-reactivar-usuario').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE_USUARIOS}/usuarios.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ ci: boton.dataset.ci, estado: 'ACTIVO' }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarUsuarios();
+    });
+  });
+}
+
+async function abrirEdicionUsuario(ci) {
+  const datos = await llamar(`${BASE_USUARIOS}/usuarios.php?ci=${encodeURIComponent(ci)}`);
+  if (!datos.exito) { mostrarMensajeGlobal(datos.mensaje, 'error'); return; }
+
+  const u = datos.usuario;
+  document.getElementById('usu_sin_seleccion').hidden = true;
+  formUsuario.hidden = false;
+  document.getElementById('usu_ci').value = u.ci;
+  document.getElementById('usu_ci_visible').textContent = `${u.ci} (${u.tipo_usuario})`;
+  document.getElementById('usu_nombre').value = u.nombre_completo;
+  document.getElementById('usu_email').value = u.email;
+  document.getElementById('usu_telefonos').value = u.telefonos.join(', ');
+  document.getElementById('usu_contrasena').value = '';
+  document.getElementById('usu_cargo_contenedor').style.display = u.tipo_usuario === 'OPERARIO' ? '' : 'none';
+  document.getElementById('usu_cargo').value = u.cargo || '';
+  formUsuario.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+document.getElementById('usu_filtro_tipo').addEventListener('change', cargarUsuarios);
+
+document.getElementById('usu_cancelar').addEventListener('click', () => {
+  formUsuario.reset();
+  formUsuario.hidden = true;
+  document.getElementById('usu_sin_seleccion').hidden = false;
+});
+
+formUsuario.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const telefonos = document.getElementById('usu_telefonos').value.split(',').map(t => t.trim()).filter(Boolean);
+  const cuerpo = {
+    ci: document.getElementById('usu_ci').value,
+    nombre_completo: document.getElementById('usu_nombre').value.trim(),
+    email: document.getElementById('usu_email').value.trim(),
+    telefonos,
+  };
+  const cargo = document.getElementById('usu_cargo').value.trim();
+  if (document.getElementById('usu_cargo_contenedor').style.display !== 'none') {
+    cuerpo.cargo = cargo;
+  }
+  const contrasena = document.getElementById('usu_contrasena').value;
+  if (contrasena) cuerpo.contrasena = contrasena;
+
+  const resultado = await llamar(`${BASE_USUARIOS}/usuarios.php`, {
+    method: 'PUT',
+    body: JSON.stringify(cuerpo),
+  });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) {
+    formUsuario.reset();
+    formUsuario.hidden = true;
+    document.getElementById('usu_sin_seleccion').hidden = false;
+    cargarUsuarios();
+  }
+});
+
+// ---------------------------------------------------------------
 // CONTENEDORES
 // ---------------------------------------------------------------
 async function cargarContenedores() {
@@ -313,6 +424,7 @@ document.getElementById('formInstalacion').addEventListener('submit', async (eve
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
+  await cargarUsuarios();
   await cargarRutas();       // primero, porque llena los <select> que usan otras secciones
   await cargarContenedores();
   await cargarCuadrillas();
