@@ -19,7 +19,7 @@
     { pagina: 'dashboard', href: 'dashboard.html', texto: 'Dashboard' },
     { pagina: 'gestion', href: 'panel_gestion.html', texto: 'Gestión de recursos' },
     { pagina: 'incidencias', href: 'panel_incidencias.html', texto: 'Incidencias' },
-    { pagina: 'recoleccion', href: '#', texto: 'Recolección', proximamente: true },
+    { pagina: 'recoleccion', href: 'panel_recoleccion.html', texto: 'Recolección' },
   ];
 
   const nav = document.createElement('nav');
