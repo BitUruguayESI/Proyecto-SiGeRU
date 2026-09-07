@@ -40,6 +40,7 @@ sigeru/
                         panel_gestion.html, panel_incidencias.html,
                         panel_recoleccion.html, css/, js/
   sql/                  sigeru_schema.sql (25 tablas) y datos_prueba.sql
+  Dockerfile, docker-compose.yml, .dockerignore
 ```
 
 Es un solo proyecto PHP (no microservicios separados): cada paquete del
@@ -86,6 +87,33 @@ contenedores Docker independientes, la división lógica ya está hecha.
    ```
 
 5. Abrir `http://127.0.0.1:8000/` en el navegador (te lleva a la landing).
+
+## Levantarlo con Docker (alternativa a los pasos 1-4)
+
+Con Docker no hace falta instalar MySQL/MariaDB ni PHP a mano:
+
+```
+docker compose up --build
+```
+
+Esto levanta dos contenedores: `db` (MariaDB 11, que al crearse por
+primera vez carga automáticamente `sql/sigeru_schema.sql` y después
+`sql/datos_prueba.sql` — ver "Datos de prueba" abajo) y `app` (PHP 8.2 +
+Apache con el código de este repo, ya configurado por variables de
+entorno para conectarse a `db`). La app queda en `http://localhost:8080/`.
+
+Para arrancar de cero (borra los datos cargados; la próxima vez se
+vuelven a cargar los scripts de `sql/`):
+```
+docker compose down -v
+```
+
+Nota: el `docker-compose.yml` y el `Dockerfile` se armaron y se
+validaron (`docker compose config`, y cada script `sql/` corriendo
+contra una base MariaDB real) en este entorno, pero acá no hay salida
+a internet para bajar las imágenes de Docker Hub, así que el
+`docker compose up --build` en sí no se pudo ejecutar de punta a punta
+en esta sesión. Probalo en tu máquina y avisame si algo no levanta.
 
 ## Datos de prueba
 

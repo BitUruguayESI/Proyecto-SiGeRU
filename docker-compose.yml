@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass_dev
+      MARIADB_DATABASE: sigeru
+      MARIADB_USER: sigeru_app
+      MARIADB_PASSWORD: sigeru_pass_dev
+    volumes:
+      - db_data:/var/lib/mysql
+      # Se ejecutan una sola vez, en orden alfabético del nombre DESTINO,
+      # la primera vez que se crea el volumen db_data (comportamiento
+      # estándar de la imagen oficial de MariaDB): primero el esquema,
+      # después los datos de prueba.
+      - ./sql/sigeru_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./sql/datos_prueba.sql:/docker-entrypoint-initdb.d/02-datos-prueba.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SIGERU_DB_HOST: db
+      SIGERU_DB_PORT: "3306"
+      SIGERU_DB_NAME: sigeru
+      SIGERU_DB_USER: sigeru_app
+      SIGERU_DB_PASS: sigeru_pass_dev
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:
