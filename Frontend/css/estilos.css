@@ -1,0 +1,213 @@
+:root {
+  --azul: #1F4E79;
+  --azul-claro: #3B9DE8;
+  --verde: #2E7D32;
+  --rojo: #C0392B;
+  --gris-fondo: #F4F6F8;
+  --gris-borde: #D0D5DB;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--gris-fondo);
+  color: #222;
+}
+
+header.banner {
+  background: var(--azul-claro);
+  padding: 18px 32px;
+}
+header.banner h1 {
+  color: #fff;
+  margin: 0;
+  font-size: 22px;
+}
+
+main {
+  max-width: 480px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 28px 32px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+h2 { margin-top: 0; color: var(--azul); }
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-top: 14px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.fila-telefono {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.fila-telefono input { flex: 1; }
+.fila-telefono button {
+  flex-shrink: 0;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button.principal {
+  width: 100%;
+  background: var(--azul-claro);
+  color: #fff;
+  padding: 11px;
+  margin-top: 22px;
+  font-weight: 600;
+}
+button.principal:hover { background: var(--azul); }
+
+button.secundario {
+  background: var(--gris-borde);
+  color: #333;
+  padding: 8px 10px;
+}
+
+.mensaje {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: none;
+}
+.mensaje.exito { background: #E3F3E3; color: var(--verde); display: block; }
+.mensaje.error { background: #FBE3E3; color: var(--rojo); display: block; }
+
+.enlace-secundario {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--azul-claro);
+  text-decoration: none;
+}
+.enlace-secundario:hover { text-decoration: underline; }
+
+.oculto { display: none !important; }
+
+/* ---- Paneles de gestión (tablas, pestañas) ---- */
+main.panel { max-width: 960px; }
+
+.pestanias {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.pestanias button {
+  background: none;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+.pestanias button.activa {
+  color: var(--azul);
+  border-bottom-color: var(--azul-claro);
+}
+
+.seccion-panel { display: none; }
+.seccion-panel.activa { display: block; }
+
+table.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+table.tabla-datos th, table.tabla-datos td {
+  border: 1px solid var(--gris-borde);
+  padding: 7px 9px;
+  text-align: left;
+}
+table.tabla-datos th { background: #EEF2F6; }
+table.tabla-datos select { padding: 4px; font-size: 12px; }
+
+.formulario-alta {
+  background: #FAFBFC;
+  border: 1px solid var(--gris-borde);
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-top: 10px;
+}
+.formulario-alta h3 { margin-top: 0; font-size: 15px; color: var(--azul); }
+.formulario-alta .fila-doble { display: flex; gap: 12px; }
+.formulario-alta .fila-doble > div { flex: 1; }
+
+button.peligro { background: var(--rojo); color: #fff; padding: 5px 9px; font-size: 12px; }
+button.chico { padding: 5px 9px; font-size: 12px; background: var(--azul-claro); color: #fff; }
+
+/* ---- Nav admin (dashboard, panel de gestión, etc.) ---- */
+nav.nav-admin {
+  background: var(--azul);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+nav.nav-admin a {
+  color: #DCEEFB;
+  text-decoration: none;
+  padding: 14px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+}
+nav.nav-admin a:hover { color: #fff; }
+nav.nav-admin a.activa { color: #fff; border-bottom-color: var(--azul-claro); }
+nav.nav-admin a.deshabilitada { color: #6E93B4; pointer-events: none; }
+nav.nav-admin a.deshabilitada .etiqueta-proximamente { font-size: 10px; display: block; font-weight: 400; }
+nav.nav-admin .separador { flex: 1; }
+nav.nav-admin .usuario-actual { color: #DCEEFB; font-size: 13px; margin-right: 10px; }
+nav.nav-admin button.cerrar-sesion {
+  background: none;
+  color: #DCEEFB;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #4C7BA6;
+  border-radius: 5px;
+}
+nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
+
+.tarjetas-estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+.tarjeta-estadistica {
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+}
+.tarjeta-estadistica .numero { font-size: 30px; font-weight: 800; color: var(--azul); }
+.tarjeta-estadistica .etiqueta { font-size: 13px; color: #555; margin-top: 4px; }
+.tarjeta-estadistica.alerta .numero { color: var(--rojo); }

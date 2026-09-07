@@ -1,0 +1,79 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('formRegistro');
+  const selectTipo = document.getElementById('tipo_usuario');
+  const bloqueCargo = document.getElementById('bloqueCargo');
+  const campoCargo = document.getElementById('cargo');
+  const listaTelefonos = document.getElementById('listaTelefonos');
+  const btnAgregarTelefono = document.getElementById('btnAgregarTelefono');
+  const divMensaje = document.getElementById('mensaje');
+
+  // Mostrar/ocultar "cargo" según el tipo de usuario elegido
+  selectTipo.addEventListener('change', () => {
+    const esOperario = selectTipo.value === 'OPERARIO';
+    bloqueCargo.classList.toggle('oculto', !esOperario);
+    campoCargo.required = esOperario;
+  });
+
+  function agregarFilaTelefono() {
+    const fila = document.createElement('div');
+    fila.className = 'fila-telefono';
+    fila.innerHTML = `
+      <input type="text" class="telefono" placeholder="Ej: 099123456">
+      <button type="button" class="secundario btn-quitar">Quitar</button>
+    `;
+    fila.querySelector('.btn-quitar').addEventListener('click', () => fila.remove());
+    listaTelefonos.appendChild(fila);
+  }
+  btnAgregarTelefono.addEventListener('click', agregarFilaTelefono);
+  agregarFilaTelefono(); // arrancar con un campo de teléfono visible
+
+  function mostrarMensaje(texto, tipo) {
+    divMensaje.textContent = texto;
+    divMensaje.className = 'mensaje ' + tipo;
+  }
+
+  form.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    divMensaje.className = 'mensaje';
+
+    const contrasena = document.getElementById('contrasena').value;
+    const confirmar = document.getElementById('confirmar_contrasena').value;
+    if (contrasena !== confirmar) {
+      mostrarMensaje('Las contraseñas no coinciden.', 'error');
+      return;
+    }
+
+    const telefonos = Array.from(document.querySelectorAll('.telefono'))
+      .map(input => input.value.trim())
+      .filter(valor => valor !== '');
+
+    const datos = {
+      ci: document.getElementById('ci').value.trim(),
+      nombre_completo: document.getElementById('nombre_completo').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      contrasena,
+      tipo_usuario: selectTipo.value,
+      cargo: campoCargo.value.trim(),
+      telefonos,
+    };
+
+    try {
+      const respuesta = await fetch('../api-usuarios/registro.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+      });
+      const resultado = await respuesta.json();
+
+      if (resultado.exito) {
+        mostrarMensaje('Registro exitoso. Ya podés iniciar sesión.', 'exito');
+        form.reset();
+        bloqueCargo.classList.add('oculto');
+      } else {
+        mostrarMensaje(resultado.mensaje || 'No se pudo completar el registro.', 'error');
+      }
+    } catch (error) {
+      mostrarMensaje('Error de conexión con el servidor.', 'error');
+    }
+  });
+});
