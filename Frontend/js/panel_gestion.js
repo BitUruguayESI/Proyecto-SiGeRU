@@ -378,7 +378,9 @@ document.getElementById('formCamion').addEventListener('submit', async (evento) 
 async function cargarInstalaciones() {
   const datos = await llamar(`${BASE}/instalaciones.php`);
   const cuerpo = document.getElementById('tablaInstalaciones');
+  const selectMaquinaria = document.getElementById('maq_id_centro');
   cuerpo.innerHTML = '';
+  selectMaquinaria.innerHTML = '';
   if (!datos.exito) return;
 
   datos.instalaciones.forEach(i => {
@@ -390,6 +392,7 @@ async function cargarInstalaciones() {
       <td><button class="peligro btn-eliminar-instalacion" data-id="${i.id_centro}">Eliminar</button></td>
     `;
     cuerpo.appendChild(fila);
+    selectMaquinaria.appendChild(new Option(i.nombre, i.id_centro));
   });
 
   cuerpo.querySelectorAll('.btn-eliminar-instalacion').forEach(boton => {
@@ -421,6 +424,116 @@ document.getElementById('formInstalacion').addEventListener('submit', async (eve
 });
 
 // ---------------------------------------------------------------
+// MAQUINARIA + REPUESTOS
+// ---------------------------------------------------------------
+async function cargarRepuestos() {
+  const datos = await llamar(`${BASE}/repuestos.php`);
+  const cuerpo = document.getElementById('tablaRepuestos');
+  const selectMaquinaria = document.getElementById('maq_repuestos');
+  cuerpo.innerHTML = '';
+  selectMaquinaria.innerHTML = '';
+  if (!datos.exito) return;
+
+  datos.repuestos.forEach(r => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${r.id_repuesto}</td><td>${r.nombre}</td><td>${r.tipo}</td><td>${r.stock}</td><td>${r.estado}</td>
+      <td><button class="peligro btn-eliminar-repuesto" data-id="${r.id_repuesto}">Eliminar</button></td>
+    `;
+    cuerpo.appendChild(fila);
+    selectMaquinaria.appendChild(new Option(`${r.nombre} (${r.tipo})`, r.id_repuesto));
+  });
+
+  cuerpo.querySelectorAll('.btn-eliminar-repuesto').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE}/repuestos.php`, {
+        method: 'DELETE',
+        body: JSON.stringify({ id_repuesto: Number(boton.dataset.id) }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarRepuestos();
+      cargarMaquinaria();
+    });
+  });
+}
+
+document.getElementById('formRepuesto').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const resultado = await llamar(`${BASE}/repuestos.php`, {
+    method: 'POST',
+    body: JSON.stringify({
+      nombre: document.getElementById('rep_nombre').value.trim(),
+      tipo: document.getElementById('rep_tipo').value.trim(),
+      stock: Number(document.getElementById('rep_stock').value || 0),
+    }),
+  });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) { document.getElementById('formRepuesto').reset(); cargarRepuestos(); }
+});
+
+async function cargarMaquinaria() {
+  const datos = await llamar(`${BASE}/maquinaria.php`);
+  const cuerpo = document.getElementById('tablaMaquinaria');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  datos.maquinas.forEach(m => {
+    const repuestos = m.repuestos.map(r => r.nombre).join(', ') || '—';
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${m.id_maquinaria}</td><td>${m.nombre}</td><td>${m.tipo}</td>
+      <td>
+        <select data-id="${m.id_maquinaria}" class="select-estado-maquinaria">
+          <option value="OPERATIVA" ${m.estado === 'OPERATIVA' ? 'selected' : ''}>Operativa</option>
+          <option value="EN_MANTENIMIENTO" ${m.estado === 'EN_MANTENIMIENTO' ? 'selected' : ''}>En mantenimiento</option>
+          <option value="FUERA_DE_SERVICIO" ${m.estado === 'FUERA_DE_SERVICIO' ? 'selected' : ''}>Fuera de servicio</option>
+        </select>
+      </td>
+      <td>${m.nombre_instalacion}</td><td>${repuestos}</td>
+      <td><button class="peligro btn-eliminar-maquinaria" data-id="${m.id_maquinaria}">Eliminar</button></td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.select-estado-maquinaria').forEach(select => {
+    select.addEventListener('change', async () => {
+      const resultado = await llamar(`${BASE}/maquinaria.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ id_maquinaria: Number(select.dataset.id), estado: select.value }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      if (resultado.exito) cargarMaquinaria();
+    });
+  });
+  cuerpo.querySelectorAll('.btn-eliminar-maquinaria').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE}/maquinaria.php`, {
+        method: 'DELETE',
+        body: JSON.stringify({ id_maquinaria: Number(boton.dataset.id) }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarMaquinaria();
+    });
+  });
+}
+
+document.getElementById('formMaquinaria').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const repuestos = Array.from(document.getElementById('maq_repuestos').selectedOptions).map(o => Number(o.value));
+  const resultado = await llamar(`${BASE}/maquinaria.php`, {
+    method: 'POST',
+    body: JSON.stringify({
+      nombre: document.getElementById('maq_nombre').value.trim(),
+      tipo: document.getElementById('maq_tipo').value.trim(),
+      id_centro: Number(document.getElementById('maq_id_centro').value),
+      repuestos,
+    }),
+  });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) { document.getElementById('formMaquinaria').reset(); cargarMaquinaria(); }
+});
+
+// ---------------------------------------------------------------
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
@@ -430,4 +543,6 @@ document.getElementById('formInstalacion').addEventListener('submit', async (eve
   await cargarCuadrillas();
   await cargarCamiones();
   await cargarInstalaciones();
+  await cargarRepuestos();   // antes de maquinaria, porque llena el <select> de repuestos
+  await cargarMaquinaria();
 })();

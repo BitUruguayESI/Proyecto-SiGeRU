@@ -21,6 +21,7 @@
       <button data-seccion="cuadrillas">Cuadrillas</button>
       <button data-seccion="camiones">Camiones</button>
       <button data-seccion="instalaciones">Instalaciones</button>
+      <button data-seccion="maquinaria">Maquinaria</button>
     </nav>
 
     <!-- ===================== USUARIOS ===================== -->
@@ -168,6 +169,44 @@
           <label>Residuos aceptados</label>
           <input type="text" id="inst_residuos" placeholder="organico, plastico, vidrio" required>
           <button type="submit" class="principal">Registrar instalación</button>
+        </form>
+      </div>
+    </section>
+    <!-- ===================== MAQUINARIA ===================== -->
+    <section id="seccion-maquinaria" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Instalación</th><th>Repuestos</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaMaquinaria"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3>Registrar maquinaria</h3>
+        <form id="formMaquinaria">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="maq_nombre" placeholder="Compactadora 1" required></div>
+            <div><label>Tipo</label><input type="text" id="maq_tipo" placeholder="Compactadora, prensa, cinta..." required></div>
+          </div>
+          <label>Instalación</label>
+          <select id="maq_id_centro" required></select>
+          <label>Repuestos asociados (opcional)</label>
+          <select id="maq_repuestos" multiple size="4"></select>
+          <button type="submit" class="principal">Registrar maquinaria</button>
+        </form>
+      </div>
+
+      <div class="formulario-alta" style="margin-top:16px;">
+        <h3>Catálogo de repuestos</h3>
+        <table class="tabla-datos">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tablaRepuestos"></tbody>
+        </table>
+        <form id="formRepuesto">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="rep_nombre" required></div>
+            <div><label>Tipo</label><input type="text" id="rep_tipo" required></div>
+          </div>
+          <label>Stock</label>
+          <input type="number" id="rep_stock" min="0" value="0">
+          <button type="submit" class="principal">Registrar repuesto</button>
         </form>
       </div>
     </section>
