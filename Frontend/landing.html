@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Inicio</title>
+<link rel="stylesheet" href="css/estilos.css">
+<style>
+  main.landing { max-width: 780px; }
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .tarjeta {
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    text-decoration: none;
+    color: #222;
+    background: #fafbfc;
+  }
+  .tarjeta:hover { border-color: var(--azul-claro); }
+  .tarjeta h3 { margin: 8px 0 6px; color: var(--azul); font-size: 16px; }
+  .tarjeta p { margin: 0; font-size: 13px; color: #555; }
+  .tarjeta.deshabilitada { opacity: 0.55; pointer-events: none; }
+  .tarjeta .etiqueta { font-size: 11px; color: var(--azul-claro); font-weight: 600; }
+</style>
+</head>
+<body>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+
+  <main class="landing">
+    <h2>Bienvenido/a</h2>
+    <p>
+      SiGeRU es el sistema de gestión de residuos urbanos de BitUruguay: permite
+      reportar y hacer seguimiento de incidencias con contenedores, coordinar
+      cuadrillas y rutas de recolección, y controlar camiones, instalaciones y
+      mantenimiento. Por ahora, esta opción está disponible sin necesidad de
+      registrarte:
+    </p>
+
+    <div class="tarjetas">
+      <a class="tarjeta deshabilitada" href="#">
+        <h3>Reportar una incidencia</h3>
+        <p>Contenedor desbordado, dañado o fuera de servicio.</p>
+        <span class="etiqueta">próximamente</span>
+      </a>
+
+      <a class="tarjeta" href="consulta.html">
+        <h3>Realizar una consulta</h3>
+        <p>Enviar una pregunta o comentario general al equipo de SiGeRU.</p>
+      </a>
+    </div>
+
+    <hr style="margin:28px 0; border:none; border-top:1px solid var(--gris-borde);">
+
+    <p><strong>¿Sos parte del personal (Operario o Administrador)?</strong></p>
+    <div class="tarjetas">
+      <a class="tarjeta" href="login.html">
+        <h3>Iniciar sesión</h3>
+        <p>Acceder con tu cuenta.</p>
+      </a>
+      <a class="tarjeta" href="registro.html">
+        <h3>Registrarme</h3>
+        <p>Crear una cuenta de Operario o Administrador.</p>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
