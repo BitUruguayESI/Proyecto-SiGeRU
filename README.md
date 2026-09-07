@@ -27,9 +27,11 @@ cuadrilla primero).
 ```
 sigeru/
   Comun/              conexion.php (PDO) y funciones.php (helpers + auth por rol)
-  api-usuarios/        registro.php, login.php, logout.php, quien_soy.php
+  api-usuarios/        registro.php, login.php, logout.php, quien_soy.php,
+                        usuarios.php (CRUD completo), listar_operarios.php
   api-gestion/         contenedores.php, rutas.php, cuadrillas.php,
-                        camiones.php, instalaciones.php, registrar_consulta.php
+                        camiones.php, instalaciones.php, maquinaria.php,
+                        repuestos.php, registrar_consulta.php
   api-incidencias/      contenedores_disponibles.php, registrar.php, listar.php,
                         asignar_cuadrilla.php, actualizar_estado.php
   api-recoleccion/      asignaciones.php, descargas.php, mantenimiento.php
@@ -37,7 +39,7 @@ sigeru/
                         reportar_incidencia.html, dashboard.html,
                         panel_gestion.html, panel_incidencias.html,
                         panel_recoleccion.html, css/, js/
-  sql/                  sigeru_schema.sql (el script de las 25 tablas)
+  sql/                  sigeru_schema.sql (25 tablas) y datos_prueba.sql
 ```
 
 Es un solo proyecto PHP (no microservicios separados): cada paquete del
@@ -46,9 +48,18 @@ contenedores Docker independientes, la división lógica ya está hecha.
 
 ## Cómo levantarlo
 
-1. Crear la base de datos (si no la tenés creada todavía):
+1. Crear la base de datos (si no la tenés creada todavía). Importante:
+   siempre con `--default-character-set=utf8mb4`, si no los acentos y la
+   "ñ" quedan mal guardados (no es un problema de la aplicación, es el
+   cliente `mysql` interpretando mal el archivo):
    ```
-   mysql -u root -p < sql/sigeru_schema.sql
+   mysql -u root -p --default-character-set=utf8mb4 < sql/sigeru_schema.sql
+   ```
+   Opcionalmente, para tener datos de ejemplo (usuarios, contenedores,
+   incidencias en distintos estados, etc. — ver "Datos de prueba" más
+   abajo):
+   ```
+   mysql -u root -p --default-character-set=utf8mb4 < sql/datos_prueba.sql
    ```
 
 2. Crear un usuario de MySQL para que la aplicación no use `root`:
@@ -75,6 +86,17 @@ contenedores Docker independientes, la división lógica ya está hecha.
    ```
 
 5. Abrir `http://127.0.0.1:8000/` en el navegador (te lleva a la landing).
+
+## Datos de prueba
+
+`sql/datos_prueba.sql` carga usuarios, rutas, cuadrillas, contenedores,
+camiones, instalaciones, maquinaria con repuestos, incidencias en varios
+estados del Diagrama de Estados, una asignación diaria con sus
+operarios, descargas, un mantenimiento y consultas públicas — para no
+tener que dar de alta todo a mano antes de mostrar la app funcionando.
+
+Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
+`20000001`-`20000004` Operarios) tienen la contraseña `test1234`.
 
 ## Notas de diseño
 
