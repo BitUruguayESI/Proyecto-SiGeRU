@@ -38,3 +38,34 @@ function obtenerJsonEntrada(): array
     $datos = json_decode($crudo, true);
     return is_array($datos) ? $datos : [];
 }
+
+/**
+ * Asegura que haya una sesión de USUARIO (Operario o Administrador)
+ * iniciada (via api-usuarios/login.php). Si no la hay, corta la
+ * ejecución con 401. Devuelve los datos de sesión para quien los use.
+ */
+function requerirSesionActiva(): array
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+    if (empty($_SESSION['ci_usuario'])) {
+        responderJson(['exito' => false, 'mensaje' => 'Tenés que iniciar sesión.'], 401);
+    }
+    return $_SESSION;
+}
+
+/**
+ * Igual que requerirSesionActiva(), pero además exige que el usuario
+ * sea ADMINISTRADOR. Pensado para los endpoints de api-gestion, donde
+ * solo el administrador da de alta/baja contenedores, rutas, cuadrillas,
+ * camiones e instalaciones.
+ */
+function requerirRolAdministrador(): array
+{
+    $sesion = requerirSesionActiva();
+    if ($sesion['tipo_usuario'] !== 'ADMINISTRADOR') {
+        responderJson(['exito' => false, 'mensaje' => 'Esta acción requiere una cuenta de Administrador.'], 403);
+    }
+    return $sesion;
+}
