@@ -6,10 +6,12 @@
 <title>SiGeRU — Panel de gestión</title>
 <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body>
+<body data-pagina="gestion">
   <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
   <main class="panel">
+    <h2 style="margin-top:0;">Gestión de recursos</h2>
     <div id="mensajeGlobal" class="mensaje"></div>
 
     <nav class="pestanias">
@@ -132,6 +134,7 @@
     </section>
   </main>
 
+  <script src="js/nav_admin.js"></script>
   <script src="js/panel_gestion.js"></script>
 </body>
 </html>

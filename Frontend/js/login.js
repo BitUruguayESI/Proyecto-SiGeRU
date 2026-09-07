@@ -26,8 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (resultado.exito) {
         mostrarMensaje(`Bienvenido/a, ${resultado.nombre_completo} (${resultado.tipo_usuario}).`, 'exito');
-        // TODO: cuando existan los paneles por tipo de usuario, redirigir
-        // acá según resultado.tipo_usuario en vez de quedarse en la página.
+        if (resultado.tipo_usuario === 'ADMINISTRADOR') {
+          setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+        }
+        // TODO: falta un panel propio para el Operario; por ahora se
+        // queda en esta pantalla.
       } else {
         mostrarMensaje(resultado.mensaje || 'No se pudo iniciar sesión.', 'error');
       }
