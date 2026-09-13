@@ -148,13 +148,15 @@ formUsuario.addEventListener('submit', async (evento) => {
 const COLOR_ESTADO_CONTENEDOR = {
   OPERATIVO: '#2E7D32', DESBORDADO: '#C0392B', FUERA_DE_SERVICIO: '#888888',
 };
+const MONTEVIDEO_CENTRO = [-34.9011, -56.1645];
+const MONTEVIDEO_ZOOM = 12;
 
 let mapaContenedores = null;
 let capaMarcadoresContenedores = null;
 
 function iniciarMapaContenedores() {
   if (mapaContenedores || typeof L === 'undefined') return;
-  mapaContenedores = L.map('mapaContenedores').setView([-34.9011, -56.1645], 12); // Montevideo
+  mapaContenedores = L.map('mapaContenedores').setView(MONTEVIDEO_CENTRO, MONTEVIDEO_ZOOM);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
@@ -192,7 +194,13 @@ function actualizarMapaContenedores(contenedores) {
 
   const sinUbicar = contenedores.length - puntos.length;
   if (puntos.length) {
-    mapaContenedores.fitBounds(puntos, { padding: [24, 24], maxZoom: 15 });
+    // Siempre incluye a Montevideo en el encuadre (además de los
+    // contenedores), para que el mapa quede centrado ahí en vez de
+    // desplazarse a otro lado si algún contenedor quedó mal geocodificado.
+    const limites = L.latLngBounds(puntos).extend(MONTEVIDEO_CENTRO);
+    mapaContenedores.fitBounds(limites, { padding: [24, 24], maxZoom: 15 });
+  } else {
+    mapaContenedores.setView(MONTEVIDEO_CENTRO, MONTEVIDEO_ZOOM);
   }
   if (sinUbicar > 0) {
     aviso.hidden = false;
