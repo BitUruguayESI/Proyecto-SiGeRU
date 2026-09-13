@@ -118,6 +118,13 @@ async function cargarIncidencias() {
 document.getElementById('filtroEstado').addEventListener('change', cargarIncidencias);
 
 (async function iniciar() {
+  // Permite entrar directo con un estado filtrado (ej. desde el Dashboard:
+  // panel_incidencias.html?estado=PENDIENTE).
+  const estadoDesdeUrl = new URLSearchParams(location.search).get('estado');
+  if (estadoDesdeUrl && ETIQUETAS_ESTADO[estadoDesdeUrl]) {
+    document.getElementById('filtroEstado').value = estadoDesdeUrl;
+  }
+
   const datosCuadrillas = await llamar(`${BASE_GES}/cuadrillas.php`);
   cuadrillasDisponibles = datosCuadrillas.exito ? datosCuadrillas.cuadrillas : [];
   await cargarIncidencias();

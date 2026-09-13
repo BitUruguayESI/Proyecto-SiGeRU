@@ -20,6 +20,7 @@
     { pagina: 'gestion', href: 'panel_gestion.html', texto: 'Gestión de recursos' },
     { pagina: 'incidencias', href: 'panel_incidencias.html', texto: 'Incidencias' },
     { pagina: 'recoleccion', href: 'panel_recoleccion.html', texto: 'Recolección' },
+    { pagina: 'asignacion-diaria', href: 'panel_recoleccion.html#asignaciones', texto: 'Asignación diaria' },
   ];
 
   const nav = document.createElement('nav');

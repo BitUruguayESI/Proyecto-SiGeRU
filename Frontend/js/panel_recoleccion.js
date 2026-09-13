@@ -24,14 +24,25 @@ async function llamar(url, opciones = {}) {
 // ---------------------------------------------------------------
 // Pestañas
 // ---------------------------------------------------------------
+function activarPestania(nombre) {
+  const boton = document.querySelector(`.pestanias button[data-seccion="${nombre}"]`);
+  const seccion = document.getElementById('seccion-' + nombre);
+  if (!boton || !seccion) return;
+  document.querySelectorAll('.pestanias button').forEach(b => b.classList.remove('activa'));
+  document.querySelectorAll('.seccion-panel').forEach(s => s.classList.remove('activa'));
+  boton.classList.add('activa');
+  seccion.classList.add('activa');
+}
+
 document.querySelectorAll('.pestanias button').forEach(boton => {
-  boton.addEventListener('click', () => {
-    document.querySelectorAll('.pestanias button').forEach(b => b.classList.remove('activa'));
-    document.querySelectorAll('.seccion-panel').forEach(s => s.classList.remove('activa'));
-    boton.classList.add('activa');
-    document.getElementById('seccion-' + boton.dataset.seccion).classList.add('activa');
-  });
+  boton.addEventListener('click', () => activarPestania(boton.dataset.seccion));
 });
+
+// Permite entrar directo a una pestaña por link (ej. desde el Dashboard:
+// panel_recoleccion.html#asignaciones).
+if (location.hash) {
+  activarPestania(location.hash.slice(1));
+}
 
 // ---------------------------------------------------------------
 // Datos de referencia (para llenar los <select>)

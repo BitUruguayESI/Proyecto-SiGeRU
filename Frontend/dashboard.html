@@ -18,6 +18,28 @@
       <!-- se completan por JS -->
     </div>
 
+    <div class="fila-paneles-dashboard">
+      <section class="bloque-dashboard">
+        <h3>Incidencias por estado</h3>
+        <div class="grafico-estados" id="graficoEstadosIncidencias">
+          <!-- se completa por JS -->
+        </div>
+      </section>
+
+      <section class="bloque-dashboard">
+        <h3>Incidencias recientes</h3>
+        <table class="tabla-datos" id="tablaIncidenciasRecientes">
+          <thead>
+            <tr><th>Tipo</th><th>Estado</th><th>Contenedor</th><th>Fecha</th></tr>
+          </thead>
+          <tbody id="cuerpoIncidenciasRecientes">
+            <!-- se completa por JS -->
+          </tbody>
+        </table>
+        <a href="panel_incidencias.html" class="enlace-secundario" style="text-align:left; margin-top:0;">Ver todas las incidencias →</a>
+      </section>
+    </div>
+
     <p style="color:#777; font-size:13px;">
       Los reportes exportables (PDF/Excel, RF15) y el mapa interactivo (RF13)
       se agregan junto con api-incidencias y api-recoleccion.
