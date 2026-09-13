@@ -62,6 +62,36 @@ final class IncidenciasApiTest extends TestCase
         self::assertNotEmpty($encontrada);
     }
 
+    /**
+     * El vecino reporta por dirección, no por coordenadas: listar.php le
+     * devuelve al Administrador la dirección del contenedor (no la
+     * "coordenadas" cruda), y contenedores_disponibles.php (el que arma
+     * la lista de sugerencias en reportar_incidencia.html) también la
+     * incluye para poder mostrarla en vez de un id.
+     */
+    public function testDireccionSeVeEnVezDeCoordenadas(): void
+    {
+        $id = $this->reportarIncidencia();
+
+        $listado = $this->admin->get('/api-incidencias/listar.php?estado=PENDIENTE');
+        $incidencia = null;
+        foreach ($listado['cuerpo']['incidencias'] as $i) {
+            if ((int) $i['id_incidencia'] === $id) { $incidencia = $i; break; }
+        }
+        self::assertTrue($incidencia !== null);
+        self::assertSame('18 de Julio 1234, Montevideo', $incidencia['contenedor_direccion']);
+        self::assertFalse(array_key_exists('contenedor_coordenadas', $incidencia));
+
+        $disponibles = $this->anonimo->get('/api-incidencias/contenedores_disponibles.php');
+        self::assertSame(200, $disponibles['codigo']);
+        $contenedor = null;
+        foreach ($disponibles['cuerpo']['contenedores'] as $c) {
+            if ((int) $c['id_contenedor'] === $this->idContenedor) { $contenedor = $c; break; }
+        }
+        self::assertTrue($contenedor !== null);
+        self::assertSame('18 de Julio 1234, Montevideo', $contenedor['direccion']);
+    }
+
     public function testDesbordeMarcaElContenedorComoDesbordado(): void
     {
         $this->reportarIncidencia('Desborde');

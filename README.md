@@ -162,6 +162,21 @@ igual — solo que sin ubicación en el mapa todavía — y el aviso arriba de l
 tabla te dice cuántos quedaron así; podés reintentar editándolos con una
 dirección más precisa una vez que haya internet.
 
+Del lado del vecino, `reportar_incidencia.html` (público, sin sesión) usa
+esa misma dirección para identificar el contenedor: en vez de un `<select>`
+con "Contenedor #N" y la `coordenadas` cruda, hay un campo de texto con
+sugerencias (`<datalist>`, se completa solo con las direcciones ya
+cargadas) — el vecino escribe o elige la dirección, y recién ahí se manda
+el `id_contenedor` real por debajo. Al elegir una dirección con
+coincidencia exacta se muestra un mapa Leaflet con un marcador en esa
+ubicación (reutilizando la `coordenadas` ya geocodificada, sin volver a
+llamar a Nominatim) para que el vecino confirme visualmente que es el
+contenedor correcto; si la dirección no tiene ubicación cargada, o el
+texto no matchea ninguna sugerencia, se avisa en texto y no se deja
+enviar el formulario sin una dirección válida. El panel de incidencias
+del Administrador (`panel_incidencias.js`) también muestra la dirección
+del contenedor en vez de sus coordenadas.
+
 ## Datos de prueba
 
 `sql/datos_prueba.sql` carga usuarios, rutas, cuadrillas, contenedores,
@@ -179,12 +194,13 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-23 tests de integración (usuarios, CRUD de contenedores + autorización
+24 tests de integración (usuarios, CRUD de contenedores + autorización
 por rol, máquina de estados de incidencias de 3 pasos + quién puede
 resolver, rol editable y cuadrilla estable, alta/edición de asignación
-diaria) contra una base de datos de test separada (`sigeru_test`, nunca
-toca la de desarrollo). Ver `tests/README.md` para el detalle de qué
-cubren y cómo correrlos con PHPUnit real.
+diaria, reporte de incidencias por dirección) contra una base de datos
+de test separada (`sigeru_test`, nunca toca la de desarrollo). Ver
+`tests/README.md` para el detalle de qué cubren y cómo correrlos con
+PHPUnit real.
 
 ## Notas de diseño
 

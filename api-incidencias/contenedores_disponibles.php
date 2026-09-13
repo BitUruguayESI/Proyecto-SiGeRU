@@ -2,10 +2,12 @@
 /**
  * api-incidencias/contenedores_disponibles.php
  * Listado público (sin sesión) de contenedores que un vecino puede
- * elegir al reportar una incidencia. Expone solo lo mínimo necesario
- * (id, coordenadas, estado) — nada de datos administrativos.
+ * elegir al reportar una incidencia. El vecino los identifica por
+ * dirección (no por id ni coordenadas) — "coordenadas" se sigue
+ * devolviendo para poder ubicar el contenedor elegido en el mapa,
+ * pero nunca se le muestra como texto.
  *
- * GET -> { exito, contenedores: [{ id_contenedor, coordenadas, estado }] }
+ * GET -> { exito, contenedores: [{ id_contenedor, direccion, coordenadas, estado }] }
  */
 
 declare(strict_types=1);
@@ -19,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $pdo = obtenerConexion();
 $contenedores = $pdo->query(
-    "SELECT id_contenedor, coordenadas, estado FROM CONTENEDOR
+    "SELECT id_contenedor, direccion, coordenadas, estado FROM CONTENEDOR
      WHERE estado <> 'FUERA_DE_SERVICIO' ORDER BY id_contenedor"
 )->fetchAll();
 

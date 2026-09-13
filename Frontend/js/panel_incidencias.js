@@ -66,7 +66,7 @@ async function cargarIncidencias() {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${inc.id_incidencia}</td>
-      <td>#${inc.id_contenedor} (${inc.contenedor_coordenadas || '—'})</td>
+      <td>${inc.contenedor_direccion || `Contenedor #${inc.id_contenedor} (sin dirección cargada)`}</td>
       <td>${inc.tipo_incidencia}</td>
       <td>${inc.descripcion}</td>
       <td>${ETIQUETAS_ESTADO[inc.estado] || inc.estado}</td>

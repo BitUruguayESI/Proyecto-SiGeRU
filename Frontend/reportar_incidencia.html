@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiGeRU — Reportar incidencia</title>
 <link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
   <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
@@ -15,10 +19,13 @@
       No hace falta tener cuenta. Te avisamos las novedades a tu email.
     </p>
     <form id="formIncidencia" novalidate>
-      <label for="contenedor">Contenedor afectado</label>
-      <select id="contenedor" required>
-        <option value="">Cargando contenedores...</option>
-      </select>
+      <label for="direccionContenedor">Dirección del contenedor</label>
+      <input type="text" id="direccionContenedor" list="listaDirecciones" autocomplete="off"
+             placeholder="Empezá a escribir la dirección...">
+      <datalist id="listaDirecciones"></datalist>
+      <input type="hidden" id="contenedor">
+      <p id="avisoContenedor" class="aviso-mapa" hidden></p>
+      <div id="mapaReporte" class="mapa-contenedores" hidden></div>
 
       <label for="tipo">Tipo de incidencia</label>
       <select id="tipo" required>

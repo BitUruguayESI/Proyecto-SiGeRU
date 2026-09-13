@@ -22,8 +22,10 @@ Cubren:
   público, que "Desborde" marque el contenedor, que no se pueda saltar
   de PENDIENTE a EN_PROCESO sin pasar por asignar cuadrilla (que ahora
   deja la incidencia directo en EN_PROCESO), el ciclo completo hasta
-  RESUELTA con la reversión automática del contenedor, y que el
-  Recolector no pueda resolver una incidencia pero el Chofer sí.
+  RESUELTA con la reversión automática del contenedor, que el
+  Recolector no pueda resolver una incidencia pero el Chofer sí, y que
+  tanto `listar.php` como `contenedores_disponibles.php` devuelvan la
+  dirección del contenedor (no la "coordenadas" cruda).
 - **RolesYCuadrillasApiTest** — cambiar el rol de un usuario (Recolector
   ↔ Chofer ↔ Administrador) y que el discriminador RN01 y el cargo
   queden consistentes; que un Administrador no pueda cambiarse el rol a
@@ -68,4 +70,4 @@ test**. `tests/bootstrap.php` elige automáticamente uno u otro: usa
 PHPUnit real si existe `vendor/autoload.php`, o el shim si no.
 
 Corrida en este entorno (con el runner incluido, ver más arriba):
-`Tests: 23, Fallos: 0`.
+`Tests: 24, Fallos: 0`.
