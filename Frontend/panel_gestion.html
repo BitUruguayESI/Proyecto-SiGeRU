@@ -14,15 +14,12 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
-  <div class="dashboard">
-    <div id="navAdmin"></div>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
-    <div class="contenido">
-      <div class="topbar">
-        <h1>Gestión de recursos</h1>
-        <div id="rolUsuario"></div>
-      </div>
-      <div id="mensajeGlobal" class="mensaje"></div>
+  <main class="panel">
+    <h2 style="margin-top:0;">Gestión de recursos</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
 
     <nav class="pestanias">
       <button data-seccion="usuarios">Usuarios</button>
@@ -268,8 +265,7 @@
         </form>
       </div>
     </section>
-    </div>
-  </div>
+  </main>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>

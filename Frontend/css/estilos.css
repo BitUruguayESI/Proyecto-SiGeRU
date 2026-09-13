@@ -1199,3 +1199,115 @@ a.card-info { text-decoration: none; cursor: pointer; }
 }
 .fila-telefono .telefono { flex: 1; margin-bottom: 0 !important; }
 .fila-telefono .btn-quitar { flex-shrink: 0; }
+
+/* ==========================================================================
+   14. NAVEGACIÓN SUPERIOR — PANELES DE PERSONAL
+   (dashboard, gestión, incidencias, recolección, mi día, registro)
+   ========================================================================== */
+header.banner {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+header.banner h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+header.banner a.enlace-header {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 8px 16px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+header.banner a.enlace-header:hover { background: rgba(255, 255, 255, 0.07); }
+
+nav.nav-admin {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+nav.nav-admin a {
+    color: #a0aec0;
+    text-decoration: none;
+    padding: 14px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s ease;
+}
+nav.nav-admin a:hover { color: #ffffff; }
+nav.nav-admin a.activa { color: #ffffff; border-bottom-color: #5c61f2; }
+nav.nav-admin a.deshabilitada { color: #5b5870; pointer-events: none; }
+nav.nav-admin a.deshabilitada .etiqueta-proximamente { font-size: 10px; display: block; font-weight: 400; }
+nav.nav-admin .separador { flex: 1; }
+nav.nav-admin .usuario-actual { color: #a0aec0; font-size: 13px; margin-right: 10px; }
+nav.nav-admin button.cerrar-sesion {
+    background: none;
+    color: #a0aec0;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+nav.nav-admin button.cerrar-sesion:hover { background: rgba(255, 255, 255, 0.07); color: #ffffff; }
+
+main.panel {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 32px 50px;
+}
+
+@media (max-width: 700px) {
+    header.banner, nav.nav-admin { padding: 0 16px; }
+    header.banner { padding: 16px; }
+    main.panel { padding: 20px 16px 40px; }
+}
+
+/* Registrar usuario: tarjeta angosta bajo la barra de navegación superior
+   (mismo look que .form-container, sin usar esa clase para no arrastrar
+   su centrado en pantalla completa). */
+body[data-pagina="registro"] main {
+    max-width: 480px;
+    margin: 40px auto;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.enlace-secundario {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: #4facfe;
+    text-decoration: none;
+}
+.enlace-secundario:hover { text-decoration: underline; color: #00f2fe; }

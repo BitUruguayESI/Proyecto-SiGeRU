@@ -10,37 +10,33 @@
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body data-pagina="incidencias">
-  <div class="dashboard">
-    <div id="navAdmin"></div>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
-    <div class="contenido">
-      <div class="topbar">
-        <h1>Incidencias</h1>
-        <div id="rolUsuario"></div>
-      </div>
-      <div id="mensajeGlobal" class="mensaje"></div>
+  <main class="panel">
+    <h2 style="margin-top:0;">Incidencias</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
 
-      <div class="formulario-alta" style="margin-bottom:18px;">
-        <label for="filtroEstado">Filtrar por estado</label>
-        <select id="filtroEstado" style="max-width:260px;">
-          <option value="">Todas</option>
-          <option value="PENDIENTE">Pendiente</option>
-          <option value="EN_PROCESO">En proceso</option>
-          <option value="RESUELTA">Resuelta</option>
-        </select>
-      </div>
-
-      <table class="tabla-datos">
-        <thead>
-          <tr>
-            <th>ID</th><th>Contenedor</th><th>Tipo</th><th>Descripción</th>
-            <th>Estado</th><th>Cuadrilla</th><th>Registrada</th><th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tablaIncidencias"></tbody>
-      </table>
+    <div class="formulario-alta" style="margin-bottom:18px;">
+      <label for="filtroEstado">Filtrar por estado</label>
+      <select id="filtroEstado" style="max-width:260px;">
+        <option value="">Todas</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="EN_PROCESO">En proceso</option>
+        <option value="RESUELTA">Resuelta</option>
+      </select>
     </div>
-  </div>
+
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>ID</th><th>Contenedor</th><th>Tipo</th><th>Descripción</th>
+          <th>Estado</th><th>Cuadrilla</th><th>Registrada</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaIncidencias"></tbody>
+    </table>
+  </main>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>

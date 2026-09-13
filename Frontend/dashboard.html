@@ -11,45 +11,45 @@
 <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body data-pagina="dashboard">
-  <div class="dashboard">
-    <div id="navAdmin"></div>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
-    <div class="contenido">
-      <div class="topbar">
-        <h1>Panel de Control</h1>
-        <div id="rolUsuario"></div>
-      </div>
-
-      <div class="tarjetas-estadisticas" id="tarjetasEstadisticas">
-        <!-- se completan por JS -->
-      </div>
-      <p class="info-actualizada" id="infoActualizada">Información actualizada: —</p>
-
-      <div class="fila-paneles-dashboard">
-        <section class="bloque-dashboard">
-          <h3>Distribución de incidencias por estado</h3>
-          <div class="grafico-estados" id="graficoEstadosIncidencias">
-            <!-- se completa por JS -->
-          </div>
-        </section>
-
-        <section class="bloque-dashboard">
-          <div class="encabezado-bloque-oscuro">
-            <h3>Incidencias recientes</h3>
-            <a href="panel_incidencias.html" class="enlace-ver-todas">Ver todas</a>
-          </div>
-          <ul class="lista-incidencias-recientes" id="listaIncidenciasRecientes">
-            <!-- se completa por JS -->
-          </ul>
-        </section>
-      </div>
-
-      <p class="nota-pie-oscura">
-        Los reportes exportables (PDF/Excel, RF15) y el mapa interactivo (RF13)
-        se agregan junto con api-incidencias y api-recoleccion.
-      </p>
+  <main class="panel panel-oscuro">
+    <div class="encabezado-panel-oscuro">
+      <h2>Panel de Control</h2>
+      <div class="pildora-rol" id="pildoraRol">👤 Personal Municipal</div>
     </div>
-  </div>
+    <h3 class="subtitulo-panel-oscuro">Panel Principal</h3>
+
+    <div class="tarjetas-estadisticas tarjetas-oscuras" id="tarjetasEstadisticas">
+      <!-- se completan por JS -->
+    </div>
+    <p class="info-actualizada" id="infoActualizada">Información actualizada: —</p>
+
+    <div class="fila-paneles-dashboard paneles-oscuros">
+      <section class="bloque-dashboard bloque-oscuro">
+        <h3>Distribución de incidencias por estado</h3>
+        <div class="grafico-estados" id="graficoEstadosIncidencias">
+          <!-- se completa por JS -->
+        </div>
+      </section>
+
+      <section class="bloque-dashboard bloque-oscuro">
+        <div class="encabezado-bloque-oscuro">
+          <h3>Incidencias recientes</h3>
+          <a href="panel_incidencias.html" class="enlace-ver-todas">Ver todas</a>
+        </div>
+        <ul class="lista-incidencias-recientes" id="listaIncidenciasRecientes">
+          <!-- se completa por JS -->
+        </ul>
+      </section>
+    </div>
+
+    <p class="nota-pie-oscura">
+      Los reportes exportables (PDF/Excel, RF15) y el mapa interactivo (RF13)
+      se agregan junto con api-incidencias y api-recoleccion.
+    </p>
+  </main>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>

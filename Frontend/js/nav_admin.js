@@ -1,11 +1,10 @@
 /**
  * nav_admin.js
- * Inyecta el menú lateral (sidebar) de las pantallas de personal dentro de
- * un <div id="navAdmin"></div> presente en la página, y completa el badge
- * de rol (#rolUsuario) que cada página trae en su propia topbar. Marca
- * como activo el link que corresponde a la página actual vía data-pagina
- * en <body>, y arma un menú distinto según el rol de la sesión activa (RN
- * de dashboards por rol):
+ * Inyecta la barra de navegación de las pantallas de personal dentro de
+ * un <div id="navAdmin"></div> presente en la página. Marca como activo
+ * el link que corresponde a la página actual vía data-pagina en <body>,
+ * y arma un menú distinto según el rol de la sesión activa (RN de
+ * dashboards por rol):
  *   - Administrador: el menú completo, como siempre.
  *   - Recolector: solo "Mi día" (incidencias del día, asignación diaria
  *     y cuadrilla propia).
@@ -13,12 +12,7 @@
  *
  * Depende de sesion.js (obtenerSesion()) — tiene que cargarse antes.
  *
- * Uso: <body data-pagina="dashboard">
- *        <div class="dashboard">
- *          <div id="navAdmin"></div>
- *          <div class="contenido">
- *            <div class="topbar"><h1>...</h1><div id="rolUsuario"></div></div>
- *            ...
+ * Uso: <body data-pagina="dashboard"> ... <div id="navAdmin"></div>
  *      <script src="js/sesion.js"></script>
  *      <script src="js/nav_admin.js"></script>
  */
@@ -52,21 +46,14 @@
     : rol === 'CHOFER' ? enlacesChofer
     : enlacesRecolector;
 
-  const aside = document.createElement('aside');
-  aside.className = 'sidebar';
-
-  const titulo = document.createElement('h2');
-  titulo.textContent = 'SiGeRU';
-  aside.appendChild(titulo);
-
-  const lista = document.createElement('ul');
+  const nav = document.createElement('nav');
+  nav.className = 'nav-admin';
 
   enlaces.forEach(enlace => {
-    const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = enlace.href;
     a.textContent = enlace.texto;
-    if (enlace.pagina === paginaActual) a.classList.add('active');
+    if (enlace.pagina === paginaActual) a.classList.add('activa');
     if (enlace.proximamente) {
       a.classList.add('deshabilitada');
       a.setAttribute('aria-disabled', 'true');
@@ -75,15 +62,17 @@
       etiqueta.textContent = 'próximamente';
       a.appendChild(etiqueta);
     }
-    li.appendChild(a);
-    lista.appendChild(li);
+    nav.appendChild(a);
   });
-
-  aside.appendChild(lista);
 
   const separador = document.createElement('div');
   separador.className = 'separador';
-  aside.appendChild(separador);
+  nav.appendChild(separador);
+
+  const spanUsuario = document.createElement('span');
+  spanUsuario.className = 'usuario-actual';
+  spanUsuario.textContent = '';
+  nav.appendChild(spanUsuario);
 
   const botonSalir = document.createElement('button');
   botonSalir.className = 'cerrar-sesion';
@@ -95,13 +84,10 @@
       window.location.href = 'landing.html';
     }
   });
-  aside.appendChild(botonSalir);
+  nav.appendChild(botonSalir);
 
-  contenedor.replaceWith(aside);
+  contenedor.replaceWith(nav);
 
   const ETIQUETAS_ROL = { ADMINISTRADOR: 'Administrador', CHOFER: 'Chofer', RECOLECTOR: 'Recolector' };
-  const elRol = document.getElementById('rolUsuario');
-  if (elRol) {
-    elRol.textContent = `${sesion.nombre_completo} (${ETIQUETAS_ROL[rol] || sesion.tipo_usuario})`;
-  }
+  spanUsuario.textContent = `${sesion.nombre_completo} (${ETIQUETAS_ROL[rol] || sesion.tipo_usuario})`;
 })();

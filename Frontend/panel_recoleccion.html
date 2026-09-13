@@ -10,15 +10,12 @@
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body data-pagina="recoleccion">
-  <div class="dashboard">
-    <div id="navAdmin"></div>
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
-    <div class="contenido">
-      <div class="topbar">
-        <h1>Recolección</h1>
-        <div id="rolUsuario"></div>
-      </div>
-      <div id="mensajeGlobal" class="mensaje"></div>
+  <main class="panel">
+    <h2 style="margin-top:0;">Recolección</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
 
     <nav class="pestanias">
       <button data-seccion="asignaciones" class="activa">Asignación diaria</button>
@@ -113,8 +110,7 @@
         </form>
       </div>
     </section>
-    </div>
-  </div>
+  </main>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>
