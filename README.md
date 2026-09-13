@@ -240,10 +240,15 @@ PHPUnit real.
 - Asignación diaria (RF23): la crea el Administrador (se resuelve
   `id_administrador` a partir de su sesión) y junta cuadrilla + ruta +
   camión + una lista de operarios con rol ("Chofer"/"Recolector") vía
-  `ASIGNACION_OPERARIO`. RF25 ("consultar rutas asignadas") se resuelve
-  con `?mias=1` en `asignaciones.php`, que filtra por el `id_operario`
-  del usuario logueado — así el Operario ve solo lo suyo sin necesitar
-  un endpoint aparte.
+  `ASIGNACION_OPERARIO`. La API sigue pidiendo `id_camion` y `operarios`
+  en el POST, pero en el formulario (`panel_recoleccion.js`) ya no se
+  eligen a mano: al elegir la Cuadrilla se completan solos con su camión
+  y chofer estables (`cuadrillas.php` ya los trae en la lista), y el
+  select de Recolectores se limita a los de esa cuadrilla, todos
+  premarcados por si alguno falta ese día. RF25 ("consultar rutas
+  asignadas") se resuelve con `?mias=1` en `asignaciones.php`, que
+  filtra por el `id_operario` del usuario logueado — así el Operario ve
+  solo lo suyo sin necesitar un endpoint aparte.
 - Registrar mantenimiento (RF27) inserta en el historial
   (`MANTENIMIENTO_CAMION`) y además actualiza el resumen en `CAMION`
   (kilometraje, fecha_ultimo_mantenimiento) en la misma transacción — ojo

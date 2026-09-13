@@ -1,6 +1,5 @@
 const BASE_REC = '../api-recoleccion';
 const BASE_GES = '../api-gestion';
-const BASE_USU = '../api-usuarios';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 
 function mostrarMensajeGlobal(texto, tipo) {
@@ -47,13 +46,17 @@ if (location.hash) {
 // ---------------------------------------------------------------
 // Datos de referencia (para llenar los <select>)
 // ---------------------------------------------------------------
+// Cuadrillas cargadas, indexadas por id_cuadrilla — se usan para completar
+// solas el camión y el chofer de "Crear asignación diaria" a partir de la
+// cuadrilla estable (ya no se eligen a mano ahí, ver actualizarInfoCuadrilla).
+let cuadrillasPorId = {};
+
 async function cargarReferencias() {
-  const [cuadrillas, rutas, camiones, instalaciones, operarios] = await Promise.all([
+  const [cuadrillas, rutas, camiones, instalaciones] = await Promise.all([
     llamar(`${BASE_GES}/cuadrillas.php`),
     llamar(`${BASE_GES}/rutas.php`),
     llamar(`${BASE_GES}/camiones.php`),
     llamar(`${BASE_GES}/instalaciones.php`),
-    llamar(`${BASE_USU}/listar_operarios.php`).catch(() => ({ exito: false })), // 403 si es Operario
   ]);
 
   const llenar = (idSelect, lista, campoValor, campoTexto) => {
@@ -61,21 +64,51 @@ async function cargarReferencias() {
     lista.forEach(item => select.appendChild(new Option(item[campoTexto], item[campoValor])));
   };
 
-  if (cuadrillas.exito) llenar('asig_cuadrilla', cuadrillas.cuadrillas, 'id_cuadrilla', 'nombre_cuadrilla');
+  if (cuadrillas.exito) {
+    llenar('asig_cuadrilla', cuadrillas.cuadrillas, 'id_cuadrilla', 'nombre_cuadrilla');
+    cuadrillasPorId = Object.fromEntries(cuadrillas.cuadrillas.map(c => [String(c.id_cuadrilla), c]));
+  }
   if (rutas.exito) llenar('asig_ruta', rutas.rutas, 'id_ruta', 'nombre_zona');
   if (camiones.exito) {
-    ['asig_camion', 'desc_camion', 'mant_camion'].forEach(id => llenar(id, camiones.camiones, 'id_camion', 'matricula'));
+    ['desc_camion', 'mant_camion'].forEach(id => llenar(id, camiones.camiones, 'id_camion', 'matricula'));
     const filtro = document.getElementById('filtroMantCamion');
     camiones.camiones.forEach(c => filtro.appendChild(new Option(c.matricula, c.id_camion)));
   }
   if (instalaciones.exito) llenar('desc_instalacion', instalaciones.instalaciones, 'id_centro', 'nombre');
-  if (operarios.exito) {
-    operarios.operarios.forEach(o => {
-      document.getElementById('asig_chofer').appendChild(new Option(`${o.nombre_completo} (${o.cargo})`, o.id_operario));
-      document.getElementById('asig_recolectores').appendChild(new Option(`${o.nombre_completo} (${o.cargo})`, o.id_operario));
-    });
-  }
+
+  actualizarInfoCuadrilla();
 }
+
+// Al elegir una cuadrilla en "Crear asignación diaria", camión y chofer ya
+// no se piden de nuevo: son los de su cuadrilla estable (Gestión →
+// Cuadrillas). Acá solo se muestran, y el select de recolectores se llena
+// con los de esa cuadrilla, todos preseleccionados por si alguno falta hoy.
+function actualizarInfoCuadrilla() {
+  const idCuadrilla = document.getElementById('asig_cuadrilla').value;
+  const info = document.getElementById('asig_infoCuadrilla');
+  const selectRecolectores = document.getElementById('asig_recolectores');
+  selectRecolectores.innerHTML = '';
+
+  const cuadrilla = cuadrillasPorId[idCuadrilla];
+  if (!cuadrilla) {
+    info.textContent = 'Elegí una cuadrilla para ver su camión y chofer asignados.';
+    return;
+  }
+
+  if (!cuadrilla.id_camion || !cuadrilla.id_chofer) {
+    info.textContent = `Esta cuadrilla todavía no tiene camión y/o chofer asignado. Asignalo primero en Gestión → Cuadrillas.`;
+  } else {
+    info.textContent = `Camión: ${cuadrilla.camion_matricula} — Chofer: ${cuadrilla.chofer_nombre}`;
+  }
+
+  (cuadrilla.recolectores || []).forEach(r => {
+    const opcion = new Option(r.nombre_completo, r.id_operario);
+    opcion.selected = true;
+    selectRecolectores.appendChild(opcion);
+  });
+}
+
+document.getElementById('asig_cuadrilla').addEventListener('change', actualizarInfoCuadrilla);
 
 // ---------------------------------------------------------------
 // ASIGNACIÓN DIARIA
@@ -121,9 +154,14 @@ document.getElementById('filtroMias').addEventListener('change', cargarAsignacio
 document.getElementById('formAsignacion').addEventListener('submit', async (evento) => {
   evento.preventDefault();
 
-  const operarios = [];
-  const chofer = document.getElementById('asig_chofer').value;
-  if (chofer) operarios.push({ id_operario: Number(chofer), rol_en_asignacion: 'Chofer' });
+  const idCuadrilla = document.getElementById('asig_cuadrilla').value;
+  const cuadrilla = cuadrillasPorId[idCuadrilla];
+  if (!cuadrilla || !cuadrilla.id_camion || !cuadrilla.id_chofer) {
+    mostrarMensajeGlobal('Esa cuadrilla no tiene camión y chofer asignados todavía. Asignalo primero en Gestión → Cuadrillas.', 'error');
+    return;
+  }
+
+  const operarios = [{ id_operario: Number(cuadrilla.id_chofer), rol_en_asignacion: 'Chofer' }];
   Array.from(document.getElementById('asig_recolectores').selectedOptions).forEach(o => {
     operarios.push({ id_operario: Number(o.value), rol_en_asignacion: 'Recolector' });
   });
@@ -133,14 +171,14 @@ document.getElementById('formAsignacion').addEventListener('submit', async (even
     body: JSON.stringify({
       fecha: document.getElementById('asig_fecha').value,
       turno: document.getElementById('asig_turno').value,
-      id_cuadrilla: Number(document.getElementById('asig_cuadrilla').value),
+      id_cuadrilla: Number(idCuadrilla),
       id_ruta: Number(document.getElementById('asig_ruta').value),
-      id_camion: Number(document.getElementById('asig_camion').value),
+      id_camion: Number(cuadrilla.id_camion),
       operarios,
     }),
   });
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-  if (resultado.exito) { document.getElementById('formAsignacion').reset(); cargarAsignaciones(); }
+  if (resultado.exito) { document.getElementById('formAsignacion').reset(); actualizarInfoCuadrilla(); cargarAsignaciones(); }
 });
 
 // ---------------------------------------------------------------
