@@ -1,0 +1,222 @@
+/*
+ * Frontend/css/dashboard.css
+ * Estilo oscuro del Panel de Control (dashboard.html), a pedido de
+ * Daiana a partir de una referencia visual. Todo queda bajo
+ * body[data-pagina="dashboard"] para no tocar el resto de las páginas
+ * (que comparten estilos.css / clases como .tarjeta-estadistica con
+ * mi_dia.html).
+ */
+
+body[data-pagina="dashboard"] {
+  --osc-fondo: #14111f;
+  --osc-tarjeta: #1e1a2e;
+  --osc-borde: rgba(255, 255, 255, 0.08);
+  --osc-texto: #f2f1f7;
+  --osc-texto-tenue: #8d8aa3;
+  --osc-verde: #22c55e;
+  --osc-verde-fondo: rgba(34, 197, 94, 0.16);
+  --osc-ambar: #f5b400;
+  --osc-ambar-fondo: rgba(245, 180, 0, 0.16);
+  --osc-azul: #4f7df9;
+  --osc-azul-fondo: rgba(79, 125, 249, 0.16);
+}
+
+body[data-pagina="dashboard"] main.panel-oscuro {
+  background: var(--osc-fondo);
+  color: var(--osc-texto);
+  max-width: 1100px;
+  border-radius: 14px;
+  padding: 26px 30px 34px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.encabezado-panel-oscuro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.encabezado-panel-oscuro h2 {
+  margin: 0;
+  color: var(--osc-texto);
+  font-size: 24px;
+}
+
+.pildora-rol {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--osc-tarjeta);
+  border: 1px solid var(--osc-borde);
+  color: var(--osc-texto-tenue);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.subtitulo-panel-oscuro {
+  color: var(--osc-texto);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 22px 0 14px;
+}
+
+body[data-pagina="dashboard"] .tarjetas-estadisticas.tarjetas-oscuras {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 14px;
+}
+@media (max-width: 860px) {
+  body[data-pagina="dashboard"] .tarjetas-estadisticas.tarjetas-oscuras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  body[data-pagina="dashboard"] .tarjetas-estadisticas.tarjetas-oscuras { grid-template-columns: 1fr; }
+}
+body[data-pagina="dashboard"] .tarjeta-estadistica {
+  background: var(--osc-tarjeta);
+  border: 1px solid var(--osc-borde);
+  border-radius: 12px;
+  padding: 16px 18px;
+  text-align: left;
+}
+.tarjeta-estadistica .icono-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--osc-texto-tenue);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.tarjeta-estadistica .icono-tarjeta svg { width: 16px; height: 16px; flex: none; }
+body[data-pagina="dashboard"] .tarjeta-estadistica .numero {
+  color: var(--osc-texto);
+  font-size: 26px;
+}
+body[data-pagina="dashboard"] .tarjeta-estadistica .etiqueta { display: none; }
+body[data-pagina="dashboard"] .tarjeta-estadistica.alerta .numero { color: var(--osc-ambar); }
+
+.info-actualizada {
+  color: var(--osc-texto-tenue);
+  font-size: 12px;
+  margin: 0 0 22px;
+}
+
+body[data-pagina="dashboard"] .fila-paneles-dashboard.paneles-oscuros { margin-bottom: 10px; }
+body[data-pagina="dashboard"] .bloque-dashboard.bloque-oscuro {
+  background: var(--osc-tarjeta);
+  border: 1px solid var(--osc-borde);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+body[data-pagina="dashboard"] .bloque-oscuro h3 {
+  color: var(--osc-texto);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.encabezado-bloque-oscuro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.encabezado-bloque-oscuro h3 { margin: 0; }
+.enlace-ver-todas {
+  color: var(--osc-verde);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enlace-ver-todas:hover { text-decoration: underline; }
+
+/* ---- Distribución de incidencias por estado ---- */
+.bloque-oscuro .barra-estado-oscura + .barra-estado-oscura { margin-top: 16px; }
+.barra-etiqueta-oscura {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--osc-texto);
+  margin-bottom: 6px;
+}
+.barra-etiqueta-oscura .valor { font-weight: 700; }
+.barra-etiqueta-oscura .valor.ambar { color: var(--osc-ambar); }
+.barra-etiqueta-oscura .valor.azul { color: var(--osc-azul); }
+.barra-etiqueta-oscura .valor.verde { color: var(--osc-verde); }
+.barra-pista-oscura {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.barra-relleno-oscura {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 3px;
+  transition: width 0.3s ease;
+}
+.barra-relleno-oscura.ambar { background: var(--osc-ambar); }
+.barra-relleno-oscura.azul { background: var(--osc-azul); }
+.barra-relleno-oscura.verde { background: var(--osc-verde); }
+
+/* ---- Incidencias recientes ---- */
+.lista-incidencias-recientes { list-style: none; margin: 14px 0 0; padding: 0; }
+.fila-incidencia-reciente {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--osc-borde);
+}
+.fila-incidencia-reciente:first-child { border-top: none; padding-top: 4px; }
+
+.punto-estado {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex: none;
+}
+.punto-estado.ambar { background: var(--osc-ambar); }
+.punto-estado.azul { background: var(--osc-azul); }
+.punto-estado.verde { background: var(--osc-verde); }
+
+.info-incidencia-reciente { flex: 1; min-width: 0; }
+.titulo-incidencia-reciente {
+  color: var(--osc-texto);
+  font-size: 13px;
+  font-weight: 700;
+}
+.direccion-incidencia-reciente {
+  color: var(--osc-texto-tenue);
+  font-size: 12px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.columna-estado-fecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex: none;
+}
+.chip-estado-incidencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chip-estado-incidencia.ambar { background: var(--osc-ambar-fondo); color: var(--osc-ambar); }
+.chip-estado-incidencia.azul { background: var(--osc-azul-fondo); color: var(--osc-azul); }
+.chip-estado-incidencia.verde { background: var(--osc-verde-fondo); color: var(--osc-verde); }
+.fecha-incidencia-reciente { color: var(--osc-texto-tenue); font-size: 11px; }
+
+.nota-pie-oscura { color: var(--osc-texto-tenue); font-size: 12px; }
+.nota-pie-oscura a { color: var(--osc-azul); }
