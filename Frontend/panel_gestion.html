@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiGeRU — Panel de gestión</title>
 <link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
   <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
@@ -64,22 +68,28 @@
 
     <!-- ===================== CONTENEDORES ===================== -->
     <section id="seccion-contenedores" class="seccion-panel activa">
+      <h3 style="margin-top:0;">Mapa de contenedores (RF13)</h3>
+      <div id="mapaContenedores" class="mapa-contenedores"></div>
+      <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
+
       <table class="tabla-datos">
-        <thead><tr><th>ID</th><th>Coordenadas</th><th>Estado</th><th>Nivel (%)</th><th>Ruta</th><th>Tipos de residuo</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>ID</th><th>Dirección</th><th>Estado</th><th>Nivel (%)</th><th>Ruta</th><th>Tipos de residuo</th><th>Acciones</th></tr></thead>
         <tbody id="tablaContenedores"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar contenedor (RF07)</h3>
+        <h3 id="cont_titulo_form">Registrar contenedor (RF07)</h3>
         <form id="formContenedor">
+          <input type="hidden" id="cont_id">
           <div class="fila-doble">
-            <div><label>Coordenadas</label><input type="text" id="cont_coordenadas" placeholder="-34.9,-56.1" required></div>
+            <div><label>Dirección</label><input type="text" id="cont_direccion" placeholder="Bulevar Artigas 1234, Montevideo" required></div>
             <div><label>Ruta (opcional)</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
           </div>
           <div class="fila-doble">
             <div><label>Nivel de llenado inicial (%)</label><input type="number" id="cont_nivel" min="0" max="100" value="0"></div>
             <div><label>Tipos de residuo (separados por coma)</label><input type="text" id="cont_tipos" placeholder="organico, plastico"></div>
           </div>
-          <button type="submit" class="principal">Registrar contenedor</button>
+          <button type="submit" class="principal" id="cont_boton_submit">Registrar contenedor</button>
+          <button type="button" class="secundario" id="cont_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>
@@ -91,13 +101,15 @@
         <tbody id="tablaRutas"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar ruta (RF17 / RF22)</h3>
+        <h3 id="ruta_titulo_form">Registrar ruta (RF17 / RF22)</h3>
         <form id="formRuta">
+          <input type="hidden" id="ruta_id">
           <div class="fila-doble">
             <div><label>Zona</label><input type="text" id="ruta_zona" placeholder="Zona Centro" required></div>
             <div><label>Frecuencia</label><input type="text" id="ruta_frecuencia" placeholder="diaria / lunes y jueves" required></div>
           </div>
-          <button type="submit" class="principal">Registrar ruta</button>
+          <button type="submit" class="principal" id="ruta_boton_submit">Registrar ruta</button>
+          <button type="button" class="secundario" id="ruta_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>
@@ -109,15 +121,17 @@
         <tbody id="tablaCuadrillas"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar cuadrilla</h3>
+        <h3 id="cuad_titulo_form">Registrar cuadrilla</h3>
         <form id="formCuadrilla">
+          <input type="hidden" id="cuad_id">
           <div class="fila-doble">
             <div><label>Nombre</label><input type="text" id="cuad_nombre" required></div>
             <div><label>Cantidad de integrantes</label><input type="number" id="cuad_cantidad" min="0" value="0"></div>
           </div>
           <label>Rutas habituales</label>
           <select id="cuad_rutas" multiple size="4"></select>
-          <button type="submit" class="principal">Registrar cuadrilla</button>
+          <button type="submit" class="principal" id="cuad_boton_submit">Registrar cuadrilla</button>
+          <button type="button" class="secundario" id="cuad_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>
@@ -129,8 +143,9 @@
         <tbody id="tablaCamiones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar camión (RF26)</h3>
+        <h3 id="cam_titulo_form">Registrar camión (RF26)</h3>
         <form id="formCamion">
+          <input type="hidden" id="cam_id">
           <div class="fila-doble">
             <div><label>Matrícula</label><input type="text" id="cam_matricula" required></div>
             <div><label>Capacidad de carga (kg)</label><input type="number" id="cam_capacidad" min="1" required></div>
@@ -139,7 +154,11 @@
             <div><label>Marca</label><input type="text" id="cam_marca" required></div>
             <div><label>Modelo</label><input type="text" id="cam_modelo" required></div>
           </div>
-          <button type="submit" class="principal">Registrar camión</button>
+          <div class="fila-doble">
+            <div><label>Kilometraje</label><input type="number" id="cam_kilometraje" min="0" value="0"></div>
+          </div>
+          <button type="submit" class="principal" id="cam_boton_submit">Registrar camión</button>
+          <button type="button" class="secundario" id="cam_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>
@@ -151,8 +170,9 @@
         <tbody id="tablaInstalaciones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar centro de acopio / vertedero (RF10 / RF11)</h3>
+        <h3 id="inst_titulo_form">Registrar centro de acopio / vertedero (RF10 / RF11)</h3>
         <form id="formInstalacion">
+          <input type="hidden" id="inst_id">
           <div class="fila-doble">
             <div><label>Nombre</label><input type="text" id="inst_nombre" required></div>
             <div><label>Tipo</label>
@@ -168,7 +188,8 @@
           </div>
           <label>Residuos aceptados</label>
           <input type="text" id="inst_residuos" placeholder="organico, plastico, vidrio" required>
-          <button type="submit" class="principal">Registrar instalación</button>
+          <button type="submit" class="principal" id="inst_boton_submit">Registrar instalación</button>
+          <button type="button" class="secundario" id="inst_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>

@@ -5,10 +5,17 @@
  * Solo ADMINISTRADOR puede crear/editar/dar de baja; cualquier USUARIO
  * con sesión activa (Operario o Administrador) puede listar.
  *
+ * El alta/edición se hace con una dirección de texto ("direccion"), no con
+ * coordenadas a mano: acá se geocodifica automáticamente contra OpenStreetMap
+ * (Nominatim) para completar "coordenadas" y poder mostrar el contenedor en
+ * el mapa interactivo (RF13). Si no hay internet o no se encuentra la
+ * dirección, igual se guarda el contenedor (con coordenadas NULL) y se avisa
+ * en el mensaje — no bloquea el alta.
+ *
  * GET    ?id=1           -> un contenedor (con sus tipos de residuo)
  * GET                     -> todos los contenedores
- * POST   { coordenadas, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
- * PUT    { id_contenedor, coordenadas?, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
+ * POST   { direccion, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
+ * PUT    { id_contenedor, direccion?, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
  * DELETE { id_contenedor }   -> baja lógica: estado = FUERA_DE_SERVICIO
  */
 
@@ -23,7 +30,7 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 function contenedorConTipos(PDO $pdo, int $idContenedor): ?array
 {
     $consulta = $pdo->prepare(
-        'SELECT c.id_contenedor, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta, r.nombre_zona
+        'SELECT c.id_contenedor, c.direccion, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta, r.nombre_zona
          FROM CONTENEDOR c
          LEFT JOIN RUTA r ON r.id_ruta = c.id_ruta
          WHERE c.id_contenedor = :id'
@@ -59,14 +66,14 @@ if ($metodo === 'POST') {
     requerirRolAdministrador();
     $entrada = obtenerJsonEntrada();
 
-    $coordenadas   = limpiarTexto($entrada['coordenadas'] ?? '');
+    $direccion     = limpiarTexto($entrada['direccion'] ?? '');
     $estado        = limpiarTexto($entrada['estado'] ?? 'OPERATIVO');
     $nivelLlenado  = (int) ($entrada['nivel_llenado'] ?? 0);
     $idRuta        = isset($entrada['id_ruta']) && $entrada['id_ruta'] !== '' ? (int) $entrada['id_ruta'] : null;
     $tiposResiduo  = is_array($entrada['tipos_residuo'] ?? null) ? $entrada['tipos_residuo'] : [];
 
-    if ($coordenadas === '') {
-        responderJson(['exito' => false, 'mensaje' => 'Las coordenadas son obligatorias.'], 400);
+    if ($direccion === '') {
+        responderJson(['exito' => false, 'mensaje' => 'La dirección es obligatoria.'], 400);
     }
     if (!in_array($estado, ['OPERATIVO', 'DESBORDADO', 'FUERA_DE_SERVICIO'], true)) {
         responderJson(['exito' => false, 'mensaje' => 'Estado inválido.'], 400);
@@ -75,14 +82,18 @@ if ($metodo === 'POST') {
         responderJson(['exito' => false, 'mensaje' => 'El nivel de llenado debe estar entre 0 y 100.'], 400);
     }
 
+    $geo = geocodificarDireccion($direccion);
+    $coordenadas = $geo ? "{$geo['lat']},{$geo['lon']}" : null;
+
     try {
         $pdo->beginTransaction();
 
         $insertar = $pdo->prepare(
-            'INSERT INTO CONTENEDOR (coordenadas, estado, nivel_llenado, id_ruta)
-             VALUES (:coordenadas, :estado, :nivel_llenado, :id_ruta)'
+            'INSERT INTO CONTENEDOR (direccion, coordenadas, estado, nivel_llenado, id_ruta)
+             VALUES (:direccion, :coordenadas, :estado, :nivel_llenado, :id_ruta)'
         );
         $insertar->execute([
+            'direccion'     => $direccion,
             'coordenadas'   => $coordenadas,
             'estado'        => $estado,
             'nivel_llenado' => $nivelLlenado,
@@ -108,7 +119,10 @@ if ($metodo === 'POST') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo registrar el contenedor: ' . $e->getMessage()], 500);
     }
 
-    responderJson(['exito' => true, 'mensaje' => 'Contenedor registrado.', 'id_contenedor' => $idContenedor], 201);
+    $mensaje = $coordenadas
+        ? 'Contenedor registrado y ubicado en el mapa.'
+        : 'Contenedor registrado, pero no se pudo ubicar la dirección en el mapa automáticamente (revisá que esté completa, o que haya conexión a internet). Podés reintentar editándolo.';
+    responderJson(['exito' => true, 'mensaje' => $mensaje, 'id_contenedor' => $idContenedor], 201);
 }
 
 if ($metodo === 'PUT') {
@@ -122,10 +136,23 @@ if ($metodo === 'PUT') {
 
     $campos = [];
     $valores = ['id' => $idContenedor];
+    $mensajeGeo = null;
 
-    if (isset($entrada['coordenadas'])) {
+    if (isset($entrada['direccion'])) {
+        $direccion = limpiarTexto($entrada['direccion']);
+        if ($direccion === '') {
+            responderJson(['exito' => false, 'mensaje' => 'La dirección no puede quedar vacía.'], 400);
+        }
+        $campos[] = 'direccion = :direccion';
+        $valores['direccion'] = $direccion;
+
+        // Cambió la dirección -> reintentamos geocodificar.
+        $geo = geocodificarDireccion($direccion);
         $campos[] = 'coordenadas = :coordenadas';
-        $valores['coordenadas'] = limpiarTexto($entrada['coordenadas']);
+        $valores['coordenadas'] = $geo ? "{$geo['lat']},{$geo['lon']}" : null;
+        $mensajeGeo = $geo
+            ? null
+            : 'No se pudo ubicar la nueva dirección en el mapa automáticamente (revisá que esté completa, o que haya conexión a internet).';
     }
     if (isset($entrada['estado'])) {
         $estado = limpiarTexto($entrada['estado']);
@@ -175,7 +202,7 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo actualizar el contenedor: ' . $e->getMessage()], 500);
     }
 
-    responderJson(['exito' => true, 'mensaje' => 'Contenedor actualizado.']);
+    responderJson(['exito' => true, 'mensaje' => $mensajeGeo ? "Contenedor actualizado. {$mensajeGeo}" : 'Contenedor actualizado.']);
 }
 
 if ($metodo === 'DELETE') {

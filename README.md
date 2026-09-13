@@ -41,7 +41,8 @@ sigeru/
                         reportar_incidencia.html, dashboard.html,
                         panel_gestion.html, panel_incidencias.html,
                         panel_recoleccion.html, css/, js/
-  sql/                  sigeru_schema.sql (25 tablas) y datos_prueba.sql
+  sql/                  sigeru_schema.sql (25 tablas), datos_prueba.sql y
+                        actualizar_contenedor_direccion.sql (migración)
   tests/                tests de integración de la API (ver tests/README.md)
   Dockerfile, docker-compose.yml, .dockerignore, phpunit.xml, composer.json
 ```
@@ -64,6 +65,15 @@ contenedores Docker independientes, la división lógica ya está hecha.
    abajo):
    ```
    mysql -u root -p --default-character-set=utf8mb4 < sql/datos_prueba.sql
+   ```
+
+   Si ya tenías la base `sigeru` creada de antes (con contenedores/rutas
+   cargados a mano) y no querés perder esos datos reimportando todo desde
+   cero, corré en cambio esta migración una sola vez — agrega la columna
+   `direccion` que usa el mapa de contenedores (ver "Mapa de contenedores"
+   más abajo):
+   ```
+   mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/actualizar_contenedor_direccion.sql
    ```
 
 2. Crear un usuario de MySQL para que la aplicación no use `root`:
@@ -117,6 +127,25 @@ contra una base MariaDB real) en este entorno, pero acá no hay salida
 a internet para bajar las imágenes de Docker Hub, así que el
 `docker compose up --build` en sí no se pudo ejecutar de punta a punta
 en esta sesión. Probalo en tu máquina y avisame si algo no levanta.
+
+## Mapa de contenedores (RF13)
+
+En la pestaña "Contenedores" del panel de gestión, el alta/edición se hace
+con una **dirección** de texto (ej. "Bulevar Artigas 1234, Montevideo"), no
+con coordenadas a mano. El backend (`api-gestion/contenedores.php`,
+función `geocodificarDireccion()` en `Comun/funciones.php`) geocodifica esa
+dirección contra **Nominatim (OpenStreetMap)** y guarda el resultado en
+`coordenadas`; el mapa interactivo (Leaflet + tiles de OpenStreetMap, ambos
+cargados desde CDN) se arma solo con eso, mostrando un marcador por
+contenedor coloreado según su estado (verde operativo, rojo desbordado,
+gris fuera de servicio).
+
+Esto necesita que el servidor tenga salida a internet (para geocodificar y
+para bajar Leaflet/las tiles del mapa desde el navegador). Si no hay
+conexión, o Nominatim no encuentra la dirección, el contenedor se guarda
+igual — solo que sin ubicación en el mapa todavía — y el aviso arriba de la
+tabla te dice cuántos quedaron así; podés reintentar editándolos con una
+dirección más precisa una vez que haya internet.
 
 ## Datos de prueba
 
@@ -198,11 +227,18 @@ cuadrillas, rutas, instalaciones); el OPERARIO cae en `panel_incidencias.html`
 directamente, porque es su responsabilidad principal por ahora. El nav de
 arriba (`js/nav_admin.js`, inyectado en cualquier página que tenga
 `<div id="navAdmin">` y `<body data-pagina="...">`) lleva a Dashboard,
-"Gestión de recursos" (`panel_gestion.html`) e "Incidencias"
-(`panel_incidencias.html`) y "Recolección" (`panel_recoleccion.html`). El
-mismo nav resuelve "Cerrar sesión" (llama a `logout.php` y vuelve a la
-landing) y muestra el nombre del usuario logueado vía
-`api-usuarios/quien_soy.php`.
+"Gestión de recursos" (`panel_gestion.html`), "Incidencias"
+(`panel_incidencias.html`), "Recolección" (`panel_recoleccion.html`) y
+"Asignación diaria" (acceso directo a esa pestaña de Recolección, sin pasar
+primero por la pestaña de Descargas/Mantenimiento). El mismo nav resuelve
+"Cerrar sesión" (llama a `logout.php` y vuelve a la landing) y muestra el
+nombre del usuario logueado vía `api-usuarios/quien_soy.php`.
+
+El panel de control del Dashboard además muestra un gráfico de incidencias
+agrupadas por estado (Pendientes / En proceso / Resueltas — ASIGNADA,
+EN_PROCESO y ESCALADA cuentan como "en proceso" porque ya tienen cuadrilla
+o el trabajo arrancó) y una tabla con las 5 incidencias más recientes, con
+link a `panel_incidencias.html?estado=...` para ver el detalle ya filtrado.
 
 Con esto, los 4 paquetes del backend del Diagrama de Paquetes
 (api-usuarios, api-gestion, api-incidencias, api-recoleccion) ya existen y
@@ -215,8 +251,11 @@ asignación diaria).
 - Notificaciones (RF33-RF35): hoy la tabla NOTIFICACION existe pero nada la
   escribe todavía; se puede insertar una fila ahí cuando cambia el estado
   de una incidencia, se asigna una cuadrilla, o se crea una asignación diaria.
-- Reportes exportables (RF15, PDF/Excel) y mapa interactivo (RF13) para el
-  Dashboard — quedaron mencionados ahí como pendientes.
+- Reportes exportables (RF15, PDF/Excel) para el Dashboard.
+- El mapa interactivo (RF13) hoy vive en la pestaña Contenedores del panel
+  de gestión; se podría replicar/enlazar también desde el Dashboard, y
+  extender la misma lógica de dirección+geocodificación a Instalaciones
+  (que todavía usa coordenadas a mano).
 - Un panel propio para el Operario más orientado a "mis tareas de hoy"
   (incidencias asignadas a su cuadrilla + su asignación diaria del día)
   en vez de los listados completos que hoy comparte con el Administrador.

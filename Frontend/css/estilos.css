@@ -250,3 +250,17 @@ nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
 .barra-relleno.rojo { background: var(--rojo); }
 .barra-relleno.azul { background: var(--azul-claro); }
 .barra-relleno.verde { background: var(--verde); }
+
+/* ---- Mapa de contenedores (Leaflet, RF13) ---- */
+.mapa-contenedores {
+  height: 340px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: var(--gris-fondo);
+}
+.aviso-mapa {
+  font-size: 13px;
+  color: #777;
+  margin: 0 0 18px;
+}

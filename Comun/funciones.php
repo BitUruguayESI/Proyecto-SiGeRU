@@ -69,3 +69,62 @@ function requerirRolAdministrador(): array
     }
     return $sesion;
 }
+
+/**
+ * Geocodifica una dirección de texto ("Bulevar Artigas 1234, Montevideo")
+ * a coordenadas "lat,lon" usando Nominatim (OpenStreetMap), para el mapa
+ * interactivo de contenedores (RF13).
+ *
+ * Devuelve null si no se pudo geocodificar (sin internet, dirección no
+ * encontrada, timeout, límite de uso, etc.) — el llamador debe guardar
+ * igual el registro con coordenadas NULL y avisar que el mapa no va a
+ * poder ubicarlo hasta que se reintente con una dirección más precisa.
+ *
+ * Nominatim exige un User-Agent identificable y como máximo ~1 consulta
+ * por segundo (política de uso); acá alcanza sobra porque se llama una
+ * vez por alta/edición hecha a mano por el Administrador.
+ */
+function geocodificarDireccion(string $direccion): ?array
+{
+    $direccion = trim($direccion);
+    if ($direccion === '' || !function_exists('curl_init')) {
+        return null;
+    }
+
+    // Si no menciona el país, lo agregamos para que Nominatim no ubique
+    // la dirección en otro lugar del mundo con el mismo nombre de calle.
+    $consulta = stripos($direccion, 'uruguay') === false ? "{$direccion}, Uruguay" : $direccion;
+
+    $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
+        'format' => 'json',
+        'q'      => $consulta,
+        'limit'  => 1,
+    ]);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 6,
+        CURLOPT_CONNECTTIMEOUT => 4,
+        CURLOPT_USERAGENT      => 'SiGeRU-UTU-PasajeDeGrado/1.0 (proyecto academico BitUruguay)',
+        CURLOPT_HTTPHEADER     => ['Accept-Language: es'],
+    ]);
+    $respuesta = curl_exec($ch);
+    $codigoHttp = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($respuesta === false || $error || $codigoHttp !== 200) {
+        return null;
+    }
+
+    $resultados = json_decode($respuesta, true);
+    if (!is_array($resultados) || empty($resultados[0]['lat']) || empty($resultados[0]['lon'])) {
+        return null;
+    }
+
+    return [
+        'lat' => (float) $resultados[0]['lat'],
+        'lon' => (float) $resultados[0]['lon'],
+    ];
+}

@@ -51,13 +51,16 @@ INSERT INTO CUADRILLA_RUTA_HABITUAL (id_cuadrilla, id_ruta) VALUES
 (2, 3);
 
 -- ---- Contenedores ----
-INSERT INTO CONTENEDOR (coordenadas, estado, nivel_llenado, id_ruta) VALUES
-('-34.9058,-56.1913', 'OPERATIVO', 40, 1),
-('-34.9070,-56.1950', 'OPERATIVO', 65, 1),
-('-34.9105,-56.1780', 'DESBORDADO', 95, 2),
-('-34.9012,-56.1620', 'OPERATIVO', 20, 3),
-('-34.9200,-56.1500', 'FUERA_DE_SERVICIO', 0, NULL),
-('-34.9150,-56.1650', 'OPERATIVO', 55, 3);
+-- Las coordenadas ya vienen cargadas a mano (aprox., zona Montevideo) para
+-- que el mapa tenga algo para mostrar de entrada, sin depender de que la
+-- geocodificación por dirección (RF13, requiere internet) haya corrido.
+INSERT INTO CONTENEDOR (direccion, coordenadas, estado, nivel_llenado, id_ruta) VALUES
+('18 de Julio 1234, Montevideo', '-34.9058,-56.1913', 'OPERATIVO', 40, 1),
+('Bulevar Artigas 2500, Montevideo', '-34.9070,-56.1950', 'OPERATIVO', 65, 1),
+('Avenida Italia 3450, Montevideo', '-34.9105,-56.1780', 'DESBORDADO', 95, 2),
+('Camino Maldonado 5678, Montevideo', '-34.9012,-56.1620', 'OPERATIVO', 20, 3),
+('Ruta 8 km 15, Montevideo', '-34.9200,-56.1500', 'FUERA_DE_SERVICIO', 0, NULL),
+('Avenida de las Instrucciones 890, Montevideo', '-34.9150,-56.1650', 'OPERATIVO', 55, 3);
 
 INSERT INTO CONTENEDOR_TIPO_RESIDUO (id_contenedor, tipo_residuo) VALUES
 (1, 'organico'), (1, 'plastico'),

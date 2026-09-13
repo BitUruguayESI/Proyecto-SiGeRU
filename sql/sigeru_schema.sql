@@ -117,7 +117,10 @@ CREATE TABLE CUADRILLA_RUTA_HABITUAL (
 
 CREATE TABLE CONTENEDOR (
     id_contenedor   INT AUTO_INCREMENT,
-    coordenadas     VARCHAR(60) NOT NULL,     -- "lat,long"
+    direccion       VARCHAR(150) NULL,        -- dirección cargada por el Administrador (RF07)
+    coordenadas     VARCHAR(60) NULL,         -- "lat,long"; se completa automáticamente
+                                               -- geocodificando "direccion" (RF13, mapa interactivo).
+                                               -- Queda NULL si no se pudo geocodificar todavía.
     estado          ENUM('OPERATIVO','DESBORDADO','FUERA_DE_SERVICIO') NOT NULL DEFAULT 'OPERATIVO',
     nivel_llenado   TINYINT UNSIGNED NOT NULL DEFAULT 0,  -- 0-100 (%)
     id_ruta         INT NULL,
