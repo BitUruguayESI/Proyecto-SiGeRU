@@ -9,10 +9,11 @@ contenedores/rutas/cuadrillas/camiones/instalaciones/maquinaria
 recolectores), asignación diaria + descargas + mantenimiento de camión
 (api-recoleccion), y dashboards por rol para el personal (Administrador ve
 todo; Recolector/Chofer ven "Mi día"). Todo sobre la base de datos de 26
-tablas ya creada, con datos de prueba cargados, tests automatizados y
-Dockerfile/docker-compose para levantarlo sin instalar nada a mano — los 4
-paquetes del backend (api-usuarios, api-gestion, api-incidencias,
-api-recoleccion) del Diagrama de Paquetes ya están completos.
+tablas ya creada, con datos de prueba cargados, tests automatizados y un
+docker-compose de 3 contenedores (db + backend + frontend) para
+levantarlo sin instalar nada a mano — los 4 paquetes del backend
+(api-usuarios, api-gestion, api-incidencias, api-recoleccion) del
+Diagrama de Paquetes ya están completos.
 
 Probado de punta a punta contra base de datos real (MariaDB) y servidor PHP
 real: registro con y sin teléfonos, registro duplicado (rechazado), login
@@ -31,33 +32,49 @@ después de un cambio de rol.
 
 ```
 sigeru/
-  Comun/              conexion.php (PDO) y funciones.php (helpers + auth por rol)
-  api-usuarios/        registro.php, login.php, logout.php, quien_soy.php,
-                        usuarios.php (CRUD completo), listar_operarios.php
-  api-gestion/         contenedores.php, rutas.php, cuadrillas.php,
-                        camiones.php, instalaciones.php, maquinaria.php,
-                        repuestos.php, registrar_consulta.php
-  api-incidencias/      contenedores_disponibles.php, registrar.php, listar.php,
-                        asignar_cuadrilla.php, actualizar_estado.php
-  api-recoleccion/      asignaciones.php, descargas.php, mantenimiento.php
-  Frontend/             landing.html, login.html, registro.html, consulta.html,
-                        reportar_incidencia.html, dashboard.html,
-                        panel_gestion.html, panel_incidencias.html,
-                        panel_recoleccion.html, mi_dia.html (Recolector/
-                        Chofer), css/, js/ (incluye sesion.js, compartido
-                        por nav_admin.js y las páginas que necesitan saber
-                        el rol de la sesión activa)
-  sql/                  sigeru_schema.sql (26 tablas), datos_prueba.sql,
-                        actualizar_contenedor_direccion.sql y
-                        actualizar_roles_cuadrillas_incidencias.sql
-                        (migraciones, ver "Cómo levantarlo")
-  tests/                tests de integración de la API (ver tests/README.md)
-  Dockerfile, docker-compose.yml, .dockerignore, phpunit.xml, composer.json
+  docker-compose.yml    levanta los 3 contenedores: db, backend, frontend
+
+  Backend/               contenedor PHP 8.2 + Apache (paquetes del backend)
+    Dockerfile
+    src/
+      Comun/             conexion.php (PDO) y funciones.php (helpers + auth por rol)
+      api-usuarios/      registro.php, login.php, logout.php, quien_soy.php,
+                         usuarios.php (CRUD completo), listar_operarios.php
+      api-gestion/       contenedores.php, rutas.php, cuadrillas.php,
+                         camiones.php, instalaciones.php, maquinaria.php,
+                         repuestos.php, registrar_consulta.php
+      api-incidencias/   contenedores_disponibles.php, registrar.php, listar.php,
+                         asignar_cuadrilla.php, actualizar_estado.php
+      api-recoleccion/   asignaciones.php, descargas.php, mantenimiento.php
+
+  Frontend/              contenedor nginx (estático + proxy de /api-* al backend)
+    Dockerfile
+    nginx.conf
+    src/                 landing.html, login.html, registro.html, consulta.html,
+                         reportar_incidencia.html, dashboard.html,
+                         panel_gestion.html, panel_incidencias.html,
+                         panel_recoleccion.html, mi_dia.html (Recolector/
+                         Chofer), css/, js/ (incluye sesion.js, compartido
+                         por nav_admin.js y las páginas que necesitan saber
+                         el rol de la sesión activa), img/ (logo)
+
+  sql/                   sigeru_schema.sql (26 tablas), datos_prueba.sql,
+                         actualizar_contenedor_direccion.sql y
+                         actualizar_roles_cuadrillas_incidencias.sql
+                         (migraciones, ver "Cómo levantarlo")
+  tests/                 tests de integración de la API (ver tests/README.md)
+  phpunit.xml, composer.json
 ```
 
-Es un solo proyecto PHP (no microservicios separados): cada paquete del
-diagrama es una carpeta. Si más adelante hace falta separarlos en
-contenedores Docker independientes, la división lógica ya está hecha.
+Cada paquete del Diagrama de Paquetes sigue siendo una carpeta bien
+separada (ahora dentro de `Backend/src/`); lo que cambió es que
+backend y frontend corren en contenedores Docker independientes en vez
+de un único proyecto PHP. El frontend le habla al backend por HTTP
+(`fetch('../api-usuarios/...')` etc., sin cambios en el código JS): el
+nginx del contenedor `frontend` hace de proxy de esas rutas hacia el
+contenedor `backend` (ver `Frontend/nginx.conf`), así el navegador ve
+todo bajo el mismo origen — sin CORS, y las cookies de sesión de PHP
+viajan igual que si fuera un único servidor.
 
 ## Cómo levantarlo
 
@@ -99,8 +116,8 @@ contenedores Docker independientes, la división lógica ya está hecha.
    ```
 
 3. Configurar la conexión con variables de entorno (no hace falta tocar
-   código). Si no se definen, `Comun/conexion.php` usa por defecto
-   `127.0.0.1`, base `sigeru`, usuario `root`, sin contraseña.
+   código). Si no se definen, `Backend/src/Comun/conexion.php` usa por
+   defecto `127.0.0.1`, base `sigeru`, usuario `root`, sin contraseña.
    ```
    export SIGERU_DB_HOST=127.0.0.1
    export SIGERU_DB_NAME=sigeru
@@ -108,27 +125,45 @@ contenedores Docker independientes, la división lógica ya está hecha.
    export SIGERU_DB_PASS=elegí-una-clave
    ```
 
-4. Levantar el servidor (para probar local; en tus 3 servidores Linux
-   sería Apache/Nginx + PHP-FPM apuntando a esta misma carpeta):
+4. Levantar el backend (sirve los 4 paquetes de la API):
    ```
-   php -S 127.0.0.1:8000
+   php -S 127.0.0.1:8000 -t Backend/src
    ```
 
-5. Abrir `http://127.0.0.1:8000/` en el navegador (te lleva a la landing).
+5. Servir el frontend apuntando al mismo origen que el backend — para
+   probar rápido sin nginx, la forma más simple es servir todo con un
+   único `php -S` cuyo document root sea `Frontend/src`, y hacer que el
+   backend "aparezca" en el mismo puerto con un proxy (eso es
+   justamente lo que hace `Frontend/nginx.conf` en Docker). Para
+   levantar los 3 contenedores reales (con ese proxy ya armado), ver
+   "Levantarlo con Docker" abajo — es la forma recomendada de probar
+   esto local, porque reproduce la separación real de contenedores.
 
-## Levantarlo con Docker (alternativa a los pasos 1-4)
+## Levantarlo con Docker (recomendado)
 
-Con Docker no hace falta instalar MySQL/MariaDB ni PHP a mano:
+Con Docker no hace falta instalar MySQL/MariaDB, PHP ni nginx a mano:
 
 ```
 docker compose up --build
 ```
 
-Esto levanta dos contenedores: `db` (MariaDB 11, que al crearse por
-primera vez carga automáticamente `sql/sigeru_schema.sql` y después
-`sql/datos_prueba.sql` — ver "Datos de prueba" abajo) y `app` (PHP 8.2 +
-Apache con el código de este repo, ya configurado por variables de
-entorno para conectarse a `db`). La app queda en `http://localhost:8080/`.
+Esto levanta 3 contenedores:
+- `db` — MariaDB 11; al crearse por primera vez carga automáticamente
+  `sql/sigeru_schema.sql` y después `sql/datos_prueba.sql` (ver "Datos
+  de prueba" abajo).
+- `backend` — PHP 8.2 + Apache sirviendo `Backend/src/` (los 4
+  paquetes de la API), configurado por variables de entorno para
+  conectarse a `db`.
+- `frontend` — nginx sirviendo `Frontend/src/` (HTML/CSS/JS) y
+  haciendo de proxy de `/api-usuarios/`, `/api-gestion/`,
+  `/api-incidencias/` y `/api-recoleccion/` hacia `backend` (ver
+  `Frontend/nginx.conf`) — así el navegador ve todo bajo un mismo
+  origen, sin problemas de CORS ni de cookies de sesión entre
+  contenedores.
+
+La app queda en `http://localhost:8080/` (landing). El backend también
+queda expuesto directo en `http://localhost:8081/` por si hace falta
+pegarle a la API sin pasar por el frontend al debuggear.
 
 Para arrancar de cero (borra los datos cargados; la próxima vez se
 vuelven a cargar los scripts de `sql/`):
@@ -136,12 +171,13 @@ vuelven a cargar los scripts de `sql/`):
 docker compose down -v
 ```
 
-Nota: el `docker-compose.yml` y el `Dockerfile` se armaron y se
-validaron (`docker compose config`, y cada script `sql/` corriendo
-contra una base MariaDB real) en este entorno, pero acá no hay salida
-a internet para bajar las imágenes de Docker Hub, así que el
-`docker compose up --build` en sí no se pudo ejecutar de punta a punta
-en esta sesión. Probalo en tu máquina y avisame si algo no levanta.
+Nota: el `docker-compose.yml` y los `Dockerfile` de `Backend/` y
+`Frontend/` se armaron y se validaron (`docker compose config`, y cada
+script `sql/` corriendo contra una base MariaDB real) en este entorno,
+pero acá no hay salida a internet para bajar imágenes de Docker Hub,
+así que el `docker compose up --build` en sí no se pudo ejecutar de
+punta a punta en esta sesión. Probalo en tu máquina y avisame si algo
+no levanta.
 
 ## Mapa de contenedores (RF13)
 

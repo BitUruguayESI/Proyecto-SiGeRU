@@ -44,7 +44,7 @@ grep -v -E '^(DROP DATABASE IF EXISTS sigeru;|CREATE DATABASE sigeru|USE sigeru;
 echo "==> Levantando servidor PHP de test en 127.0.0.1:${PUERTO_TEST}"
 SIGERU_DB_HOST="$DB_HOST" SIGERU_DB_PORT="$DB_PORT" SIGERU_DB_NAME="$DB_TEST" \
   SIGERU_DB_USER="$DB_USER" SIGERU_DB_PASS="$DB_PASS" \
-  php -S "127.0.0.1:${PUERTO_TEST}" -t "$DIR_PROYECTO" > /tmp/sigeru_test_server.log 2>&1 &
+  php -S "127.0.0.1:${PUERTO_TEST}" -t "$DIR_PROYECTO/Backend/src" > /tmp/sigeru_test_server.log 2>&1 &
 PID_SERVIDOR=$!
 
 limpiar() {
@@ -52,9 +52,11 @@ limpiar() {
 }
 trap limpiar EXIT
 
-# Esperar a que el servidor responda antes de arrancar los tests.
+# Esperar a que el servidor responda antes de arrancar los tests
+# (cualquier respuesta HTTP sirve, incluso 401 — solo importa que ya
+# esté aceptando conexiones).
 for intento in $(seq 1 20); do
-  if curl -s -o /dev/null "http://127.0.0.1:${PUERTO_TEST}/index.php"; then
+  if curl -s -o /dev/null "http://127.0.0.1:${PUERTO_TEST}/api-usuarios/quien_soy.php"; then
     break
   fi
   sleep 0.25

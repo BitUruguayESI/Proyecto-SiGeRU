@@ -21,8 +21,8 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
-    build: .
+  backend:
+    build: ./Backend
     restart: unless-stopped
     depends_on:
       db:
@@ -33,6 +33,14 @@ services:
       SIGERU_DB_NAME: sigeru
       SIGERU_DB_USER: sigeru_app
       SIGERU_DB_PASS: sigeru_pass_dev
+    ports:
+      - "8081:80"   # opcional, solo para pegarle directo a la API al debuggear
+
+  frontend:
+    build: ./Frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
     ports:
       - "8080:80"
 
