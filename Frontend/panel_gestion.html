@@ -30,14 +30,15 @@
 
     <!-- ===================== USUARIOS ===================== -->
     <section id="seccion-usuarios" class="seccion-panel">
-      <label>Filtrar por tipo</label>
+      <label>Filtrar por rol</label>
       <select id="usu_filtro_tipo" style="max-width:260px; margin-bottom:12px;">
-        <option value="">Todos (Operario y Administrador)</option>
-        <option value="OPERARIO">Operario</option>
+        <option value="">Todos</option>
         <option value="ADMINISTRADOR">Administrador</option>
+        <option value="RECOLECTOR">Recolector</option>
+        <option value="CHOFER">Chofer</option>
       </select>
       <table class="tabla-datos">
-        <thead><tr><th>CI</th><th>Nombre</th><th>Email</th><th>Tipo</th><th>Cargo</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>CI</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody id="tablaUsuarios"></tbody>
       </table>
       <div class="formulario-alta">
@@ -50,10 +51,13 @@
           <input type="text" id="usu_nombre" required>
           <label>Email</label>
           <input type="email" id="usu_email" required>
-          <div id="usu_cargo_contenedor">
-            <label>Cargo</label>
-            <input type="text" id="usu_cargo">
-          </div>
+          <label>Rol</label>
+          <select id="usu_rol">
+            <option value="ADMINISTRADOR">Administrador</option>
+            <option value="RECOLECTOR">Recolector</option>
+            <option value="CHOFER">Chofer</option>
+          </select>
+          <p id="usu_rol_aviso" class="aviso-mapa" hidden>No podés cambiar tu propio rol.</p>
           <label>Teléfonos (separados por coma, opcional)</label>
           <input type="text" id="usu_telefonos" placeholder="099123456, 26001122">
           <label>Nueva contraseña (dejar vacío para no cambiarla)</label>
@@ -116,8 +120,12 @@
 
     <!-- ===================== CUADRILLAS ===================== -->
     <section id="seccion-cuadrillas" class="seccion-panel">
+      <p style="color:#555; font-size:13px; margin-top:0;">
+        La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
+        el Chofer y los Recolectores en su panel "Mi día".
+      </p>
       <table class="tabla-datos">
-        <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
         <tbody id="tablaCuadrillas"></tbody>
       </table>
       <div class="formulario-alta">
@@ -128,6 +136,12 @@
             <div><label>Nombre</label><input type="text" id="cuad_nombre" required></div>
             <div><label>Cantidad de integrantes</label><input type="number" id="cuad_cantidad" min="0" value="0"></div>
           </div>
+          <div class="fila-doble">
+            <div><label>Camión</label><select id="cuad_camion"><option value="">Sin asignar</option></select></div>
+            <div><label>Chofer</label><select id="cuad_chofer"><option value="">Sin asignar</option></select></div>
+          </div>
+          <label>Recolectores (podés elegir varios)</label>
+          <select id="cuad_recolectores" multiple size="4"></select>
           <label>Rutas habituales</label>
           <select id="cuad_rutas" multiple size="4"></select>
           <button type="submit" class="principal" id="cuad_boton_submit">Registrar cuadrilla</button>
@@ -233,6 +247,7 @@
     </section>
   </main>
 
+  <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>
   <script src="js/panel_gestion.js"></script>
 </body>

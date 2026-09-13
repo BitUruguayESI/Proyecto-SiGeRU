@@ -2,6 +2,7 @@ const BASE_INC = '../api-incidencias';
 const BASE_GES = '../api-gestion';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 let cuadrillasDisponibles = [];
+let puedeResolverIncidencias = false; // Administrador o Chofer (ver Comun/funciones.php::requerirPuedeResolverIncidencia)
 
 function mostrarMensajeGlobal(texto, tipo) {
   divMensajeGlobal.textContent = texto;
@@ -22,8 +23,7 @@ async function llamar(url, opciones = {}) {
 }
 
 const ETIQUETAS_ESTADO = {
-  PENDIENTE: 'Pendiente', ASIGNADA: 'Asignada', EN_PROCESO: 'En proceso',
-  RESUELTA: 'Resuelta', ESCALADA: 'Escalada',
+  PENDIENTE: 'Pendiente', EN_PROCESO: 'En proceso', RESUELTA: 'Resuelta',
 };
 
 function selectCuadrillas(idAtributo) {
@@ -37,15 +37,11 @@ function accionesPorEstado(inc) {
   switch (inc.estado) {
     case 'PENDIENTE':
       return `${selectCuadrillas(inc.id_incidencia)}
-              <button class="chico btn-asignar" data-id="${inc.id_incidencia}">Asignar</button>`;
-    case 'ASIGNADA':
-      return `<button class="chico btn-en-proceso" data-id="${inc.id_incidencia}">Iniciar atención</button>`;
+              <button class="chico btn-asignar" data-id="${inc.id_incidencia}">Asignar (pasa a En proceso)</button>`;
     case 'EN_PROCESO':
-      return `<button class="chico btn-resolver" data-id="${inc.id_incidencia}">Marcar resuelta</button>
-              <button class="peligro btn-escalar" data-id="${inc.id_incidencia}">Escalar</button>`;
-    case 'ESCALADA':
-      return `${selectCuadrillas(inc.id_incidencia)}
-              <button class="chico btn-asignar" data-id="${inc.id_incidencia}">Reasignar</button>`;
+      return puedeResolverIncidencias
+        ? `<button class="chico btn-resolver" data-id="${inc.id_incidencia}">Marcar resuelta</button>`
+        : 'En proceso (la resuelve el Administrador o el Chofer)';
     case 'RESUELTA':
       return `Resuelta el ${inc.fecha_resolucion || '—'}`;
     default:
@@ -110,14 +106,18 @@ async function cargarIncidencias() {
       });
     });
   };
-  conectarCambioEstado('.btn-en-proceso', 'EN_PROCESO');
   conectarCambioEstado('.btn-resolver', 'RESUELTA');
-  conectarCambioEstado('.btn-escalar', 'ESCALADA');
 }
 
 document.getElementById('filtroEstado').addEventListener('change', cargarIncidencias);
 
 (async function iniciar() {
+  // Este panel (gestión de TODAS las incidencias) es solo para
+  // Administrador; el Recolector/Chofer ven las suyas en "Mi día".
+  const sesion = await obtenerSesion();
+  if (!exigirAdministrador(sesion)) return;
+  puedeResolverIncidencias = true; // acá siempre es Administrador
+
   // Permite entrar directo con un estado filtrado (ej. desde el Dashboard:
   // panel_incidencias.html?estado=PENDIENTE).
   const estadoDesdeUrl = new URLSearchParams(location.search).get('estado');

@@ -25,11 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const resultado = await respuesta.json();
 
       if (resultado.exito) {
-        mostrarMensaje(`Bienvenido/a, ${resultado.nombre_completo} (${resultado.tipo_usuario}).`, 'exito');
-        const destino = resultado.tipo_usuario === 'ADMINISTRADOR' ? 'dashboard.html' : 'panel_incidencias.html';
+        mostrarMensaje(`Bienvenido/a, ${resultado.nombre_completo}.`, 'exito');
+        const destino = resultado.tipo_usuario === 'ADMINISTRADOR' ? 'dashboard.html' : 'mi_dia.html';
         setTimeout(() => { window.location.href = destino; }, 700);
-        // TODO: cuando exista api-recoleccion, el Operario probablemente
-        // quiera un panel propio en vez de caer directo en incidencias.
       } else {
         mostrarMensaje(resultado.mensaje || 'No se pudo iniciar sesión.', 'error');
       }

@@ -36,10 +36,20 @@ document.querySelectorAll('.pestanias button').forEach(boton => {
 // ---------------------------------------------------------------
 const BASE_USUARIOS = '../api-usuarios';
 const formUsuario = document.getElementById('formUsuario');
+const ETIQUETAS_ROL = { ADMINISTRADOR: 'Administrador', RECOLECTOR: 'Recolector', CHOFER: 'Chofer' };
+let sesionActual = null; // se completa en iniciar(), la usa abrirEdicionUsuario para bloquear el auto-cambio de rol
+
+function filtroUsuariosATipoYCargo(filtro) {
+  if (filtro === 'ADMINISTRADOR') return { tipo_usuario: 'ADMINISTRADOR' };
+  if (filtro === 'RECOLECTOR' || filtro === 'CHOFER') return { tipo_usuario: 'OPERARIO', cargo: filtro };
+  return {};
+}
 
 async function cargarUsuarios() {
-  const tipo = document.getElementById('usu_filtro_tipo').value;
-  const url = tipo ? `${BASE_USUARIOS}/usuarios.php?tipo_usuario=${tipo}` : `${BASE_USUARIOS}/usuarios.php`;
+  const filtro = document.getElementById('usu_filtro_tipo').value;
+  const params = new URLSearchParams(filtroUsuariosATipoYCargo(filtro));
+  const query = params.toString();
+  const url = query ? `${BASE_USUARIOS}/usuarios.php?${query}` : `${BASE_USUARIOS}/usuarios.php`;
   const datos = await llamar(url);
   const cuerpo = document.getElementById('tablaUsuarios');
   cuerpo.innerHTML = '';
@@ -49,7 +59,7 @@ async function cargarUsuarios() {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${u.ci}</td><td>${u.nombre_completo}</td><td>${u.email}</td>
-      <td>${u.tipo_usuario}</td><td>${u.cargo || '—'}</td>
+      <td>${ETIQUETAS_ROL[u.rol] || u.rol}</td>
       <td>${u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo'}</td>
       <td>
         <button class="chico btn-editar-usuario" data-ci="${u.ci}">Editar</button>
@@ -92,16 +102,19 @@ async function abrirEdicionUsuario(ci) {
   if (!datos.exito) { mostrarMensajeGlobal(datos.mensaje, 'error'); return; }
 
   const u = datos.usuario;
+  const esUnoMismo = sesionActual && sesionActual.ci === u.ci;
+
   document.getElementById('usu_sin_seleccion').hidden = true;
   formUsuario.hidden = false;
   document.getElementById('usu_ci').value = u.ci;
-  document.getElementById('usu_ci_visible').textContent = `${u.ci} (${u.tipo_usuario})`;
+  document.getElementById('usu_ci_visible').textContent = `${u.ci} (${ETIQUETAS_ROL[u.rol] || u.rol})`;
   document.getElementById('usu_nombre').value = u.nombre_completo;
   document.getElementById('usu_email').value = u.email;
   document.getElementById('usu_telefonos').value = u.telefonos.join(', ');
   document.getElementById('usu_contrasena').value = '';
-  document.getElementById('usu_cargo_contenedor').style.display = u.tipo_usuario === 'OPERARIO' ? '' : 'none';
-  document.getElementById('usu_cargo').value = u.cargo || '';
+  document.getElementById('usu_rol').value = u.rol;
+  document.getElementById('usu_rol').disabled = esUnoMismo;
+  document.getElementById('usu_rol_aviso').hidden = !esUnoMismo;
   formUsuario.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -110,21 +123,23 @@ document.getElementById('usu_filtro_tipo').addEventListener('change', cargarUsua
 document.getElementById('usu_cancelar').addEventListener('click', () => {
   formUsuario.reset();
   formUsuario.hidden = true;
+  document.getElementById('usu_rol').disabled = false;
+  document.getElementById('usu_rol_aviso').hidden = true;
   document.getElementById('usu_sin_seleccion').hidden = false;
 });
 
 formUsuario.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const telefonos = document.getElementById('usu_telefonos').value.split(',').map(t => t.trim()).filter(Boolean);
+  const selectRol = document.getElementById('usu_rol');
   const cuerpo = {
     ci: document.getElementById('usu_ci').value,
     nombre_completo: document.getElementById('usu_nombre').value.trim(),
     email: document.getElementById('usu_email').value.trim(),
     telefonos,
   };
-  const cargo = document.getElementById('usu_cargo').value.trim();
-  if (document.getElementById('usu_cargo_contenedor').style.display !== 'none') {
-    cuerpo.cargo = cargo;
+  if (!selectRol.disabled) {
+    cuerpo.rol = selectRol.value;
   }
   const contrasena = document.getElementById('usu_contrasena').value;
   if (contrasena) cuerpo.contrasena = contrasena;
@@ -137,6 +152,8 @@ formUsuario.addEventListener('submit', async (evento) => {
   if (resultado.exito) {
     formUsuario.reset();
     formUsuario.hidden = true;
+    document.getElementById('usu_rol').disabled = false;
+    document.getElementById('usu_rol_aviso').hidden = true;
     document.getElementById('usu_sin_seleccion').hidden = false;
     cargarUsuarios();
   }
@@ -385,8 +402,32 @@ document.getElementById('formRuta').addEventListener('submit', async (evento) =>
 });
 
 // ---------------------------------------------------------------
-// CUADRILLAS
+// CUADRILLAS (con su "cuadrilla estable": camión + chofer + recolectores)
 // ---------------------------------------------------------------
+async function cargarReferenciasCuadrilla() {
+  const [camiones, choferes, recolectores] = await Promise.all([
+    llamar(`${BASE}/camiones.php`),
+    llamar(`${BASE_USUARIOS}/listar_operarios.php?cargo=CHOFER`),
+    llamar(`${BASE_USUARIOS}/listar_operarios.php?cargo=RECOLECTOR`),
+  ]);
+  const selectCamion = document.getElementById('cuad_camion');
+  const selectChofer = document.getElementById('cuad_chofer');
+  const selectRecolectores = document.getElementById('cuad_recolectores');
+  selectCamion.innerHTML = '<option value="">Sin asignar</option>';
+  selectChofer.innerHTML = '<option value="">Sin asignar</option>';
+  selectRecolectores.innerHTML = '';
+
+  if (camiones.exito) {
+    camiones.camiones.forEach(c => selectCamion.appendChild(new Option(c.matricula, c.id_camion)));
+  }
+  if (choferes.exito) {
+    choferes.operarios.forEach(o => selectChofer.appendChild(new Option(o.nombre_completo, o.id_operario)));
+  }
+  if (recolectores.exito) {
+    recolectores.operarios.forEach(o => selectRecolectores.appendChild(new Option(o.nombre_completo, o.id_operario)));
+  }
+}
+
 async function cargarCuadrillas() {
   const datos = await llamar(`${BASE}/cuadrillas.php`);
   const cuerpo = document.getElementById('tablaCuadrillas');
@@ -397,9 +438,11 @@ async function cargarCuadrillas() {
   datos.cuadrillas.forEach(c => {
     cuadrillasPorId[c.id_cuadrilla] = c;
     const rutas = c.rutas_habituales.map(r => r.nombre_zona).join(', ') || '—';
+    const recolectores = c.recolectores.map(r => r.nombre_completo).join(', ') || '—';
     const fila = document.createElement('tr');
     fila.innerHTML = `
-      <td>${c.id_cuadrilla}</td><td>${c.nombre_cuadrilla}</td><td>${c.cantidad_integrantes}</td><td>${rutas}</td>
+      <td>${c.id_cuadrilla}</td><td>${c.nombre_cuadrilla}</td><td>${c.cantidad_integrantes}</td>
+      <td>${c.camion_matricula || '—'}</td><td>${c.chofer_nombre || '—'}</td><td>${recolectores}</td><td>${rutas}</td>
       <td>
         <button class="chico btn-editar-cuadrilla" data-id="${c.id_cuadrilla}">Editar</button>
         <button class="peligro btn-eliminar-cuadrilla" data-id="${c.id_cuadrilla}">Eliminar</button>
@@ -414,6 +457,12 @@ async function cargarCuadrillas() {
       document.getElementById('cuad_id').value = c.id_cuadrilla;
       document.getElementById('cuad_nombre').value = c.nombre_cuadrilla;
       document.getElementById('cuad_cantidad').value = c.cantidad_integrantes;
+      document.getElementById('cuad_camion').value = c.id_camion || '';
+      document.getElementById('cuad_chofer').value = c.id_chofer || '';
+      const idsRecolectores = c.recolectores.map(r => String(r.id_operario));
+      Array.from(document.getElementById('cuad_recolectores').options).forEach(opcion => {
+        opcion.selected = idsRecolectores.includes(opcion.value);
+      });
       const idsHabituales = c.rutas_habituales.map(r => String(r.id_ruta));
       Array.from(document.getElementById('cuad_rutas').options).forEach(opcion => {
         opcion.selected = idsHabituales.includes(opcion.value);
@@ -449,9 +498,15 @@ document.getElementById('formCuadrilla').addEventListener('submit', async (event
   evento.preventDefault();
   const idCuadrilla = document.getElementById('cuad_id').value;
   const rutasSeleccionadas = Array.from(document.getElementById('cuad_rutas').selectedOptions).map(o => Number(o.value));
+  const recolectoresSeleccionados = Array.from(document.getElementById('cuad_recolectores').selectedOptions).map(o => Number(o.value));
+  const camion = document.getElementById('cuad_camion').value;
+  const chofer = document.getElementById('cuad_chofer').value;
   const cuerpo = {
     nombre_cuadrilla: document.getElementById('cuad_nombre').value.trim(),
     cantidad_integrantes: Number(document.getElementById('cuad_cantidad').value || 0),
+    id_camion: camion ? Number(camion) : null,
+    id_chofer: chofer ? Number(chofer) : null,
+    recolectores: recolectoresSeleccionados,
     rutas_habituales: rutasSeleccionadas,
   };
   const resultado = idCuadrilla
@@ -751,10 +806,15 @@ document.getElementById('formMaquinaria').addEventListener('submit', async (even
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
+  const sesion = await obtenerSesion();
+  if (!exigirAdministrador(sesion)) return; // Gestión de recursos es solo para Administrador
+  sesionActual = sesion;
+
   iniciarMapaContenedores();
   await cargarUsuarios();
   await cargarRutas();       // primero, porque llena los <select> que usan otras secciones
   await cargarContenedores();
+  await cargarReferenciasCuadrilla(); // camión/chofer/recolectores para el form de cuadrillas
   await cargarCuadrillas();
   await cargarCamiones();
   await cargarInstalaciones();

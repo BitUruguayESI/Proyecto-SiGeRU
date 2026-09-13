@@ -1,11 +1,19 @@
 /**
  * nav_admin.js
- * Inyecta la barra de navegación de las pantallas de personal (Dashboard,
- * Panel de gestión, y a futuro Incidencias/Recolección) dentro de un
- * <div id="navAdmin"></div> presente en la página. Marca como activo el
- * link que corresponde a la página actual vía data-pagina en <body>.
+ * Inyecta la barra de navegación de las pantallas de personal dentro de
+ * un <div id="navAdmin"></div> presente en la página. Marca como activo
+ * el link que corresponde a la página actual vía data-pagina en <body>,
+ * y arma un menú distinto según el rol de la sesión activa (RN de
+ * dashboards por rol):
+ *   - Administrador: el menú completo, como siempre.
+ *   - Recolector: solo "Mi día" (incidencias del día, asignación diaria
+ *     y cuadrilla propia).
+ *   - Chofer: "Mi día" + "Recolección" (para registrar descargas).
+ *
+ * Depende de sesion.js (obtenerSesion()) — tiene que cargarse antes.
  *
  * Uso: <body data-pagina="dashboard"> ... <div id="navAdmin"></div>
+ *      <script src="js/sesion.js"></script>
  *      <script src="js/nav_admin.js"></script>
  */
 
@@ -15,13 +23,28 @@
 
   const paginaActual = document.body.dataset.pagina || '';
 
-  const enlaces = [
+  const sesion = await obtenerSesion();
+  if (!sesion) return; // obtenerSesion ya redirige a login.html si no hay sesión
+
+  const enlacesAdministrador = [
     { pagina: 'dashboard', href: 'dashboard.html', texto: 'Dashboard' },
     { pagina: 'gestion', href: 'panel_gestion.html', texto: 'Gestión de recursos' },
     { pagina: 'incidencias', href: 'panel_incidencias.html', texto: 'Incidencias' },
     { pagina: 'recoleccion', href: 'panel_recoleccion.html', texto: 'Recolección' },
     { pagina: 'asignacion-diaria', href: 'panel_recoleccion.html#asignaciones', texto: 'Asignación diaria' },
   ];
+  const enlacesRecolector = [
+    { pagina: 'mi-dia', href: 'mi_dia.html', texto: 'Mi día' },
+  ];
+  const enlacesChofer = [
+    { pagina: 'mi-dia', href: 'mi_dia.html', texto: 'Mi día' },
+    { pagina: 'recoleccion', href: 'panel_recoleccion.html', texto: 'Recolección' },
+  ];
+
+  const rol = rolDeSesion(sesion);
+  const enlaces = rol === 'ADMINISTRADOR' ? enlacesAdministrador
+    : rol === 'CHOFER' ? enlacesChofer
+    : enlacesRecolector;
 
   const nav = document.createElement('nav');
   nav.className = 'nav-admin';
@@ -65,18 +88,6 @@
 
   contenedor.replaceWith(nav);
 
-  try {
-    const respuesta = await fetch('../api-usuarios/quien_soy.php');
-    if (respuesta.status === 401) {
-      window.location.href = 'login.html';
-      return;
-    }
-    const datos = await respuesta.json();
-    if (datos.exito) {
-      spanUsuario.textContent = `${datos.nombre_completo} (${datos.tipo_usuario})`;
-    }
-  } catch (error) {
-    // Si falla la consulta de sesión, no rompemos la página; el resto
-    // de los endpoints igual van a exigir sesión por su cuenta.
-  }
+  const ETIQUETAS_ROL = { ADMINISTRADOR: 'Administrador', CHOFER: 'Chofer', RECOLECTOR: 'Recolector' };
+  spanUsuario.textContent = `${sesion.nombre_completo} (${ETIQUETAS_ROL[rol] || sesion.tipo_usuario})`;
 })();

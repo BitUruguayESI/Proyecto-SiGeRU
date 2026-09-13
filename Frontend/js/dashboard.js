@@ -2,8 +2,7 @@ const BASE_GESTION = '../api-gestion';
 const BASE_INCIDENCIAS = '../api-incidencias';
 
 const ETIQUETAS_ESTADO_INC = {
-  PENDIENTE: 'Pendiente', ASIGNADA: 'Asignada', EN_PROCESO: 'En proceso',
-  RESUELTA: 'Resuelta', ESCALADA: 'Escalada',
+  PENDIENTE: 'Pendiente', EN_PROCESO: 'En proceso', RESUELTA: 'Resuelta',
 };
 
 async function pedir(url) {
@@ -22,14 +21,10 @@ function tarjeta(numero, etiqueta, alerta = false) {
   return div;
 }
 
-// Agrupa los 5 estados reales de INCIDENCIA en las 3 categorías que pide el
-// panel de control: Pendientes (PENDIENTE, todavía sin ninguna cuadrilla
-// asignada), En proceso (ASIGNADA + EN_PROCESO + ESCALADA — ya se les dio
-// cuadrilla y/o el trabajo arrancó, aunque haya quedado escalada para
-// reasignar) y Resueltas (RESUELTA).
+// Los 3 estados de INCIDENCIA se muestran directo, uno a uno.
 const GRUPOS_ESTADO = [
   { clave: 'pendientes', etiqueta: 'Pendientes', estados: ['PENDIENTE'], color: 'rojo' },
-  { clave: 'en_proceso', etiqueta: 'En proceso', estados: ['ASIGNADA', 'EN_PROCESO', 'ESCALADA'], color: 'azul' },
+  { clave: 'en_proceso', etiqueta: 'En proceso', estados: ['EN_PROCESO'], color: 'azul' },
   { clave: 'resueltas', etiqueta: 'Resueltas', estados: ['RESUELTA'], color: 'verde' },
 ];
 
@@ -85,6 +80,9 @@ function renderIncidenciasRecientes(incidencias) {
 }
 
 (async function cargarDashboard() {
+  const sesion = await obtenerSesion();
+  if (!exigirAdministrador(sesion)) return; // el Dashboard completo es solo para Administrador
+
   const contenedorTarjetas = document.getElementById('tarjetasEstadisticas');
 
   const [contenedores, camiones, cuadrillas, rutas, instalaciones, incidencias] = await Promise.all([

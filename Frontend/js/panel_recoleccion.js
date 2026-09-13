@@ -231,8 +231,37 @@ document.getElementById('formMantenimiento').addEventListener('submit', async (e
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
+  const sesion = await obtenerSesion();
+  const rol = rolDeSesion(sesion);
+  // Este panel es de Administrador (todas las pestañas) o Chofer (solo
+  // Descargas, para registrar sus descargas — RN de dashboards por rol).
+  // El Recolector no tiene link a esta página, pero por las dudas si
+  // entra por URL directa, lo mandamos a "Mi día".
+  if (rol === 'RECOLECTOR') {
+    window.location.href = 'mi_dia.html';
+    return;
+  }
+  const esAdministrador = rol === 'ADMINISTRADOR';
+
+  if (!esAdministrador) {
+    // Chofer: solo le sirve la pestaña de Descargas.
+    document.querySelector('.pestanias button[data-seccion="asignaciones"]').hidden = true;
+    document.querySelector('.pestanias button[data-seccion="mantenimiento"]').hidden = true;
+    activarPestania('descargas');
+  }
+
   await cargarReferencias();
-  await cargarAsignaciones();
+  if (esAdministrador) {
+    await cargarAsignaciones();
+    await cargarMantenimiento();
+  } else {
+    // Le fijamos de entrada el camión de SU cuadrilla (si ya se lo asignaron),
+    // así no tiene que buscarlo en la lista de todos los camiones.
+    const propia = await llamar(`${BASE_GES}/cuadrillas.php?propia=1`);
+    if (propia.exito && propia.cuadrilla && propia.cuadrilla.id_camion) {
+      const selectCamion = document.getElementById('desc_camion');
+      selectCamion.value = String(propia.cuadrilla.id_camion);
+    }
+  }
   await cargarDescargas();
-  await cargarMantenimiento();
 })();
