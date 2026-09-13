@@ -35,7 +35,7 @@ final class ContenedoresApiTest extends TestCase
         $this->operario->post('/api-usuarios/registro.php', [
             'ci' => $ciOperario, 'contrasena' => 'clave12345',
             'email' => "cont-oper{$sufijo}@sigeru.uy", 'nombre_completo' => 'Operario Contenedores',
-            'tipo_usuario' => 'OPERARIO', 'cargo' => 'Recolector',
+            'tipo_usuario' => 'OPERARIO', 'cargo' => 'RECOLECTOR',
         ]);
         $this->operario->post('/api-usuarios/login.php', ['ci' => $ciOperario, 'contrasena' => 'clave12345']);
     }
@@ -49,7 +49,7 @@ final class ContenedoresApiTest extends TestCase
     public function testCrearComoOperarioDevuelve403(): void
     {
         $respuesta = $this->operario->post('/api-gestion/contenedores.php', [
-            'coordenadas' => '-34.9,-56.1',
+            'direccion' => '18 de Julio 1234, Montevideo',
             'tipos_residuo' => ['organico'],
         ]);
         self::assertSame(403, $respuesta['codigo']);
@@ -58,7 +58,7 @@ final class ContenedoresApiTest extends TestCase
     public function testCicloCompletoAltaEdicionYBajaComoAdministrador(): void
     {
         $alta = $this->admin->post('/api-gestion/contenedores.php', [
-            'coordenadas' => '-34.9058,-56.1913',
+            'direccion' => '18 de Julio 1234, Montevideo',
             'nivel_llenado' => 10,
             'tipos_residuo' => ['organico', 'plastico'],
         ]);

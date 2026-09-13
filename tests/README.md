@@ -18,10 +18,18 @@ Cubren:
 - **ContenedoresApiTest** — CRUD completo como Administrador (alta,
   edición de estado, baja lógica), y el contrato de autorización
   (401 sin sesión, 403 con sesión de Operario intentando escribir).
-- **IncidenciasApiTest** — la máquina de estados completa: reporte
+- **IncidenciasApiTest** — la máquina de estados de 3 pasos: reporte
   público, que "Desborde" marque el contenedor, que no se pueda saltar
-  de PENDIENTE a EN_PROCESO sin pasar por asignar cuadrilla, y el ciclo
-  completo hasta RESUELTA con la reversión automática del contenedor.
+  de PENDIENTE a EN_PROCESO sin pasar por asignar cuadrilla (que ahora
+  deja la incidencia directo en EN_PROCESO), el ciclo completo hasta
+  RESUELTA con la reversión automática del contenedor, y que el
+  Recolector no pueda resolver una incidencia pero el Chofer sí.
+- **RolesYCuadrillasApiTest** — cambiar el rol de un usuario (Recolector
+  ↔ Chofer ↔ Administrador) y que el discriminador RN01 y el cargo
+  queden consistentes; que un Administrador no pueda cambiarse el rol a
+  sí mismo; rol inválido rechazado; alta/edición de una cuadrilla con
+  camión + chofer + recolectores editable; y que no se pueda asignar el
+  mismo chofer a dos cuadrillas.
 
 ## Cómo correrlos
 
@@ -56,4 +64,4 @@ test**. `tests/bootstrap.php` elige automáticamente uno u otro: usa
 PHPUnit real si existe `vendor/autoload.php`, o el shim si no.
 
 Corrida en este entorno (con el runner incluido, ver más arriba):
-`Tests: 13, Fallos: 0`.
+`Tests: 20, Fallos: 0`.

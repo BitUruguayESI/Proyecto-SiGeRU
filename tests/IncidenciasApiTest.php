@@ -31,7 +31,7 @@ final class IncidenciasApiTest extends TestCase
         $this->admin->post('/api-usuarios/login.php', ['ci' => $ciAdmin, 'contrasena' => 'clave12345']);
 
         $contenedor = $this->admin->post('/api-gestion/contenedores.php', [
-            'coordenadas' => '-34.90,-56.19', 'tipos_residuo' => ['organico'],
+            'direccion' => '18 de Julio 1234, Montevideo', 'tipos_residuo' => ['organico'],
         ]);
         $this->idContenedor = $contenedor['cuerpo']['id_contenedor'];
 
@@ -89,16 +89,18 @@ final class IncidenciasApiTest extends TestCase
     {
         $id = $this->reportarIncidencia('Desborde');
 
+        // Con el modelo de 3 estados, asignar_cuadrilla.php ya deja la
+        // incidencia en EN_PROCESO directamente (no hay estado ASIGNADA
+        // intermedio).
         $asignacion = $this->admin->put('/api-incidencias/asignar_cuadrilla.php', [
             'id_incidencia' => $id,
             'id_cuadrilla' => $this->idCuadrilla,
         ]);
         self::assertSame(200, $asignacion['codigo']);
 
-        $enProceso = $this->admin->put('/api-incidencias/actualizar_estado.php', [
-            'id_incidencia' => $id, 'estado' => 'EN_PROCESO',
-        ]);
-        self::assertSame(200, $enProceso['codigo']);
+        $detalle = $this->admin->get("/api-incidencias/listar.php?id_cuadrilla={$this->idCuadrilla}");
+        $encontrada = current(array_filter($detalle['cuerpo']['incidencias'], fn($i) => (int) $i['id_incidencia'] === $id));
+        self::assertSame('EN_PROCESO', $encontrada['estado']);
 
         $resuelta = $this->admin->put('/api-incidencias/actualizar_estado.php', [
             'id_incidencia' => $id, 'estado' => 'RESUELTA',
@@ -107,5 +109,45 @@ final class IncidenciasApiTest extends TestCase
 
         $contenedor = $this->admin->get("/api-gestion/contenedores.php?id={$this->idContenedor}");
         self::assertSame('OPERATIVO', $contenedor['cuerpo']['contenedor']['estado']);
+    }
+
+    public function testRecolectorNoPuedeResolverPeroChoferSi(): void
+    {
+        $sufijo = (string) random_int(0, 999999);
+
+        $ciRecolector = '5' . str_pad($sufijo, 7, '0', STR_PAD_LEFT);
+        $recolector = new ApiClient();
+        $recolector->post('/api-usuarios/registro.php', [
+            'ci' => $ciRecolector, 'contrasena' => 'clave12345',
+            'email' => "inc-recolector{$sufijo}@sigeru.uy", 'nombre_completo' => 'Recolector Incidencias',
+            'tipo_usuario' => 'OPERARIO', 'cargo' => 'RECOLECTOR',
+        ]);
+        $recolector->post('/api-usuarios/login.php', ['ci' => $ciRecolector, 'contrasena' => 'clave12345']);
+
+        $ciChofer = '4' . str_pad($sufijo, 7, '0', STR_PAD_LEFT);
+        $chofer = new ApiClient();
+        $chofer->post('/api-usuarios/registro.php', [
+            'ci' => $ciChofer, 'contrasena' => 'clave12345',
+            'email' => "inc-chofer{$sufijo}@sigeru.uy", 'nombre_completo' => 'Chofer Incidencias',
+            'tipo_usuario' => 'OPERARIO', 'cargo' => 'CHOFER',
+        ]);
+        $chofer->post('/api-usuarios/login.php', ['ci' => $ciChofer, 'contrasena' => 'clave12345']);
+
+        $id = $this->reportarIncidencia();
+        $this->admin->put('/api-incidencias/asignar_cuadrilla.php', [
+            'id_incidencia' => $id, 'id_cuadrilla' => $this->idCuadrilla,
+        ]);
+
+        $rechazado = $recolector->put('/api-incidencias/actualizar_estado.php', [
+            'id_incidencia' => $id, 'estado' => 'RESUELTA',
+        ]);
+        self::assertSame(403, $rechazado['codigo']);
+        self::assertFalse($rechazado['cuerpo']['exito']);
+
+        $aceptado = $chofer->put('/api-incidencias/actualizar_estado.php', [
+            'id_incidencia' => $id, 'estado' => 'RESUELTA',
+        ]);
+        self::assertSame(200, $aceptado['codigo']);
+        self::assertTrue($aceptado['cuerpo']['exito']);
     }
 }

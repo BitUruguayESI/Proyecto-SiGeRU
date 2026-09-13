@@ -1,28 +1,31 @@
 # SiGeRU — Backend + Frontend
 
 Módulos funcionales: alta y CRUD completo de usuarios (Operario/
-Administrador) e inicio de sesión (api-usuarios), landing page pública con
-consulta pública (RN21) y reporte de incidencias por vecinos
-(api-incidencias), gestión de contenedores/rutas/cuadrillas/camiones/
-instalaciones/maquinaria (api-gestion), asignación diaria + descargas +
-mantenimiento de camión (api-recoleccion), y dashboard + navegación para
-el personal. Todo sobre la base de datos de 25 tablas ya creada, con datos
-de prueba cargados, tests automatizados y Dockerfile/docker-compose para
-levantarlo sin instalar nada a mano — los 4 paquetes del backend
-(api-usuarios, api-gestion, api-incidencias, api-recoleccion) del Diagrama
-de Paquetes ya están completos.
+Administrador, con rol editable: Administrador/Recolector/Chofer) e inicio
+de sesión (api-usuarios), landing page pública con consulta pública (RN21)
+y reporte de incidencias por vecinos (api-incidencias), gestión de
+contenedores/rutas/cuadrillas/camiones/instalaciones/maquinaria
+(api-gestion) — incluida la "cuadrilla estable" (1 camión + 1 chofer + N
+recolectores), asignación diaria + descargas + mantenimiento de camión
+(api-recoleccion), y dashboards por rol para el personal (Administrador ve
+todo; Recolector/Chofer ven "Mi día"). Todo sobre la base de datos de 26
+tablas ya creada, con datos de prueba cargados, tests automatizados y
+Dockerfile/docker-compose para levantarlo sin instalar nada a mano — los 4
+paquetes del backend (api-usuarios, api-gestion, api-incidencias,
+api-recoleccion) del Diagrama de Paquetes ya están completos.
 
 Probado de punta a punta contra base de datos real (MariaDB) y servidor PHP
 real: registro con y sin teléfonos, registro duplicado (rechazado), login
 correcto e incorrecto, consulta pública, api-gestion completo (alta/edición/
 baja, control de que solo ADMINISTRADOR pueda escribir, errores de
-integridad referencial con mensaje claro), y el ciclo de vida completo de
-una incidencia — reporte público → asignar cuadrilla → en proceso →
-resuelta (con reversión automática del contenedor a OPERATIVO), y también
-el camino en proceso → escalada → reasignar cuadrilla — validando que la
-máquina de estados rechace transiciones que no corresponden al Diagrama de
-Estados (ej: no se puede pasar de PENDIENTE a EN_PROCESO sin asignar
-cuadrilla primero).
+integridad referencial con mensaje claro), el ciclo de vida completo de una
+incidencia — reporte público → asignar cuadrilla (pasa directo a EN_PROCESO)
+→ resuelta (con reversión automática del contenedor a OPERATIVO, y
+verificando que solo Administrador o Chofer puedan resolverla) — y el
+cambio de rol de un usuario (Recolector ↔ Chofer ↔ Administrador),
+incluyendo que un Administrador no pueda cambiarse el rol a sí mismo y que
+la cuadrilla estable (camión/chofer/recolectores) quede consistente
+después de un cambio de rol.
 
 ## Estructura (mapea 1 a 1 con el Diagrama de Paquetes)
 
@@ -40,9 +43,14 @@ sigeru/
   Frontend/             landing.html, login.html, registro.html, consulta.html,
                         reportar_incidencia.html, dashboard.html,
                         panel_gestion.html, panel_incidencias.html,
-                        panel_recoleccion.html, css/, js/
-  sql/                  sigeru_schema.sql (25 tablas), datos_prueba.sql y
-                        actualizar_contenedor_direccion.sql (migración)
+                        panel_recoleccion.html, mi_dia.html (Recolector/
+                        Chofer), css/, js/ (incluye sesion.js, compartido
+                        por nav_admin.js y las páginas que necesitan saber
+                        el rol de la sesión activa)
+  sql/                  sigeru_schema.sql (26 tablas), datos_prueba.sql,
+                        actualizar_contenedor_direccion.sql y
+                        actualizar_roles_cuadrillas_incidencias.sql
+                        (migraciones, ver "Cómo levantarlo")
   tests/                tests de integración de la API (ver tests/README.md)
   Dockerfile, docker-compose.yml, .dockerignore, phpunit.xml, composer.json
 ```
@@ -69,12 +77,19 @@ contenedores Docker independientes, la división lógica ya está hecha.
 
    Si ya tenías la base `sigeru` creada de antes (con contenedores/rutas
    cargados a mano) y no querés perder esos datos reimportando todo desde
-   cero, corré en cambio esta migración una sola vez — agrega la columna
-   `direccion` que usa el mapa de contenedores (ver "Mapa de contenedores"
-   más abajo):
+   cero, corré en cambio estas migraciones una sola vez, en este orden:
    ```
    mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/actualizar_contenedor_direccion.sql
+   mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/actualizar_roles_cuadrillas_incidencias.sql
    ```
+   ⚠️ **Importante**: la segunda es la que agrega el rol editable
+   (Administrador/Recolector/Chofer), la cuadrilla estable (camión + chofer
+   + recolectores) y simplifica los estados de INCIDENCIA a 3 (PENDIENTE/
+   EN_PROCESO/RESUELTA). Si no la corrés sobre una base ya existente, vas a
+   ver el mismo tipo de error de "columna no existe" que dio la falta de la
+   migración de `direccion` (JSON roto en el Dashboard y en Usuarios/
+   Cuadrillas) — hacé un respaldo antes si tenés datos que te importen; el
+   archivo tiene el detalle de qué hace cada paso.
 
 2. Crear un usuario de MySQL para que la aplicación no use `root`:
    ```sql
@@ -164,11 +179,12 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-13 tests de integración (usuarios, CRUD de contenedores + autorización
-por rol, máquina de estados de incidencias completa) contra una base
-de datos de test separada (`sigeru_test`, nunca toca la de desarrollo).
-Ver `tests/README.md` para el detalle de qué cubren y cómo correrlos
-con PHPUnit real.
+20 tests de integración (usuarios, CRUD de contenedores + autorización
+por rol, máquina de estados de incidencias de 3 pasos + quién puede
+resolver, rol editable y cuadrilla estable) contra una base de datos de
+test separada (`sigeru_test`, nunca toca la de desarrollo). Ver
+`tests/README.md` para el detalle de qué cubren y cómo correrlos con
+PHPUnit real.
 
 ## Notas de diseño
 
@@ -185,15 +201,42 @@ con PHPUnit real.
   (RN21) y el reporte de incidencias tampoco requieren sesión: en
   `api-incidencias/registrar.php` se identifica solo con su email (se
   reutiliza el VECINO si ese email ya existe, o se crea uno nuevo).
-- Máquina de estados de INCIDENCIA (RF18-RF20): PENDIENTE/ESCALADA →
-  ASIGNADA se hace en `asignar_cuadrilla.php` (requiere elegir cuadrilla,
-  solo Administrador); ASIGNADA → EN_PROCESO → RESUELTA|ESCALADA se hace
-  en `actualizar_estado.php` (cualquier staff logueado), que valida la
-  transición contra el Diagrama de Estados y rechaza las que no
-  corresponden. Si el tipo de incidencia es "Desborde", el contenedor
-  pasa a DESBORDADO automáticamente al reportarse, y vuelve a OPERATIVO
-  al resolverse (simplificación: no chequea si hay otra incidencia
-  abierta sobre el mismo contenedor).
+- **Rol editable (Administrador/Recolector/Chofer)**: lo que el panel de
+  Usuarios llama "rol" combina `USUARIO.tipo_usuario` (la generalización
+  RN01) con `OPERARIO.cargo` (ahora `ENUM('CHOFER','RECOLECTOR')`, ya no
+  texto libre). Cambiar el rol vía `PUT api-usuarios/usuarios.php { ci,
+  rol }` puede significar solo un `UPDATE OPERARIO.cargo` (Recolector ↔
+  Chofer) o, si cambia entre Administrador y Operario, una transacción que
+  borra la fila hija vieja → actualiza `tipo_usuario` → inserta la fila
+  hija nueva (los triggers de RN01 bloquean el `UPDATE` de `tipo_usuario`
+  mientras exista la fila hija vieja, así que hay que borrarla primero).
+  Un Administrador no puede cambiarse el rol a sí mismo (409), para no
+  quedarse afuera sin querer. Al mover a alguien fuera de OPERARIO, o
+  cambiarle el cargo, se limpia automáticamente cualquier cuadrilla
+  estable donde figurara como chofer o recolector (por las FK `ON DELETE
+  SET NULL`/`CASCADE`, más una limpieza explícita cuando solo cambia el
+  cargo dentro de OPERARIO).
+- **Cuadrilla estable** (`CUADRILLA.id_camion`/`id_chofer` + la tabla N:M
+  `CUADRILLA_RECOLECTOR`): es "quién maneja qué camión y con quién" de
+  forma permanente, para que el Recolector/Chofer sepan "la cuadrilla que
+  les toca" sin depender de que exista una `ASIGNACION_DIARIA` para hoy.
+  Es un concepto **adicional** a `ASIGNACION_DIARIA`/`ASIGNACION_OPERARIO`
+  (que sigue existiendo para el detalle de fecha/turno/ruta puntual, RF23/
+  RF25) — no lo reemplaza. Un camión o un operario (como chofer o como
+  recolector) solo puede estar en una cuadrilla estable a la vez (UNIQUE
+  KEY en la base); `api-gestion/cuadrillas.php` valida esto y devuelve un
+  mensaje claro en vez de un error de MySQL.
+- **Máquina de estados de INCIDENCIA simplificada a 3 estados** (RF18-RF20):
+  PENDIENTE → EN_PROCESO se hace en `asignar_cuadrilla.php` (elegir
+  cuadrilla, solo Administrador, pasa directo a EN_PROCESO — ya no hay un
+  estado intermedio "ASIGNADA"); EN_PROCESO → RESUELTA se hace en
+  `actualizar_estado.php`, restringido a Administrador o al Operario con
+  cargo CHOFER (`requerirPuedeResolverIncidencia()` en `Comun/
+  funciones.php` — el Recolector puede ver el estado pero no cerrarla). Si
+  el tipo de incidencia es "Desborde", el contenedor pasa a DESBORDADO
+  automáticamente al reportarse, y vuelve a OPERATIVO al resolverse
+  (simplificación: no chequea si hay otra incidencia abierta sobre el
+  mismo contenedor).
 - Asignación diaria (RF23): la crea el Administrador (se resuelve
   `id_administrador` a partir de su sesión) y junta cuadrilla + ruta +
   camión + una lista de operarios con rol ("Chofer"/"Recolector") vía
@@ -219,26 +262,40 @@ con PHPUnit real.
   algo las referencia (ej. una asignación diaria), el DELETE se rechaza
   con un mensaje claro en vez de romper con un error de MySQL.
 
-## Dashboard y navegación
+## Dashboards por rol y navegación
 
-Al loguearse, el ADMINISTRADOR cae en `dashboard.html` (RF12: tarjetas con
-conteos reales — contenedores totales/desbordados, camiones disponibles,
-cuadrillas, rutas, instalaciones); el OPERARIO cae en `panel_incidencias.html`
-directamente, porque es su responsabilidad principal por ahora. El nav de
-arriba (`js/nav_admin.js`, inyectado en cualquier página que tenga
-`<div id="navAdmin">` y `<body data-pagina="...">`) lleva a Dashboard,
-"Gestión de recursos" (`panel_gestion.html`), "Incidencias"
-(`panel_incidencias.html`), "Recolección" (`panel_recoleccion.html`) y
-"Asignación diaria" (acceso directo a esa pestaña de Recolección, sin pasar
-primero por la pestaña de Descargas/Mantenimiento). El mismo nav resuelve
-"Cerrar sesión" (llama a `logout.php` y vuelve a la landing) y muestra el
-nombre del usuario logueado vía `api-usuarios/quien_soy.php`.
+Cada rol ve un panel distinto (según lo que necesita para su tarea, no el
+sistema completo):
 
-El panel de control del Dashboard además muestra un gráfico de incidencias
-agrupadas por estado (Pendientes / En proceso / Resueltas — ASIGNADA,
-EN_PROCESO y ESCALADA cuentan como "en proceso" porque ya tienen cuadrilla
-o el trabajo arrancó) y una tabla con las 5 incidencias más recientes, con
-link a `panel_incidencias.html?estado=...` para ver el detalle ya filtrado.
+- **Administrador**: al loguearse cae en `dashboard.html` (RF12: tarjetas
+  con conteos reales, gráfico de incidencias por estado y las 5 más
+  recientes). Ve el nav completo: Dashboard, "Gestión de recursos"
+  (`panel_gestion.html`, incluye Usuarios con el rol editable y Cuadrillas
+  con la cuadrilla estable), "Incidencias" (`panel_incidencias.html`,
+  gestión de TODAS las incidencias), "Recolección"
+  (`panel_recoleccion.html`) y "Asignación diaria" (acceso directo a esa
+  pestaña de Recolección).
+- **Recolector**: cae en `mi_dia.html` — su cuadrilla (camión, chofer,
+  compañeros), su asignación diaria de hoy (reutiliza `?mias=1` de
+  `asignaciones.php`) y las incidencias de su cuadrilla (sin poder
+  resolverlas). Su nav solo tiene "Mi día".
+- **Chofer**: lo mismo que el Recolector en `mi_dia.html`, más el botón
+  para marcar una incidencia de su cuadrilla como resuelta, y un link a
+  "Recolección" — ahí solo ve la pestaña Descargas (las de Asignación
+  diaria/Mantenimiento son de Administrador), con su propio camión
+  preseleccionado, para registrar sus descargas (RF24).
+
+`js/sesion.js` (`obtenerSesion()`/`rolDeSesion()`/`exigirAdministrador()`)
+centraliza el fetch a `api-usuarios/quien_soy.php` y lo usa tanto
+`js/nav_admin.js` (arma el menú según el rol) como cada página para
+decidir qué mostrar; `dashboard.js` y `panel_gestion.js` redirigen a
+`mi_dia.html` si quien entra no es Administrador. Esto es una restricción
+de UI (como ya hacía el nav mostrando/ocultando links), no de seguridad:
+la autorización real sigue estando en el backend (`requerirRolAdministrador()`,
+`requerirPuedeResolverIncidencia()`, etc.) — ver "Notas de diseño".
+
+El nav resuelve "Cerrar sesión" (llama a `logout.php` y vuelve a la
+landing) y muestra el nombre y rol del usuario logueado.
 
 Con esto, los 4 paquetes del backend del Diagrama de Paquetes
 (api-usuarios, api-gestion, api-incidencias, api-recoleccion) ya existen y
@@ -256,8 +313,10 @@ asignación diaria).
   de gestión; se podría replicar/enlazar también desde el Dashboard, y
   extender la misma lógica de dirección+geocodificación a Instalaciones
   (que todavía usa coordenadas a mano).
-- Un panel propio para el Operario más orientado a "mis tareas de hoy"
-  (incidencias asignadas a su cuadrilla + su asignación diaria del día)
-  en vez de los listados completos que hoy comparte con el Administrador.
 - Auditoría (RF16, RN18): la tabla AUDITORIA existe pero ningún endpoint
-  todavía inserta ahí cuando un Administrador hace una acción crítica.
+  todavía inserta ahí cuando un Administrador hace una acción crítica —
+  un buen primer caso sería justo el cambio de rol de un usuario.
+- Restringir "resolver incidencia" al Chofer de ESA cuadrilla específica
+  (hoy cualquier Chofer puede resolver cualquier incidencia EN_PROCESO,
+  no solo las de su propia cuadrilla — simplificación consciente de esta
+  vuelta, ver `requerirPuedeResolverIncidencia()`).

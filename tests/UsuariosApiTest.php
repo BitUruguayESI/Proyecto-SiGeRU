@@ -36,7 +36,7 @@ final class UsuariosApiTest extends TestCase
             'email' => "test{$ci}@sigeru.uy",
             'nombre_completo' => 'Test Operario',
             'tipo_usuario' => 'OPERARIO',
-            'cargo' => 'Recolector',
+            'cargo' => 'RECOLECTOR',
             'telefonos' => ['099111222', '26005555'],
         ]);
         self::assertSame(201, $registro['codigo']);
@@ -125,7 +125,7 @@ final class UsuariosApiTest extends TestCase
             'email' => "baja{$ciBaja}@sigeru.uy",
             'nombre_completo' => 'Para Dar De Baja',
             'tipo_usuario' => 'OPERARIO',
-            'cargo' => 'Recolector',
+            'cargo' => 'RECOLECTOR',
         ]);
 
         $baja = $sesionAdmin->delete('/api-usuarios/usuarios.php', ['ci' => $ciBaja]);
