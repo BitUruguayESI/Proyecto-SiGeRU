@@ -4,58 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiGeRU — Registrar usuario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body data-pagina="registro">
-  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
-  <div id="navAdmin"></div>
+  <div class="dashboard">
+    <div id="navAdmin"></div>
 
-  <main>
-    <h2>Registrar nuevo usuario</h2>
-    <p style="font-size:14px; color:var(--texto-tenue); margin-top:-6px;">
-      Solo un Administrador puede crear cuentas de Operario o Administrador.
-    </p>
-    <form id="formRegistro" novalidate>
-      <label for="ci">Cédula de identidad</label>
-      <input type="text" id="ci" name="ci" placeholder="Sin puntos ni guion" required>
-
-      <label for="nombre_completo">Nombre completo</label>
-      <input type="text" id="nombre_completo" name="nombre_completo" required>
-
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required>
-
-      <label for="contrasena">Contraseña</label>
-      <input type="password" id="contrasena" name="contrasena" minlength="8" required>
-
-      <label for="confirmar_contrasena">Confirmar contraseña</label>
-      <input type="password" id="confirmar_contrasena" required>
-
-      <label for="tipo_usuario">Tipo de usuario</label>
-      <select id="tipo_usuario" name="tipo_usuario" required>
-        <option value="">Seleccionar...</option>
-        <option value="OPERARIO">Operario</option>
-        <option value="ADMINISTRADOR">Administrador</option>
-      </select>
-
-      <div id="bloqueCargo" class="oculto">
-        <label for="cargo">Cargo</label>
-        <select id="cargo" name="cargo">
-          <option value="">Seleccionar...</option>
-          <option value="RECOLECTOR">Recolector</option>
-          <option value="CHOFER">Chofer</option>
-        </select>
+    <div class="contenido">
+      <div class="topbar">
+        <h1>Registrar usuario</h1>
+        <div id="rolUsuario"></div>
       </div>
 
-      <label>Teléfono(s)</label>
-      <div id="listaTelefonos"></div>
-      <button type="button" id="btnAgregarTelefono" class="secundario" style="margin-top:6px;">+ Agregar teléfono</button>
+      <div class="form-container" style="max-width:600px;">
+        <p class="form-subtitle" style="margin-bottom:20px;">
+          Solo un Administrador puede crear cuentas de Operario o Administrador.
+        </p>
+        <form id="formRegistro" novalidate>
+          <div class="input-group">
+            <label for="ci">Cédula de identidad</label>
+            <input type="text" id="ci" name="ci" placeholder="Sin puntos ni guion" required>
+          </div>
 
-      <button type="submit" class="principal">Registrar usuario</button>
-      <div id="mensaje" class="mensaje"></div>
-      <a class="enlace-secundario" href="panel_gestion.html#usuarios">Volver a Gestión de recursos</a>
-    </form>
-  </main>
+          <div class="input-group">
+            <label for="nombre_completo">Nombre completo</label>
+            <input type="text" id="nombre_completo" name="nombre_completo" required>
+          </div>
+
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="input-group">
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" name="contrasena" minlength="8" required>
+          </div>
+
+          <div class="input-group">
+            <label for="confirmar_contrasena">Confirmar contraseña</label>
+            <input type="password" id="confirmar_contrasena" required>
+          </div>
+
+          <div class="input-group">
+            <label for="tipo_usuario">Tipo de usuario</label>
+            <select id="tipo_usuario" name="tipo_usuario" required>
+              <option value="">Seleccionar...</option>
+              <option value="OPERARIO">Operario</option>
+              <option value="ADMINISTRADOR">Administrador</option>
+            </select>
+          </div>
+
+          <div id="bloqueCargo" class="input-group oculto">
+            <label for="cargo">Cargo</label>
+            <select id="cargo" name="cargo">
+              <option value="">Seleccionar...</option>
+              <option value="RECOLECTOR">Recolector</option>
+              <option value="CHOFER">Chofer</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Teléfono(s)</label>
+            <div id="listaTelefonos"></div>
+            <button type="button" id="btnAgregarTelefono" class="secundario" style="margin-top:6px;">+ Agregar teléfono</button>
+          </div>
+
+          <button type="submit" class="principal">Registrar usuario</button>
+          <div id="mensaje" class="mensaje"></div>
+          <div class="form-footer">
+            <a href="panel_gestion.html#usuarios">Volver a Gestión de recursos</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>

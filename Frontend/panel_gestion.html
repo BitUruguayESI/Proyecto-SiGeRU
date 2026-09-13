@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiGeRU — Panel de gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
@@ -11,12 +14,15 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
-  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
-  <div id="navAdmin"></div>
+  <div class="dashboard">
+    <div id="navAdmin"></div>
 
-  <main class="panel">
-    <h2 style="margin-top:0;">Gestión de recursos</h2>
-    <div id="mensajeGlobal" class="mensaje"></div>
+    <div class="contenido">
+      <div class="topbar">
+        <h1>Gestión de recursos</h1>
+        <div id="rolUsuario"></div>
+      </div>
+      <div id="mensajeGlobal" class="mensaje"></div>
 
     <nav class="pestanias">
       <button data-seccion="usuarios">Usuarios</button>
@@ -44,7 +50,7 @@
       </table>
       <div class="formulario-alta">
         <h3>Editar usuario</h3>
-        <p id="usu_sin_seleccion" style="color:var(--texto-tenue);">Elegí "Editar" en un usuario de la tabla para modificarlo acá.</p>
+        <p id="usu_sin_seleccion" style="color:#a0aec0;">Elegí "Editar" en un usuario de la tabla para modificarlo acá.</p>
         <form id="formUsuario" hidden>
           <input type="hidden" id="usu_ci">
           <p><strong>CI: <span id="usu_ci_visible"></span></strong></p>
@@ -121,7 +127,7 @@
 
     <!-- ===================== CUADRILLAS ===================== -->
     <section id="seccion-cuadrillas" class="seccion-panel">
-      <p style="color:var(--texto-tenue); font-size:13px; margin-top:0;">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
         La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
         el Chofer y los Recolectores en su panel "Mi día".
       </p>
@@ -262,7 +268,8 @@
         </form>
       </div>
     </section>
-  </main>
+    </div>
+  </div>
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>

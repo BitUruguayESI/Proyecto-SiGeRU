@@ -42,7 +42,7 @@ async function cargarMiCuadrilla() {
   const cuadrilla = datos.exito ? datos.cuadrilla : null;
 
   if (!cuadrilla) {
-    div.innerHTML = '<p style="color:var(--texto-tenue);">Todavía no te asignaron a ninguna cuadrilla.</p>';
+    div.innerHTML = '<p style="color:#a0aec0;">Todavía no te asignaron a ninguna cuadrilla.</p>';
     return null;
   }
 
@@ -62,7 +62,7 @@ async function cargarMiAsignacion() {
   const asignaciones = datos.exito ? datos.asignaciones : [];
 
   if (!asignaciones.length) {
-    div.innerHTML = '<p style="color:var(--texto-tenue);">No tenés una asignación diaria cargada para hoy.</p>';
+    div.innerHTML = '<p style="color:#a0aec0;">No tenés una asignación diaria cargada para hoy.</p>';
     return;
   }
 
@@ -78,7 +78,7 @@ async function cargarMisIncidencias(idCuadrilla, puedeResolver) {
   cuerpo.innerHTML = '';
 
   if (!idCuadrilla) {
-    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--texto-tenue);">Sin cuadrilla asignada todavía.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">Sin cuadrilla asignada todavía.</td></tr>';
     return;
   }
 
@@ -86,7 +86,7 @@ async function cargarMisIncidencias(idCuadrilla, puedeResolver) {
   const incidencias = datos.exito ? datos.incidencias : [];
 
   if (!incidencias.length) {
-    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--texto-tenue);">Tu cuadrilla no tiene incidencias asignadas.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">Tu cuadrilla no tiene incidencias asignadas.</td></tr>';
     return;
   }
 

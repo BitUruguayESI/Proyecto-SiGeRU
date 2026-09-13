@@ -58,7 +58,7 @@ async function cargarIncidencias() {
   if (!datos.exito) return;
 
   if (!datos.incidencias.length) {
-    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--texto-tenue);">No hay incidencias para este filtro.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#a0aec0;">No hay incidencias para este filtro.</td></tr>';
     return;
   }
 

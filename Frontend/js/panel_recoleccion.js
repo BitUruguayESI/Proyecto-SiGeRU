@@ -104,7 +104,7 @@ function actualizarInfoCuadrilla() {
     <p><strong>Chofer:</strong> ${cuadrilla.chofer_nombre || 'sin asignar'}</p>
     <p><strong>Recolectores:</strong> ${nombresRecolectores.join(', ') || 'sin recolectores asignados'}</p>
     ${(!cuadrilla.id_camion || !cuadrilla.id_chofer)
-      ? '<p style="color:var(--rojo);">Esta cuadrilla todavía no tiene camión y/o chofer asignado. Asignalo primero en Gestión → Cuadrillas.</p>'
+      ? '<p style="color:#fc8181;">Esta cuadrilla todavía no tiene camión y/o chofer asignado. Asignalo primero en Gestión → Cuadrillas.</p>'
       : ''}
   `;
 
@@ -134,7 +134,7 @@ async function cargarAsignaciones() {
   asignacionesPorId = {};
 
   if (!datos.asignaciones.length) {
-    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--texto-tenue);">No hay asignaciones para este filtro.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#a0aec0;">No hay asignaciones para este filtro.</td></tr>';
     return;
   }
 
@@ -247,7 +247,7 @@ async function cargarDescargas() {
   if (!datos.exito) return;
 
   if (!datos.descargas.length) {
-    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--texto-tenue);">Todavía no hay descargas registradas.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#a0aec0;">Todavía no hay descargas registradas.</td></tr>';
     return;
   }
 
@@ -289,7 +289,7 @@ async function cargarMantenimiento() {
   if (!datos.exito) return;
 
   if (!datos.mantenimientos.length) {
-    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--texto-tenue);">No hay mantenimientos registrados.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#a0aec0;">No hay mantenimientos registrados.</td></tr>';
     return;
   }
 
