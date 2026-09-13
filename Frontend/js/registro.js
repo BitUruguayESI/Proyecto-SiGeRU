@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const sesion = await obtenerSesion();
+  if (!exigirAdministrador(sesion)) return;
+
   const form = document.getElementById('formRegistro');
   const selectTipo = document.getElementById('tipo_usuario');
   const bloqueCargo = document.getElementById('bloqueCargo');
@@ -66,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const resultado = await respuesta.json();
 
       if (resultado.exito) {
-        mostrarMensaje('Registro exitoso. Ya podés iniciar sesión.', 'exito');
+        mostrarMensaje('Usuario registrado correctamente.', 'exito');
         form.reset();
         bloqueCargo.classList.add('oculto');
       } else {

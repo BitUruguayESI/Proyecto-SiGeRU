@@ -31,6 +31,13 @@ document.querySelectorAll('.pestanias button').forEach(boton => {
   });
 });
 
+// Permite entrar directo a una pestaña por link (ej. desde "Registrar
+// nuevo usuario": panel_gestion.html#usuarios).
+if (location.hash) {
+  const boton = document.querySelector(`.pestanias button[data-seccion="${location.hash.slice(1)}"]`);
+  if (boton) boton.click();
+}
+
 // ---------------------------------------------------------------
 // USUARIOS (CRUD completo: listar todos, editar, dar de baja/reactivar)
 // ---------------------------------------------------------------

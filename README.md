@@ -301,7 +301,14 @@ sistema completo):
   con la cuadrilla estable), "Incidencias" (`panel_incidencias.html`,
   gestión de TODAS las incidencias), "Recolección"
   (`panel_recoleccion.html`) y "Asignación diaria" (acceso directo a esa
-  pestaña de Recolección).
+  pestaña de Recolección). Desde "Gestión de recursos" → Usuarios tiene
+  un botón "+ Registrar nuevo usuario" que lleva a `registro.html` —
+  esa página dejó de ser pública: ya no está linkeada desde la landing
+  ni desde `login.html`, y al entrar hace `exigirAdministrador()` (te
+  manda a `login.html`/`mi_dia.html` si no sos Administrador logueado).
+  La landing (`landing.html`) ahora solo ofrece "Reportar una
+  incidencia" y "Realizar una consulta" al público; "Iniciar sesión"
+  quedó como link en la esquina superior derecha del encabezado.
 - **Recolector**: cae en `mi_dia.html` — su cuadrilla (camión, chofer,
   compañeros), su asignación diaria de hoy (reutiliza `?mias=1` de
   `asignaciones.php`) y las incidencias de su cuadrilla (sin poder
@@ -315,11 +322,18 @@ sistema completo):
 `js/sesion.js` (`obtenerSesion()`/`rolDeSesion()`/`exigirAdministrador()`)
 centraliza el fetch a `api-usuarios/quien_soy.php` y lo usa tanto
 `js/nav_admin.js` (arma el menú según el rol) como cada página para
-decidir qué mostrar; `dashboard.js` y `panel_gestion.js` redirigen a
-`mi_dia.html` si quien entra no es Administrador. Esto es una restricción
+decidir qué mostrar; `dashboard.js`, `panel_gestion.js` y ahora también
+`registro.js` redirigen a `mi_dia.html` (o a `login.html` si no hay
+sesión) si quien entra no es Administrador. Esto es una restricción
 de UI (como ya hacía el nav mostrando/ocultando links), no de seguridad:
-la autorización real sigue estando en el backend (`requerirRolAdministrador()`,
-`requerirPuedeResolverIncidencia()`, etc.) — ver "Notas de diseño".
+`api-usuarios/registro.php` en sí sigue siendo un endpoint público (sin
+`requerirRolAdministrador()`) — se mantuvo así a propósito porque es lo
+que usan los tests para crear sus propios usuarios de prueba sin depender
+de una sesión previa, y porque en una instalación nueva sin
+`datos_prueba.sql` es la única forma de crear el primer Administrador.
+La autorización real para las acciones que sí importan sigue estando en
+el backend (`requerirRolAdministrador()`, `requerirPuedeResolverIncidencia()`,
+etc.) — ver "Notas de diseño" y "Próximos pasos sugeridos".
 
 El nav resuelve "Cerrar sesión" (llama a `logout.php` y vuelve a la
 landing) y muestra el nombre y rol del usuario logueado.
@@ -347,3 +361,12 @@ asignación diaria).
   (hoy cualquier Chofer puede resolver cualquier incidencia EN_PROCESO,
   no solo las de su propia cuadrilla — simplificación consciente de esta
   vuelta, ver `requerirPuedeResolverIncidencia()`).
+- Agregarle a `api-usuarios/registro.php` un `requerirRolAdministrador()`
+  para que crear usuarios sea también una restricción de backend, no solo
+  de UI (hoy `registro.html` está protegida en la página, pero el
+  endpoint en sí sigue aceptando el alta sin sesión si se lo llama
+  directo). Se dejó así a propósito esta vuelta para no tener que
+  reescribir el bootstrap de los 24 tests (todos se autoregistran su
+  propio Administrador de prueba antes de loguearse); si se hace este
+  cambio, esos tests necesitan loguearse primero con un Administrador
+  ya sembrado por `datos_prueba.sql`.

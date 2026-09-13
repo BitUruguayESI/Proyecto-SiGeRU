@@ -19,12 +19,28 @@ body {
 header.banner {
   background: var(--azul-claro);
   padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 header.banner h1 {
   color: #fff;
   margin: 0;
   font-size: 22px;
 }
+header.banner a.enlace-header {
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 5px;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+header.banner a.enlace-header:hover { background: rgba(255,255,255,0.15); }
 
 main {
   max-width: 480px;
@@ -107,6 +123,20 @@ button.secundario {
 .enlace-secundario:hover { text-decoration: underline; }
 
 .oculto { display: none !important; }
+
+a.boton-enlace {
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--azul-claro);
+  color: #fff;
+  padding: 9px 14px;
+  margin-bottom: 14px;
+}
+a.boton-enlace:hover { background: var(--azul); }
 
 /* ---- Paneles de gestión (tablas, pestañas) ---- */
 main.panel { max-width: 960px; }

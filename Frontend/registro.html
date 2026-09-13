@@ -3,14 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SiGeRU — Registro</title>
+<title>SiGeRU — Registrar usuario</title>
 <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body>
+<body data-pagina="registro">
   <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
 
   <main>
-    <h2>Registro de usuario</h2>
+    <h2>Registrar nuevo usuario</h2>
+    <p style="font-size:14px; color:#555; margin-top:-6px;">
+      Solo un Administrador puede crear cuentas de Operario o Administrador.
+    </p>
     <form id="formRegistro" novalidate>
       <label for="ci">Cédula de identidad</label>
       <input type="text" id="ci" name="ci" placeholder="Sin puntos ni guion" required>
@@ -47,12 +51,14 @@
       <div id="listaTelefonos"></div>
       <button type="button" id="btnAgregarTelefono" class="secundario" style="margin-top:6px;">+ Agregar teléfono</button>
 
-      <button type="submit" class="principal">Registrarme</button>
+      <button type="submit" class="principal">Registrar usuario</button>
       <div id="mensaje" class="mensaje"></div>
-      <a class="enlace-secundario" href="login.html">¿Ya tenés cuenta? Iniciar sesión</a>
+      <a class="enlace-secundario" href="panel_gestion.html#usuarios">Volver a Gestión de recursos</a>
     </form>
   </main>
 
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
   <script src="js/registro.js"></script>
 </body>
 </html>
