@@ -23,12 +23,13 @@ function tarjeta(numero, etiqueta, alerta = false) {
 }
 
 // Agrupa los 5 estados reales de INCIDENCIA en las 3 categorías que pide el
-// panel de control: Pendientes (PENDIENTE + ESCALADA, necesitan que se les
-// asigne/reasigne cuadrilla), En proceso (ASIGNADA + EN_PROCESO, ya tienen
-// cuadrilla y el trabajo está en curso) y Resueltas (RESUELTA).
+// panel de control: Pendientes (PENDIENTE, todavía sin ninguna cuadrilla
+// asignada), En proceso (ASIGNADA + EN_PROCESO + ESCALADA — ya se les dio
+// cuadrilla y/o el trabajo arrancó, aunque haya quedado escalada para
+// reasignar) y Resueltas (RESUELTA).
 const GRUPOS_ESTADO = [
-  { clave: 'pendientes', etiqueta: 'Pendientes', estados: ['PENDIENTE', 'ESCALADA'], color: 'rojo' },
-  { clave: 'en_proceso', etiqueta: 'En proceso', estados: ['ASIGNADA', 'EN_PROCESO'], color: 'azul' },
+  { clave: 'pendientes', etiqueta: 'Pendientes', estados: ['PENDIENTE'], color: 'rojo' },
+  { clave: 'en_proceso', etiqueta: 'En proceso', estados: ['ASIGNADA', 'EN_PROCESO', 'ESCALADA'], color: 'azul' },
   { clave: 'resueltas', etiqueta: 'Resueltas', estados: ['RESUELTA'], color: 'verde' },
 ];
 
