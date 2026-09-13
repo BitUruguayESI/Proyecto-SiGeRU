@@ -29,6 +29,7 @@
       <button data-seccion="camiones">Camiones</button>
       <button data-seccion="instalaciones">Instalaciones</button>
       <button data-seccion="maquinaria">Maquinaria</button>
+      <button data-seccion="retiros">Retiros especiales</button>
     </nav>
 
     <!-- ===================== USUARIOS ===================== -->
@@ -264,6 +265,28 @@
           <button type="button" class="secundario" id="rep_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
+    </section>
+
+    <!-- ===================== RETIROS ESPECIALES ===================== -->
+    <section id="seccion-retiros" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+        Solicitudes públicas de retiro de residuos que no van al contenedor común
+        (poda, residuos electrónicos, escombros, muebles, etc.). No tienen un día
+        fijo: coordiná el retiro con el vecino por email y marcá la solicitud como
+        retirada cuando se complete.
+      </p>
+      <label for="ret_filtro_estado">Filtrar por estado</label>
+      <select id="ret_filtro_estado" style="max-width:260px; margin-bottom:12px;">
+        <option value="">Todos</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="RETIRADO">Retirado</option>
+      </select>
+      <table class="tabla-datos">
+        <thead>
+          <tr><th>ID</th><th>Tipo de residuo</th><th>Dirección</th><th>Descripción</th><th>Email</th><th>Estado</th><th>Fecha solicitud</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaRetiros"></tbody>
+      </table>
     </section>
   </main>
 

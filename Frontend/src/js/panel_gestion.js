@@ -878,6 +878,58 @@ document.getElementById('formMaquinaria').addEventListener('submit', async (even
 });
 
 // ---------------------------------------------------------------
+// RETIROS ESPECIALES (solicitudes públicas: poda, residuos electrónicos,
+// escombros, muebles, etc. — no tienen día fijo, se coordinan por
+// solicitud; acá solo se listan y se marcan como retiradas)
+// ---------------------------------------------------------------
+const BASE_RET = '../api-retiros';
+const ETIQUETAS_ESTADO_RETIRO = { PENDIENTE: 'Pendiente', RETIRADO: 'Retirado' };
+
+async function cargarRetiros() {
+  const estado = document.getElementById('ret_filtro_estado').value;
+  const url = estado ? `${BASE_RET}/listar.php?estado=${encodeURIComponent(estado)}` : `${BASE_RET}/listar.php`;
+  const datos = await llamar(url);
+  const cuerpo = document.getElementById('tablaRetiros');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  if (!datos.solicitudes.length) {
+    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#a0aec0;">No hay solicitudes para este filtro.</td></tr>';
+    return;
+  }
+
+  datos.solicitudes.forEach(s => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${s.id_solicitud}</td>
+      <td>${s.tipo_residuo}</td>
+      <td>${s.direccion}</td>
+      <td>${s.descripcion || '—'}</td>
+      <td>${s.vecino_email || '—'}</td>
+      <td>${ETIQUETAS_ESTADO_RETIRO[s.estado] || s.estado}</td>
+      <td>${s.fecha_registro}</td>
+      <td>${s.estado === 'PENDIENTE'
+        ? `<button class="chico btn-marcar-retirado" data-id="${s.id_solicitud}">Marcar retirado</button>`
+        : `Retirado el ${s.fecha_retiro || '—'}`}</td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.btn-marcar-retirado').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE_RET}/actualizar_estado.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ id_solicitud: Number(boton.dataset.id) }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarRetiros();
+    });
+  });
+}
+
+document.getElementById('ret_filtro_estado').addEventListener('change', cargarRetiros);
+
+// ---------------------------------------------------------------
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
@@ -895,4 +947,5 @@ document.getElementById('formMaquinaria').addEventListener('submit', async (even
   await cargarInstalaciones();
   await cargarRepuestos();   // antes de maquinaria, porque llena el <select> de repuestos
   await cargarMaquinaria();
+  await cargarRetiros();
 })();

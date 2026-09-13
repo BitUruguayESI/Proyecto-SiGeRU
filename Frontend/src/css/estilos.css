@@ -1311,3 +1311,51 @@ body[data-pagina="registro"] main {
     text-decoration: none;
 }
 .enlace-secundario:hover { text-decoration: underline; color: #00f2fe; }
+
+/* ==========================================================================
+   15. SOLICITAR RETIRO DE RESIDUOS ESPECIALES
+   ========================================================================== */
+.contenedor-retiro {
+    flex: 1;
+    display: flex;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+    padding: 60px 40px;
+    flex-wrap: wrap;
+}
+
+.contenedor-retiro .form-container {
+    max-width: 480px;
+}
+
+.imagen-zonas-wrapper {
+    flex: 1;
+    min-width: 280px;
+    max-width: 380px;
+    text-align: center;
+}
+
+.imagen-zonas-wrapper img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.imagen-zonas-wrapper p {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #a0aec0;
+    line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+    .contenedor-retiro {
+        flex-direction: column-reverse;
+        padding: 40px 24px;
+    }
+}

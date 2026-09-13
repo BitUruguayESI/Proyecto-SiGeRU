@@ -46,21 +46,27 @@ sigeru/
       api-incidencias/   contenedores_disponibles.php, registrar.php, listar.php,
                          asignar_cuadrilla.php, actualizar_estado.php
       api-recoleccion/   asignaciones.php, descargas.php, mantenimiento.php
+      api-retiros/       registrar.php, listar.php, actualizar_estado.php
+                         (retiro de residuos especiales: poda, residuos
+                         electrónicos, escombros, muebles, etc. — no van
+                         al contenedor común, se coordinan por solicitud)
 
   Frontend/              contenedor nginx (estático + proxy de /api-* al backend)
     Dockerfile
     nginx.conf
     src/                 landing.html, login.html, registro.html, consulta.html,
-                         reportar_incidencia.html, dashboard.html,
-                         panel_gestion.html, panel_incidencias.html,
-                         panel_recoleccion.html, mi_dia.html (Recolector/
-                         Chofer), css/, js/ (incluye sesion.js, compartido
-                         por nav_admin.js y las páginas que necesitan saber
-                         el rol de la sesión activa), img/ (logo)
+                         reportar_incidencia.html, solicitar_retiro.html,
+                         dashboard.html, panel_gestion.html,
+                         panel_incidencias.html, panel_recoleccion.html,
+                         mi_dia.html (Recolector/Chofer), css/, js/ (incluye
+                         sesion.js, compartido por nav_admin.js y las
+                         páginas que necesitan saber el rol de la sesión
+                         activa), img/ (logo + mapa de zonas decorativo)
 
-  sql/                   sigeru_schema.sql (26 tablas), datos_prueba.sql,
-                         actualizar_contenedor_direccion.sql y
-                         actualizar_roles_cuadrillas_incidencias.sql
+  sql/                   sigeru_schema.sql (27 tablas), datos_prueba.sql,
+                         actualizar_contenedor_direccion.sql,
+                         actualizar_roles_cuadrillas_incidencias.sql y
+                         agregar_solicitud_retiro.sql
                          (migraciones, ver "Cómo levantarlo")
   tests/                 tests de integración de la API (ver tests/README.md)
   phpunit.xml, composer.json
@@ -98,6 +104,7 @@ viajan igual que si fuera un único servidor.
    ```
    mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/actualizar_contenedor_direccion.sql
    mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/actualizar_roles_cuadrillas_incidencias.sql
+   mysql -u root -p --default-character-set=utf8mb4 sigeru < sql/agregar_solicitud_retiro.sql
    ```
    ⚠️ **Importante**: la segunda es la que agrega el rol editable
    (Administrador/Recolector/Chofer), la cuadrilla estable (camión + chofer
@@ -106,7 +113,8 @@ viajan igual que si fuera un único servidor.
    ver el mismo tipo de error de "columna no existe" que dio la falta de la
    migración de `direccion` (JSON roto en el Dashboard y en Usuarios/
    Cuadrillas) — hacé un respaldo antes si tenés datos que te importen; el
-   archivo tiene el detalle de qué hace cada paso.
+   archivo tiene el detalle de qué hace cada paso. La tercera agrega la
+   tabla `SOLICITUD_RETIRO` (retiro de residuos especiales, ver más abajo).
 
 2. Crear un usuario de MySQL para que la aplicación no use `root`:
    ```sql
@@ -125,7 +133,7 @@ viajan igual que si fuera un único servidor.
    export SIGERU_DB_PASS=elegí-una-clave
    ```
 
-4. Levantar el backend (sirve los 4 paquetes de la API):
+4. Levantar el backend (sirve los 5 paquetes de la API):
    ```
    php -S 127.0.0.1:8000 -t Backend/src
    ```
@@ -151,15 +159,15 @@ Esto levanta 3 contenedores:
 - `db` — MariaDB 11; al crearse por primera vez carga automáticamente
   `sql/sigeru_schema.sql` y después `sql/datos_prueba.sql` (ver "Datos
   de prueba" abajo).
-- `backend` — PHP 8.2 + Apache sirviendo `Backend/src/` (los 4
+- `backend` — PHP 8.2 + Apache sirviendo `Backend/src/` (los 5
   paquetes de la API), configurado por variables de entorno para
   conectarse a `db`.
 - `frontend` — nginx sirviendo `Frontend/src/` (HTML/CSS/JS) y
   haciendo de proxy de `/api-usuarios/`, `/api-gestion/`,
-  `/api-incidencias/` y `/api-recoleccion/` hacia `backend` (ver
-  `Frontend/nginx.conf`) — así el navegador ve todo bajo un mismo
-  origen, sin problemas de CORS ni de cookies de sesión entre
-  contenedores.
+  `/api-incidencias/`, `/api-recoleccion/` y `/api-retiros/` hacia
+  `backend` (ver `Frontend/nginx.conf`) — así el navegador ve todo
+  bajo un mismo origen, sin problemas de CORS ni de cookies de sesión
+  entre contenedores.
 
 La app queda en `http://localhost:8080/` (landing). El backend también
 queda expuesto directo en `http://localhost:8081/` por si hace falta
@@ -213,6 +221,31 @@ enviar el formulario sin una dirección válida. El panel de incidencias
 del Administrador (`panel_incidencias.js`) también muestra la dirección
 del contenedor en vez de sus coordenadas.
 
+## Solicitar retiro de residuos especiales
+
+Reemplaza el lugar que antes ocupaba "Realizar una consulta" en la
+landing: `solicitar_retiro.html` (público, sin sesión) es un formulario
+para pedir el retiro de residuos que **no van al contenedor común**
+(poda, residuos electrónicos, escombros, muebles, etc.). El vecino
+indica el tipo de residuo, la dirección y, opcionalmente, una
+descripción, y se identifica solo con su email — mismo patrón de
+"buscar o crear VECINO por email" que usa `reportar_incidencia.html`.
+Incluye además un mapa de zonas como imagen puramente decorativa
+(`img/mapa-zonas.png`), sin datos reales de rutas ni de días de
+recolección detrás.
+
+No hay un día fijo por tipo de residuo: cada solicitud queda
+`PENDIENTE` y el Administrador coordina el día/horario con el vecino
+por email, caso a caso. El seguimiento se hace desde la pestaña
+"Retiros especiales" del panel de gestión (`panel_gestion.html`):
+lista las solicitudes (filtrables por estado) y permite marcarlas como
+`RETIRADO` (backend: `api-retiros/registrar.php`, `listar.php`,
+`actualizar_estado.php`; tabla `SOLICITUD_RETIRO`).
+
+La consulta pública original (`consulta.html`, RN21) no se eliminó:
+sigue funcionando igual que antes, solo dejó de estar linkeada desde
+la landing.
+
 ## Datos de prueba
 
 `sql/datos_prueba.sql` carga usuarios, rutas, cuadrillas, contenedores,
@@ -230,13 +263,14 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-37 tests de integración (usuarios, CRUD de contenedores + autorización
+42 tests de integración (usuarios, CRUD de contenedores + autorización
 por rol, máquina de estados de incidencias de 3 pasos + quién puede
 resolver, rol editable y cuadrilla estable, alta/edición de asignación
-diaria, reporte de incidencias por dirección, y el ciclo de vida
+diaria, reporte de incidencias por dirección, el ciclo de vida
 completo — alta/edición/baja + control de acceso por rol — de
-camiones, instalaciones, maquinaria y repuestos) contra una base de
-datos de test separada (`sigeru_test`, nunca toca la de desarrollo).
+camiones, instalaciones, maquinaria y repuestos, y solicitudes de
+retiro de residuos especiales) contra una base de datos de test
+separada (`sigeru_test`, nunca toca la de desarrollo).
 Ver `tests/README.md` para el detalle de qué cubren y cómo correrlos
 con PHPUnit real.
 
@@ -345,8 +379,11 @@ sistema completo):
   ni desde `login.html`, y al entrar hace `exigirAdministrador()` (te
   manda a `login.html`/`mi_dia.html` si no sos Administrador logueado).
   La landing (`landing.html`) ahora solo ofrece "Reportar una
-  incidencia" y "Realizar una consulta" al público; "Iniciar sesión"
-  quedó como link en la esquina superior derecha del encabezado.
+  incidencia" y "Solicitar retiro de residuos especiales" al público;
+  "Iniciar sesión" quedó como link en la esquina superior derecha del
+  encabezado. `consulta.html` (la consulta pública, RN21) sigue
+  existiendo y funcionando igual que antes — solo se desvinculó de la
+  landing al reemplazar ese lugar con el nuevo flujo de retiro.
 - **Recolector**: cae en `mi_dia.html` — su cuadrilla (camión, chofer,
   compañeros), su asignación diaria de hoy (reutiliza `?mias=1` de
   `asignaciones.php`) y las incidencias de su cuadrilla (sin poder
@@ -404,7 +441,7 @@ asignación diaria).
   de UI (hoy `registro.html` está protegida en la página, pero el
   endpoint en sí sigue aceptando el alta sin sesión si se lo llama
   directo). Se dejó así a propósito esta vuelta para no tener que
-  reescribir el bootstrap de los 37 tests (todos se autoregistran su
+  reescribir el bootstrap de los 42 tests (todos se autoregistran su
   propio Administrador de prueba antes de loguearse); si se hace este
   cambio, esos tests necesitan loguearse primero con un Administrador
   ya sembrado por `datos_prueba.sql`.
