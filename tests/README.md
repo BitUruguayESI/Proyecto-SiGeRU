@@ -36,6 +36,24 @@ Cubren:
   edición (PUT: cambiar fecha/turno/ruta y la lista de operarios sin
   borrar y recrear la asignación), que editar una asignación inexistente
   devuelva 404, y que un Operario no pueda editar asignaciones (403).
+- **CamionesApiTest** — ciclo completo de un camión (RF26): alta,
+  edición (PUT), baja lógica (DELETE deja el estado en
+  `FUERA_DE_SERVICIO`, no borra el registro), matrícula duplicada
+  rechazada (409), y que un Operario no pueda crear/editar/dar de baja
+  (solo listar).
+- **InstalacionesApiTest** — ciclo completo de una instalación (RF10/
+  RF11): alta, edición (incluido cambiar entre `CENTRO_ACOPIO` y
+  `VERTEDERO`), eliminación, `tipo_instalacion` inválido rechazado
+  (400), que no se pueda eliminar una instalación con maquinaria
+  asociada (409), y que un Operario no pueda crear/editar/eliminar
+  (solo listar).
+- **MaquinariaApiTest** — ciclo completo de una máquina y de su
+  catálogo de repuestos: alta y edición de un repuesto (incluido
+  estado inválido rechazado), alta de una máquina con repuestos
+  asociados, edición completa (nombre/estado/instalación y reemplazo
+  de los repuestos asociados) y eliminación, crear maquinaria en una
+  instalación inexistente (404), y que un Operario no pueda crear/
+  editar/eliminar ni máquinas ni repuestos (solo listar).
 
 ## Cómo correrlos
 
@@ -70,4 +88,4 @@ test**. `tests/bootstrap.php` elige automáticamente uno u otro: usa
 PHPUnit real si existe `vendor/autoload.php`, o el shim si no.
 
 Corrida en este entorno (con el runner incluido, ver más arriba):
-`Tests: 24, Fallos: 0`.
+`Tests: 37, Fallos: 0`.

@@ -194,13 +194,15 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-24 tests de integración (usuarios, CRUD de contenedores + autorización
+37 tests de integración (usuarios, CRUD de contenedores + autorización
 por rol, máquina de estados de incidencias de 3 pasos + quién puede
 resolver, rol editable y cuadrilla estable, alta/edición de asignación
-diaria, reporte de incidencias por dirección) contra una base de datos
-de test separada (`sigeru_test`, nunca toca la de desarrollo). Ver
-`tests/README.md` para el detalle de qué cubren y cómo correrlos con
-PHPUnit real.
+diaria, reporte de incidencias por dirección, y el ciclo de vida
+completo — alta/edición/baja + control de acceso por rol — de
+camiones, instalaciones, maquinaria y repuestos) contra una base de
+datos de test separada (`sigeru_test`, nunca toca la de desarrollo).
+Ver `tests/README.md` para el detalle de qué cubren y cómo correrlos
+con PHPUnit real.
 
 ## Notas de diseño
 
@@ -366,7 +368,7 @@ asignación diaria).
   de UI (hoy `registro.html` está protegida en la página, pero el
   endpoint en sí sigue aceptando el alta sin sesión si se lo llama
   directo). Se dejó así a propósito esta vuelta para no tener que
-  reescribir el bootstrap de los 24 tests (todos se autoregistran su
+  reescribir el bootstrap de los 37 tests (todos se autoregistran su
   propio Administrador de prueba antes de loguearse); si se hace este
   cambio, esos tests necesitan loguearse primero con un Administrador
   ya sembrado por `datos_prueba.sql`.

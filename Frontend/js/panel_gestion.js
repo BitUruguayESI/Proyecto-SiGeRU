@@ -702,6 +702,8 @@ document.getElementById('formInstalacion').addEventListener('submit', async (eve
 // ---------------------------------------------------------------
 // MAQUINARIA + REPUESTOS
 // ---------------------------------------------------------------
+let repuestosPorId = {};
+
 async function cargarRepuestos() {
   const datos = await llamar(`${BASE}/repuestos.php`);
   const cuerpo = document.getElementById('tablaRepuestos');
@@ -710,16 +712,35 @@ async function cargarRepuestos() {
   selectMaquinaria.innerHTML = '';
   if (!datos.exito) return;
 
+  repuestosPorId = {};
   datos.repuestos.forEach(r => {
+    repuestosPorId[r.id_repuesto] = r;
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${r.id_repuesto}</td><td>${r.nombre}</td><td>${r.tipo}</td><td>${r.stock}</td><td>${r.estado}</td>
-      <td><button class="peligro btn-eliminar-repuesto" data-id="${r.id_repuesto}">Eliminar</button></td>
+      <td>
+        <button class="chico btn-editar-repuesto" data-id="${r.id_repuesto}">Editar</button>
+        <button class="peligro btn-eliminar-repuesto" data-id="${r.id_repuesto}">Eliminar</button>
+      </td>
     `;
     cuerpo.appendChild(fila);
     selectMaquinaria.appendChild(new Option(`${r.nombre} (${r.tipo})`, r.id_repuesto));
   });
 
+  cuerpo.querySelectorAll('.btn-editar-repuesto').forEach(boton => {
+    boton.addEventListener('click', () => {
+      const r = repuestosPorId[boton.dataset.id];
+      document.getElementById('rep_id').value = r.id_repuesto;
+      document.getElementById('rep_nombre').value = r.nombre;
+      document.getElementById('rep_tipo').value = r.tipo;
+      document.getElementById('rep_stock').value = r.stock;
+      document.getElementById('rep_estado').value = r.estado;
+      document.getElementById('rep_titulo_form').textContent = `Editar repuesto #${r.id_repuesto}`;
+      document.getElementById('rep_boton_submit').textContent = 'Guardar cambios';
+      document.getElementById('rep_cancelar').hidden = false;
+      document.getElementById('formRepuesto').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
   cuerpo.querySelectorAll('.btn-eliminar-repuesto').forEach(boton => {
     boton.addEventListener('click', async () => {
       const resultado = await llamar(`${BASE}/repuestos.php`, {
@@ -733,19 +754,32 @@ async function cargarRepuestos() {
   });
 }
 
+function salirModoEdicionRepuesto() {
+  document.getElementById('formRepuesto').reset();
+  document.getElementById('rep_id').value = '';
+  document.getElementById('rep_titulo_form').textContent = 'Catálogo de repuestos';
+  document.getElementById('rep_boton_submit').textContent = 'Registrar repuesto';
+  document.getElementById('rep_cancelar').hidden = true;
+}
+document.getElementById('rep_cancelar').addEventListener('click', salirModoEdicionRepuesto);
+
 document.getElementById('formRepuesto').addEventListener('submit', async (evento) => {
   evento.preventDefault();
-  const resultado = await llamar(`${BASE}/repuestos.php`, {
-    method: 'POST',
-    body: JSON.stringify({
-      nombre: document.getElementById('rep_nombre').value.trim(),
-      tipo: document.getElementById('rep_tipo').value.trim(),
-      stock: Number(document.getElementById('rep_stock').value || 0),
-    }),
-  });
+  const idRepuesto = document.getElementById('rep_id').value;
+  const cuerpo = {
+    nombre: document.getElementById('rep_nombre').value.trim(),
+    tipo: document.getElementById('rep_tipo').value.trim(),
+    stock: Number(document.getElementById('rep_stock').value || 0),
+    estado: document.getElementById('rep_estado').value,
+  };
+  const resultado = idRepuesto
+    ? await llamar(`${BASE}/repuestos.php`, { method: 'PUT', body: JSON.stringify({ id_repuesto: Number(idRepuesto), ...cuerpo }) })
+    : await llamar(`${BASE}/repuestos.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-  if (resultado.exito) { document.getElementById('formRepuesto').reset(); cargarRepuestos(); }
+  if (resultado.exito) { salirModoEdicionRepuesto(); cargarRepuestos(); }
 });
+
+let maquinariasPorId = {};
 
 async function cargarMaquinaria() {
   const datos = await llamar(`${BASE}/maquinaria.php`);
@@ -753,7 +787,9 @@ async function cargarMaquinaria() {
   cuerpo.innerHTML = '';
   if (!datos.exito) return;
 
+  maquinariasPorId = {};
   datos.maquinas.forEach(m => {
+    maquinariasPorId[m.id_maquinaria] = m;
     const repuestos = m.repuestos.map(r => r.nombre).join(', ') || '—';
     const fila = document.createElement('tr');
     fila.innerHTML = `
@@ -766,7 +802,10 @@ async function cargarMaquinaria() {
         </select>
       </td>
       <td>${m.nombre_instalacion}</td><td>${repuestos}</td>
-      <td><button class="peligro btn-eliminar-maquinaria" data-id="${m.id_maquinaria}">Eliminar</button></td>
+      <td>
+        <button class="chico btn-editar-maquinaria" data-id="${m.id_maquinaria}">Editar</button>
+        <button class="peligro btn-eliminar-maquinaria" data-id="${m.id_maquinaria}">Eliminar</button>
+      </td>
     `;
     cuerpo.appendChild(fila);
   });
@@ -781,6 +820,24 @@ async function cargarMaquinaria() {
       if (resultado.exito) cargarMaquinaria();
     });
   });
+  cuerpo.querySelectorAll('.btn-editar-maquinaria').forEach(boton => {
+    boton.addEventListener('click', () => {
+      const m = maquinariasPorId[boton.dataset.id];
+      document.getElementById('maq_id').value = m.id_maquinaria;
+      document.getElementById('maq_nombre').value = m.nombre;
+      document.getElementById('maq_tipo').value = m.tipo;
+      document.getElementById('maq_id_centro').value = m.id_centro;
+      document.getElementById('maq_estado').value = m.estado;
+      const idsRepuesto = m.repuestos.map(r => String(r.id_repuesto));
+      Array.from(document.getElementById('maq_repuestos').options).forEach(opcion => {
+        opcion.selected = idsRepuesto.includes(opcion.value);
+      });
+      document.getElementById('maq_titulo_form').textContent = `Editar maquinaria #${m.id_maquinaria}`;
+      document.getElementById('maq_boton_submit').textContent = 'Guardar cambios';
+      document.getElementById('maq_cancelar').hidden = false;
+      document.getElementById('formMaquinaria').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
   cuerpo.querySelectorAll('.btn-eliminar-maquinaria').forEach(boton => {
     boton.addEventListener('click', async () => {
       const resultado = await llamar(`${BASE}/maquinaria.php`, {
@@ -793,20 +850,31 @@ async function cargarMaquinaria() {
   });
 }
 
+function salirModoEdicionMaquinaria() {
+  document.getElementById('formMaquinaria').reset();
+  document.getElementById('maq_id').value = '';
+  document.getElementById('maq_titulo_form').textContent = 'Registrar maquinaria';
+  document.getElementById('maq_boton_submit').textContent = 'Registrar maquinaria';
+  document.getElementById('maq_cancelar').hidden = true;
+}
+document.getElementById('maq_cancelar').addEventListener('click', salirModoEdicionMaquinaria);
+
 document.getElementById('formMaquinaria').addEventListener('submit', async (evento) => {
   evento.preventDefault();
+  const idMaquinaria = document.getElementById('maq_id').value;
   const repuestos = Array.from(document.getElementById('maq_repuestos').selectedOptions).map(o => Number(o.value));
-  const resultado = await llamar(`${BASE}/maquinaria.php`, {
-    method: 'POST',
-    body: JSON.stringify({
-      nombre: document.getElementById('maq_nombre').value.trim(),
-      tipo: document.getElementById('maq_tipo').value.trim(),
-      id_centro: Number(document.getElementById('maq_id_centro').value),
-      repuestos,
-    }),
-  });
+  const cuerpo = {
+    nombre: document.getElementById('maq_nombre').value.trim(),
+    tipo: document.getElementById('maq_tipo').value.trim(),
+    id_centro: Number(document.getElementById('maq_id_centro').value),
+    estado: document.getElementById('maq_estado').value,
+    repuestos,
+  };
+  const resultado = idMaquinaria
+    ? await llamar(`${BASE}/maquinaria.php`, { method: 'PUT', body: JSON.stringify({ id_maquinaria: Number(idMaquinaria), ...cuerpo }) })
+    : await llamar(`${BASE}/maquinaria.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-  if (resultado.exito) { document.getElementById('formMaquinaria').reset(); cargarMaquinaria(); }
+  if (resultado.exito) { salirModoEdicionMaquinaria(); cargarMaquinaria(); }
 });
 
 // ---------------------------------------------------------------

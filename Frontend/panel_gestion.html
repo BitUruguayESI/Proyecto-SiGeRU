@@ -215,34 +215,50 @@
         <tbody id="tablaMaquinaria"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3>Registrar maquinaria</h3>
+        <h3 id="maq_titulo_form">Registrar maquinaria</h3>
         <form id="formMaquinaria">
+          <input type="hidden" id="maq_id">
           <div class="fila-doble">
             <div><label>Nombre</label><input type="text" id="maq_nombre" placeholder="Compactadora 1" required></div>
             <div><label>Tipo</label><input type="text" id="maq_tipo" placeholder="Compactadora, prensa, cinta..." required></div>
           </div>
           <label>Instalación</label>
           <select id="maq_id_centro" required></select>
+          <label>Estado</label>
+          <select id="maq_estado">
+            <option value="OPERATIVA">Operativa</option>
+            <option value="EN_MANTENIMIENTO">En mantenimiento</option>
+            <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+          </select>
           <label>Repuestos asociados (opcional)</label>
           <select id="maq_repuestos" multiple size="4"></select>
-          <button type="submit" class="principal">Registrar maquinaria</button>
+          <button type="submit" class="principal" id="maq_boton_submit">Registrar maquinaria</button>
+          <button type="button" class="secundario" id="maq_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
 
       <div class="formulario-alta" style="margin-top:16px;">
-        <h3>Catálogo de repuestos</h3>
+        <h3 id="rep_titulo_form">Catálogo de repuestos</h3>
         <table class="tabla-datos">
           <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
           <tbody id="tablaRepuestos"></tbody>
         </table>
         <form id="formRepuesto">
+          <input type="hidden" id="rep_id">
           <div class="fila-doble">
             <div><label>Nombre</label><input type="text" id="rep_nombre" required></div>
             <div><label>Tipo</label><input type="text" id="rep_tipo" required></div>
           </div>
           <label>Stock</label>
           <input type="number" id="rep_stock" min="0" value="0">
-          <button type="submit" class="principal">Registrar repuesto</button>
+          <label>Estado</label>
+          <select id="rep_estado">
+            <option value="DISPONIBLE">Disponible</option>
+            <option value="AGOTADO">Agotado</option>
+            <option value="DESCONTINUADO">Descontinuado</option>
+          </select>
+          <button type="submit" class="principal" id="rep_boton_submit">Registrar repuesto</button>
+          <button type="button" class="secundario" id="rep_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
     </section>
