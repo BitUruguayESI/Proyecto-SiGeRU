@@ -91,15 +91,22 @@ function actualizarInfoCuadrilla() {
 
   const cuadrilla = cuadrillasPorId[idCuadrilla];
   if (!cuadrilla) {
-    info.textContent = 'Elegí una cuadrilla para ver su camión y chofer asignados.';
+    info.className = 'ficha-cuadrilla vacia';
+    info.textContent = 'Elegí una cuadrilla para ver su camión, chofer y recolectores asignados.';
     return;
   }
 
-  if (!cuadrilla.id_camion || !cuadrilla.id_chofer) {
-    info.textContent = `Esta cuadrilla todavía no tiene camión y/o chofer asignado. Asignalo primero en Gestión → Cuadrillas.`;
-  } else {
-    info.textContent = `Camión: ${cuadrilla.camion_matricula} — Chofer: ${cuadrilla.chofer_nombre}`;
-  }
+  const nombresRecolectores = (cuadrilla.recolectores || []).map(r => r.nombre_completo);
+
+  info.className = 'ficha-cuadrilla';
+  info.innerHTML = `
+    <p><strong>Camión:</strong> ${cuadrilla.camion_matricula || 'sin asignar'}</p>
+    <p><strong>Chofer:</strong> ${cuadrilla.chofer_nombre || 'sin asignar'}</p>
+    <p><strong>Recolectores:</strong> ${nombresRecolectores.join(', ') || 'sin recolectores asignados'}</p>
+    ${(!cuadrilla.id_camion || !cuadrilla.id_chofer)
+      ? '<p style="color:var(--rojo);">Esta cuadrilla todavía no tiene camión y/o chofer asignado. Asignalo primero en Gestión → Cuadrillas.</p>'
+      : ''}
+  `;
 
   (cuadrilla.recolectores || []).forEach(r => {
     const opcion = new Option(r.nombre_completo, r.id_operario);
