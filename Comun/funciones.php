@@ -71,6 +71,34 @@ function requerirRolAdministrador(): array
 }
 
 /**
+ * Igual que requerirSesionActiva(), pero además exige que el usuario
+ * pueda marcar una incidencia como RESUELTA: solo ADMINISTRADOR o el
+ * OPERARIO con cargo CHOFER (el Recolector puede ver el estado, pero no
+ * resolverla). Se consulta el cargo directo en la base (no desde
+ * $_SESSION) para reflejar de inmediato un cambio de rol hecho por un
+ * Administrador mientras la sesión del operario sigue activa.
+ */
+function requerirPuedeResolverIncidencia(PDO $pdo): array
+{
+    $sesion = requerirSesionActiva();
+    if ($sesion['tipo_usuario'] === 'ADMINISTRADOR') {
+        return $sesion;
+    }
+
+    $consulta = $pdo->prepare('SELECT cargo FROM OPERARIO WHERE ci_usuario = :ci');
+    $consulta->execute(['ci' => $sesion['ci_usuario']]);
+    $fila = $consulta->fetch();
+
+    if (!$fila || $fila['cargo'] !== 'CHOFER') {
+        responderJson([
+            'exito' => false,
+            'mensaje' => 'Solo un Administrador o el Chofer de la cuadrilla pueden marcar una incidencia como resuelta.',
+        ], 403);
+    }
+    return $sesion;
+}
+
+/**
  * Geocodifica una dirección de texto ("Bulevar Artigas 1234, Montevideo")
  * a coordenadas "lat,lon" usando Nominatim (OpenStreetMap), para el mapa
  * interactivo de contenedores (RF13).

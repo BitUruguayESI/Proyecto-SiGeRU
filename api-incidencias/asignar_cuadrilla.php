@@ -2,8 +2,9 @@
 /**
  * api-incidencias/asignar_cuadrilla.php
  * RF19 — Asignar cuadrilla a incidencia. Solo ADMINISTRADOR.
- * Válido desde PENDIENTE o ESCALADA (reasignación tras escalar) -> ASIGNADA,
- * según el Diagrama de Estados de INCIDENCIA.
+ * Válido solo desde PENDIENTE -> pasa directo a EN_PROCESO (el modelo de
+ * 3 estados no tiene un estado intermedio "ASIGNADA": asignarle una
+ * cuadrilla a la incidencia ES lo que la pone en curso).
  *
  * PUT { "id_incidencia": 1, "id_cuadrilla": 2 }
  */
@@ -36,10 +37,10 @@ $incidencia = $consulta->fetch();
 if (!$incidencia) {
     responderJson(['exito' => false, 'mensaje' => 'Incidencia no encontrada.'], 404);
 }
-if (!in_array($incidencia['estado'], ['PENDIENTE', 'ESCALADA'], true)) {
+if ($incidencia['estado'] !== 'PENDIENTE') {
     responderJson([
         'exito' => false,
-        'mensaje' => "No se puede asignar cuadrilla desde el estado {$incidencia['estado']}. Solo desde PENDIENTE o ESCALADA.",
+        'mensaje' => "No se puede asignar cuadrilla desde el estado {$incidencia['estado']}. Solo desde PENDIENTE.",
     ], 409);
 }
 
@@ -50,8 +51,8 @@ if (!$cuadrilla->fetch()) {
 }
 
 $actualizar = $pdo->prepare(
-    "UPDATE INCIDENCIA SET id_cuadrilla = :cuadrilla, estado = 'ASIGNADA' WHERE id_incidencia = :id"
+    "UPDATE INCIDENCIA SET id_cuadrilla = :cuadrilla, estado = 'EN_PROCESO' WHERE id_incidencia = :id"
 );
 $actualizar->execute(['cuadrilla' => $idCuadrilla, 'id' => $idIncidencia]);
 
-responderJson(['exito' => true, 'mensaje' => 'Cuadrilla asignada. La incidencia pasó a ASIGNADA.']);
+responderJson(['exito' => true, 'mensaje' => 'Cuadrilla asignada. La incidencia pasó a EN_PROCESO.']);

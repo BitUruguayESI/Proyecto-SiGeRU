@@ -23,7 +23,7 @@ $pdo = obtenerConexion();
 $condiciones = [];
 $valores = [];
 
-$estadosValidos = ['PENDIENTE', 'ASIGNADA', 'EN_PROCESO', 'RESUELTA', 'ESCALADA'];
+$estadosValidos = ['PENDIENTE', 'EN_PROCESO', 'RESUELTA'];
 if (!empty($_GET['estado']) && in_array($_GET['estado'], $estadosValidos, true)) {
     $condiciones[] = 'i.estado = :estado';
     $valores['estado'] = $_GET['estado'];
@@ -38,7 +38,7 @@ if (!empty($_GET['id_cuadrilla'])) {
 }
 
 $sql = 'SELECT i.id_incidencia, i.descripcion, i.tipo_incidencia, i.estado,
-               i.fecha_registro, i.fecha_resolucion, i.fecha_escalacion,
+               i.fecha_registro, i.fecha_resolucion,
                i.id_contenedor, c.coordenadas AS contenedor_coordenadas,
                i.id_vecino, v.email AS vecino_email,
                i.id_cuadrilla, cu.nombre_cuadrilla

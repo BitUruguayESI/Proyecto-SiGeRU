@@ -1,15 +1,15 @@
 <?php
 /**
  * api-incidencias/actualizar_estado.php
- * RF20 — Actualizar estado de incidencia, siguiendo el Diagrama de
- * Estados: ASIGNADA -> EN_PROCESO -> RESUELTA | ESCALADA.
- * (PENDIENTE->ASIGNADA y ESCALADA->ASIGNADA se hacen en asignar_cuadrilla.php,
- * porque esas dos transiciones requieren elegir una cuadrilla.)
+ * RF20 — Actualizar estado de incidencia, siguiendo el modelo simplificado
+ * de 3 estados: PENDIENTE -> EN_PROCESO (en asignar_cuadrilla.php, al
+ * elegirle una cuadrilla) -> RESUELTA (acá).
  *
- * Cualquier USUARIO logueado (Operario o Administrador) puede actualizar
- * — en la práctica es la cuadrilla en el terreno la que marca el avance.
+ * Marcar RESUELTA está restringido: solo el Administrador o el Chofer de
+ * la cuadrilla pueden hacerlo (el Recolector puede ver el estado, pero no
+ * cerrarla) — ver Comun/funciones.php::requerirPuedeResolverIncidencia().
  *
- * PUT { "id_incidencia": 1, "estado": "EN_PROCESO" | "RESUELTA" | "ESCALADA" }
+ * PUT { "id_incidencia": 1, "estado": "RESUELTA" }
  */
 
 declare(strict_types=1);
@@ -21,7 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     responderJson(['exito' => false, 'mensaje' => 'Método no permitido.'], 405);
 }
 
-requerirSesionActiva();
+$pdo = obtenerConexion();
+
+requerirPuedeResolverIncidencia($pdo);
 
 $entrada = obtenerJsonEntrada();
 $idIncidencia = (int) ($entrada['id_incidencia'] ?? 0);
@@ -31,13 +33,11 @@ if ($idIncidencia <= 0) {
     responderJson(['exito' => false, 'mensaje' => 'id_incidencia es obligatorio.'], 400);
 }
 
-// Transiciones permitidas por el Diagrama de Estados (sin pasar por asignar_cuadrilla.php)
+// Única transición que queda en este endpoint (PENDIENTE->EN_PROCESO se
+// hace en asignar_cuadrilla.php, porque requiere elegir una cuadrilla).
 $transicionesValidas = [
-    'ASIGNADA'   => ['EN_PROCESO'],
-    'EN_PROCESO' => ['RESUELTA', 'ESCALADA'],
+    'EN_PROCESO' => ['RESUELTA'],
 ];
-
-$pdo = obtenerConexion();
 
 $consulta = $pdo->prepare('SELECT estado, id_contenedor FROM INCIDENCIA WHERE id_incidencia = :id');
 $consulta->execute(['id' => $idIncidencia]);
@@ -61,26 +61,18 @@ if (!in_array($estadoNuevo, $siguientesValidos, true)) {
 try {
     $pdo->beginTransaction();
 
-    if ($estadoNuevo === 'RESUELTA') {
-        $pdo->prepare(
-            "UPDATE INCIDENCIA SET estado = 'RESUELTA', fecha_resolucion = NOW() WHERE id_incidencia = :id"
-        )->execute(['id' => $idIncidencia]);
+    // La única transición que llega hasta acá es EN_PROCESO -> RESUELTA.
+    $pdo->prepare(
+        "UPDATE INCIDENCIA SET estado = 'RESUELTA', fecha_resolucion = NOW() WHERE id_incidencia = :id"
+    )->execute(['id' => $idIncidencia]);
 
-        // Si el contenedor estaba desbordado por esta incidencia, se
-        // considera solucionado (simplificación: no chequea si hay otras
-        // incidencias abiertas sobre el mismo contenedor).
-        if ($incidencia['id_contenedor']) {
-            $pdo->prepare(
-                "UPDATE CONTENEDOR SET estado = 'OPERATIVO' WHERE id_contenedor = :id AND estado = 'DESBORDADO'"
-            )->execute(['id' => $incidencia['id_contenedor']]);
-        }
-    } elseif ($estadoNuevo === 'ESCALADA') {
+    // Si el contenedor estaba desbordado por esta incidencia, se
+    // considera solucionado (simplificación: no chequea si hay otras
+    // incidencias abiertas sobre el mismo contenedor).
+    if ($incidencia['id_contenedor']) {
         $pdo->prepare(
-            "UPDATE INCIDENCIA SET estado = 'ESCALADA', fecha_escalacion = NOW() WHERE id_incidencia = :id"
-        )->execute(['id' => $idIncidencia]);
-    } else {
-        $pdo->prepare('UPDATE INCIDENCIA SET estado = :estado WHERE id_incidencia = :id')
-            ->execute(['estado' => $estadoNuevo, 'id' => $idIncidencia]);
+            "UPDATE CONTENEDOR SET estado = 'OPERATIVO' WHERE id_contenedor = :id AND estado = 'DESBORDADO'"
+        )->execute(['id' => $incidencia['id_contenedor']]);
     }
 
     $pdo->commit();

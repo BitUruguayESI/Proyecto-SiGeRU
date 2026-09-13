@@ -4,8 +4,10 @@
 -- Basado en el MER final (24 entidades) + RN01-RN21 + 3ra Forma Normal
 -- Incluye tabla adicional USUARIO_TELEFONO (teléfono como atributo
 -- multivaluado de USUARIO, normalizado según 3FN — análogo a
--- CONTENEDOR_TIPO_RESIDUO para el atributo multivaluado de CONTENEDOR)
--- Total: 25 tablas
+-- CONTENEDOR_TIPO_RESIDUO para el atributo multivaluado de CONTENEDOR).
+-- Incluye también CUADRILLA_RECOLECTOR (N:M CUADRILLA-OPERARIO, para la
+-- "cuadrilla estable" de cada recolector/chofer/camión).
+-- Total: 26 tablas
 -- =====================================================================
 
 DROP DATABASE IF EXISTS sigeru;
@@ -50,9 +52,13 @@ CREATE TABLE USUARIO_TELEFONO (
         REFERENCES USUARIO(ci) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- cargo distingue, dentro de OPERARIO, entre Chofer y Recolector (los dos
+-- roles de personal de campo que pide el modelo de dashboards por rol);
+-- se resolvió como ENUM (y no texto libre) para que sea un valor cerrado
+-- y editable de forma segura desde el panel de Usuarios.
 CREATE TABLE OPERARIO (
     id_operario   INT AUTO_INCREMENT,
-    cargo         VARCHAR(80) NOT NULL,
+    cargo         ENUM('CHOFER','RECOLECTOR') NOT NULL,
     ci_usuario    VARCHAR(15) NOT NULL,
     PRIMARY KEY (id_operario),
     UNIQUE KEY uq_operario_usuario (ci_usuario),
@@ -90,11 +96,25 @@ CREATE TABLE SESION (
 -- 2) Cuadrillas, rutas y contenedores
 -- =====================================================================
 
+-- id_camion / id_chofer son la "cuadrilla estable" (quién maneja qué
+-- camión y con qué chofer día a día), independiente de la asignación
+-- diaria puntual (ASIGNACION_DIARIA/ASIGNACION_OPERARIO, que sigue
+-- existiendo para el detalle de fecha/turno/ruta). Son NULL mientras no
+-- se asignan, y UNIQUE porque un camión o un chofer no puede estar en
+-- más de una cuadrilla estable a la vez.
 CREATE TABLE CUADRILLA (
     id_cuadrilla          INT AUTO_INCREMENT,
     nombre_cuadrilla      VARCHAR(100) NOT NULL,
     cantidad_integrantes  INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (id_cuadrilla)
+    id_camion             INT NULL,
+    id_chofer             INT NULL,
+    PRIMARY KEY (id_cuadrilla),
+    UNIQUE KEY uq_cuadrilla_camion (id_camion),
+    UNIQUE KEY uq_cuadrilla_chofer (id_chofer),
+    CONSTRAINT fk_cuadrilla_camion FOREIGN KEY (id_camion)
+        REFERENCES CAMION(id_camion) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_cuadrilla_chofer FOREIGN KEY (id_chofer)
+        REFERENCES OPERARIO(id_operario) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE RUTA (
@@ -102,6 +122,21 @@ CREATE TABLE RUTA (
     nombre_zona   VARCHAR(100) NOT NULL,
     frecuencia    VARCHAR(50)  NOT NULL,   -- ej: "diaria", "lunes y jueves"
     PRIMARY KEY (id_ruta)
+) ENGINE=InnoDB;
+
+-- Relación N:M CUADRILLA-OPERARIO (recolectores de la cuadrilla estable).
+-- id_operario es UNIQUE porque un recolector integra una sola cuadrilla
+-- estable a la vez (a diferencia de CUADRILLA_RUTA_HABITUAL, que sí es
+-- N:M en ambos sentidos).
+CREATE TABLE CUADRILLA_RECOLECTOR (
+    id_cuadrilla   INT NOT NULL,
+    id_operario    INT NOT NULL,
+    PRIMARY KEY (id_cuadrilla, id_operario),
+    UNIQUE KEY uq_recolector_cuadrilla (id_operario),
+    CONSTRAINT fk_crec_cuadrilla FOREIGN KEY (id_cuadrilla)
+        REFERENCES CUADRILLA(id_cuadrilla) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_crec_operario FOREIGN KEY (id_operario)
+        REFERENCES OPERARIO(id_operario) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- Relación N:M CUADRILLA-RUTA (ruta habitual de cada cuadrilla)
@@ -144,13 +179,16 @@ CREATE TABLE CONTENEDOR_TIPO_RESIDUO (
 -- 3) Incidencias
 -- =====================================================================
 
+-- Máquina de estados simplificada a 3 valores: PENDIENTE (sin cuadrilla
+-- asignada) -> EN_PROCESO (el Administrador le asignó una cuadrilla,
+-- directo, sin paso intermedio) -> RESUELTA (la marca el Administrador
+-- o el Chofer de la cuadrilla).
 CREATE TABLE INCIDENCIA (
     id_incidencia     INT AUTO_INCREMENT,
     descripcion       TEXT NOT NULL,
     fecha_registro    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_resolucion  DATETIME NULL,
-    fecha_escalacion  DATETIME NULL,
-    estado            ENUM('PENDIENTE','ASIGNADA','EN_PROCESO','RESUELTA','ESCALADA') NOT NULL DEFAULT 'PENDIENTE',
+    estado            ENUM('PENDIENTE','EN_PROCESO','RESUELTA') NOT NULL DEFAULT 'PENDIENTE',
     tipo_incidencia   VARCHAR(60) NOT NULL,
     id_contenedor     INT NULL,
     id_vecino         INT NULL,

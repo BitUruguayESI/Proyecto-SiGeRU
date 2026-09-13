@@ -28,8 +28,10 @@ if ($ci === '' || $contrasena === '') {
 $pdo = obtenerConexion();
 
 $consulta = $pdo->prepare(
-    'SELECT ci, contrasena, nombre_completo, tipo_usuario, estado
-     FROM USUARIO WHERE ci = :ci'
+    'SELECT u.ci, u.contrasena, u.nombre_completo, u.tipo_usuario, u.estado, o.cargo
+     FROM USUARIO u
+     LEFT JOIN OPERARIO o ON o.ci_usuario = u.ci
+     WHERE u.ci = :ci'
 );
 $consulta->execute(['ci' => $ci]);
 $usuario = $consulta->fetch();
@@ -53,10 +55,12 @@ session_start();
 $_SESSION['ci_usuario']    = $usuario['ci'];
 $_SESSION['tipo_usuario']  = $usuario['tipo_usuario'];
 $_SESSION['nombre']        = $usuario['nombre_completo'];
+$_SESSION['cargo']         = $usuario['cargo'];
 $_SESSION['id_sesion_bd']  = $idSesion;
 
 responderJson([
     'exito'           => true,
     'tipo_usuario'    => $usuario['tipo_usuario'],
     'nombre_completo' => $usuario['nombre_completo'],
+    'cargo'           => $usuario['cargo'],
 ]);

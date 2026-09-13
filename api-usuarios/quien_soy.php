@@ -19,4 +19,5 @@ responderJson([
     'ci'              => $sesion['ci_usuario'],
     'nombre_completo' => $sesion['nombre'],
     'tipo_usuario'    => $sesion['tipo_usuario'],
+    'cargo'           => $sesion['cargo'] ?? null,
 ]);

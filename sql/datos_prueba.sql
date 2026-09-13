@@ -25,10 +25,10 @@ INSERT INTO USUARIO (ci, contrasena, email, nombre_completo, tipo_usuario) VALUE
 INSERT INTO ADMINISTRADOR (ci_usuario) VALUES ('10000001'), ('10000002');
 
 INSERT INTO OPERARIO (cargo, ci_usuario) VALUES
-('Chofer', '20000001'),
-('Recolector', '20000002'),
-('Recolector', '20000003'),
-('Chofer', '20000004');
+('CHOFER', '20000001'),
+('RECOLECTOR', '20000002'),
+('RECOLECTOR', '20000003'),
+('CHOFER', '20000004');
 
 INSERT INTO USUARIO_TELEFONO (ci_usuario, telefono) VALUES
 ('10000001', '099100001'),
@@ -36,15 +36,31 @@ INSERT INTO USUARIO_TELEFONO (ci_usuario, telefono) VALUES
 ('20000001', '26002001'),
 ('20000002', '099200002');
 
+-- ---- Camiones ----
+-- (van antes que Cuadrillas porque la cuadrilla "estable" ya referencia
+-- un camión por FK)
+INSERT INTO CAMION (matricula, marca, modelo, capacidad_carga, estado, kilometraje, fecha_ultimo_mantenimiento) VALUES
+('SAB1234', 'Volkswagen', 'Constellation', 8000, 'DISPONIBLE', 45000, '2026-06-15'),
+('SBC5678', 'Iveco', 'Tector', 6000, 'EN_RUTA', 62000, '2026-07-01'),
+('SCD9012', 'Mercedes-Benz', 'Atego', 7500, 'EN_MANTENIMIENTO', 88000, '2026-08-20');
+
 -- ---- Rutas y cuadrillas ----
 INSERT INTO RUTA (nombre_zona, frecuencia) VALUES
 ('Zona Centro', 'diaria'),
 ('Zona Cordón', 'lunes, miércoles y viernes'),
 ('Zona Pocitos', 'diaria');
 
-INSERT INTO CUADRILLA (nombre_cuadrilla, cantidad_integrantes) VALUES
-('Cuadrilla A', 2),
-('Cuadrilla B', 2);
+-- id_camion/id_chofer arman la cuadrilla "estable": Cuadrilla A = camión
+-- SAB1234 + chofer Pablo Techera (operario 1); Cuadrilla B = camión
+-- SBC5678 + chofer Valentina Acosta (operario 4). Los recolectores de
+-- cada una van en CUADRILLA_RECOLECTOR, más abajo.
+INSERT INTO CUADRILLA (nombre_cuadrilla, cantidad_integrantes, id_camion, id_chofer) VALUES
+('Cuadrilla A', 2, 1, 1),
+('Cuadrilla B', 2, 2, 4);
+
+INSERT INTO CUADRILLA_RECOLECTOR (id_cuadrilla, id_operario) VALUES
+(1, 2),  -- Rosana Ibarra en Cuadrilla A
+(2, 3);  -- Gonzalo Pereyra en Cuadrilla B
 
 INSERT INTO CUADRILLA_RUTA_HABITUAL (id_cuadrilla, id_ruta) VALUES
 (1, 1), (1, 2),
@@ -68,12 +84,6 @@ INSERT INTO CONTENEDOR_TIPO_RESIDUO (id_contenedor, tipo_residuo) VALUES
 (3, 'organico'), (3, 'vidrio'),
 (4, 'plastico'), (4, 'papel'),
 (6, 'organico');
-
--- ---- Camiones ----
-INSERT INTO CAMION (matricula, marca, modelo, capacidad_carga, estado, kilometraje, fecha_ultimo_mantenimiento) VALUES
-('SAB1234', 'Volkswagen', 'Constellation', 8000, 'DISPONIBLE', 45000, '2026-06-15'),
-('SBC5678', 'Iveco', 'Tector', 6000, 'EN_RUTA', 62000, '2026-07-01'),
-('SCD9012', 'Mercedes-Benz', 'Atego', 7500, 'EN_MANTENIMIENTO', 88000, '2026-08-20');
 
 -- ---- Instalaciones ----
 INSERT INTO INSTALACION (nombre, coordenadas, capacidad_maxima, residuos_aceptados, tipo_instalacion) VALUES
@@ -100,11 +110,13 @@ INSERT INTO VECINO (email) VALUES
 ('vecino2@correo.com'),
 ('vecino3@correo.com');
 
-INSERT INTO INCIDENCIA (descripcion, fecha_registro, fecha_resolucion, fecha_escalacion, estado, tipo_incidencia, id_contenedor, id_vecino, id_cuadrilla) VALUES
-('El contenedor de la esquina está desbordado hace dos días.', '2026-09-01 09:15:00', NULL, NULL, 'PENDIENTE', 'Desborde', 3, 1, NULL),
-('Contenedor con la tapa rota.', '2026-08-28 14:30:00', NULL, NULL, 'ASIGNADA', 'Dañado', 2, 2, 1),
-('Mal olor persistente, parece que no se recolectó esta semana.', '2026-08-20 08:00:00', NULL, NULL, 'EN_PROCESO', 'Otro', 4, 3, 2),
-('Contenedor caído sobre la vereda.', '2026-08-10 11:00:00', '2026-08-11 16:45:00', NULL, 'RESUELTA', 'Dañado', 6, 1, 1);
+-- 3 estados posibles (PENDIENTE / EN_PROCESO / RESUELTA): EN_PROCESO ya
+-- implica que el Administrador le asignó una cuadrilla.
+INSERT INTO INCIDENCIA (descripcion, fecha_registro, fecha_resolucion, estado, tipo_incidencia, id_contenedor, id_vecino, id_cuadrilla) VALUES
+('El contenedor de la esquina está desbordado hace dos días.', '2026-09-01 09:15:00', NULL, 'PENDIENTE', 'Desborde', 3, 1, NULL),
+('Contenedor con la tapa rota.', '2026-08-28 14:30:00', NULL, 'EN_PROCESO', 'Dañado', 2, 2, 1),
+('Mal olor persistente, parece que no se recolectó esta semana.', '2026-08-20 08:00:00', NULL, 'EN_PROCESO', 'Otro', 4, 3, 2),
+('Contenedor caído sobre la vereda.', '2026-08-10 11:00:00', '2026-08-11 16:45:00', 'RESUELTA', 'Dañado', 6, 1, 1);
 
 -- ---- Asignación diaria + operarios asignados ----
 INSERT INTO ASIGNACION_DIARIA (fecha, turno, id_administrador, id_cuadrilla, id_ruta, id_camion) VALUES

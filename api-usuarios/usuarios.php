@@ -10,13 +10,20 @@
  *
  * GET  ?ci=12345678          -> un usuario (con teléfonos)
  * GET  ?tipo_usuario=OPERARIO&estado=ACTIVO  (ambos opcionales) -> lista
- * PUT  { ci, nombre_completo?, email?, cargo?, contrasena?, telefonos?, estado? }
+ * PUT  { ci, nombre_completo?, email?, rol?, contrasena?, telefonos?, estado? }
+ *      rol: 'ADMINISTRADOR' | 'CHOFER' | 'RECOLECTOR' — el "rol" que ve
+ *      el Administrador en el panel de Usuarios. Reemplaza al viejo
+ *      "cargo" (ahora es cargo el que vive dentro de rol, para OPERARIO).
  * DELETE { ci }              -> baja lógica: USUARIO.estado = INACTIVO
  *
- * No permite cambiar tipo_usuario: la generalización disjunta
- * OPERARIO/ADMINISTRADOR (RN01) se define en el alta; cambiarla
- * implicaría mover la fila hija de una tabla a otra, algo que los
- * triggers de la base ya bloquean a propósito.
+ * Cambiar de rol entre Administrador y Recolector/Chofer SÍ cambia
+ * tipo_usuario (la generalización disjunta OPERARIO/ADMINISTRADOR,
+ * RN01): se hace en una transacción que borra la fila hija vieja,
+ * actualiza el discriminador y crea la fila hija nueva, en ese orden
+ * (los triggers de la base bloquean el UPDATE de tipo_usuario mientras
+ * exista la fila hija vieja, así que hay que borrarla primero). Un
+ * Administrador no puede cambiarse el rol a sí mismo (para no quedarse
+ * sin acceso de administrador sin querer).
  */
 
 declare(strict_types=1);
@@ -24,7 +31,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../Comun/conexion.php';
 require_once __DIR__ . '/../Comun/funciones.php';
 
-requerirRolAdministrador();
+$sesionAdministrador = requerirRolAdministrador();
 
 $pdo = obtenerConexion();
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -47,6 +54,7 @@ function usuarioConDetalle(PDO $pdo, string $ci): ?array
     $telefonos = $pdo->prepare('SELECT telefono FROM USUARIO_TELEFONO WHERE ci_usuario = :ci ORDER BY id_telefono');
     $telefonos->execute(['ci' => $ci]);
     $usuario['telefonos'] = array_column($telefonos->fetchAll(), 'telefono');
+    $usuario['rol'] = $usuario['tipo_usuario'] === 'ADMINISTRADOR' ? 'ADMINISTRADOR' : $usuario['cargo'];
 
     return $usuario;
 }
@@ -70,6 +78,10 @@ if ($metodo === 'GET') {
         $condiciones[] = 'u.estado = :estado';
         $valores['estado'] = strtoupper(limpiarTexto($_GET['estado']));
     }
+    if (!empty($_GET['cargo'])) {
+        $condiciones[] = 'o.cargo = :cargo';
+        $valores['cargo'] = strtoupper(limpiarTexto($_GET['cargo']));
+    }
     $whereSql = $condiciones ? ('WHERE ' . implode(' AND ', $condiciones)) : '';
 
     $consulta = $pdo->prepare(
@@ -80,7 +92,11 @@ if ($metodo === 'GET') {
          ORDER BY u.nombre_completo"
     );
     $consulta->execute($valores);
-    responderJson(['exito' => true, 'usuarios' => $consulta->fetchAll()]);
+    $usuarios = array_map(function ($u) {
+        $u['rol'] = $u['tipo_usuario'] === 'ADMINISTRADOR' ? 'ADMINISTRADOR' : $u['cargo'];
+        return $u;
+    }, $consulta->fetchAll());
+    responderJson(['exito' => true, 'usuarios' => $usuarios]);
 }
 
 if ($metodo === 'PUT') {
@@ -142,6 +158,22 @@ if ($metodo === 'PUT') {
         $valores['estado'] = $estado;
     }
 
+    // Rol: ADMINISTRADOR, CHOFER o RECOLECTOR. Se valida acá (antes de la
+    // transacción) para responder rápido con 400/409 sin dejar nada a medio
+    // aplicar; el cambio de fila hija (si corresponde) se hace más abajo.
+    $rolNuevo = null;
+    $tipoNuevo = null;
+    if (isset($entrada['rol'])) {
+        $rolNuevo = strtoupper(limpiarTexto($entrada['rol']));
+        if (!in_array($rolNuevo, ['ADMINISTRADOR', 'CHOFER', 'RECOLECTOR'], true)) {
+            responderJson(['exito' => false, 'mensaje' => 'rol inválido: debe ser ADMINISTRADOR, CHOFER o RECOLECTOR.'], 400);
+        }
+        if ($ci === $sesionAdministrador['ci_usuario']) {
+            responderJson(['exito' => false, 'mensaje' => 'No podés cambiar tu propio rol.'], 409);
+        }
+        $tipoNuevo = $rolNuevo === 'ADMINISTRADOR' ? 'ADMINISTRADOR' : 'OPERARIO';
+    }
+
     try {
         $pdo->beginTransaction();
 
@@ -150,17 +182,54 @@ if ($metodo === 'PUT') {
             $pdo->prepare($sql)->execute($valores);
         }
 
-        // Cargo: solo aplica si es OPERARIO.
-        if (isset($entrada['cargo'])) {
-            if ($usuarioActual['tipo_usuario'] !== 'OPERARIO') {
-                responderJson(['exito' => false, 'mensaje' => 'El campo cargo solo aplica a usuarios OPERARIO.'], 400);
+        if ($rolNuevo !== null) {
+            $tipoActual = $usuarioActual['tipo_usuario'];
+            if ($tipoActual === $tipoNuevo) {
+                // Mismo tipo_usuario: si es OPERARIO, puede estar
+                // cambiando de CHOFER a RECOLECTOR (o viceversa). Si
+                // cambia, hay que sacarlo de donde ya no corresponde
+                // (una cuadrilla lo tenía como chofer o como recolector
+                // según el cargo viejo) para no dejar datos inconsistentes.
+                if ($tipoNuevo === 'OPERARIO') {
+                    $idOperario = $pdo->prepare('SELECT id_operario FROM OPERARIO WHERE ci_usuario = :ci');
+                    $idOperario->execute(['ci' => $ci]);
+                    $filaOperario = $idOperario->fetch();
+
+                    $pdo->prepare('UPDATE OPERARIO SET cargo = :cargo WHERE ci_usuario = :ci')
+                        ->execute(['cargo' => $rolNuevo, 'ci' => $ci]);
+
+                    if ($filaOperario) {
+                        if ($rolNuevo === 'CHOFER') {
+                            $pdo->prepare('DELETE FROM CUADRILLA_RECOLECTOR WHERE id_operario = :id')
+                                ->execute(['id' => $filaOperario['id_operario']]);
+                        } else {
+                            $pdo->prepare('UPDATE CUADRILLA SET id_chofer = NULL WHERE id_chofer = :id')
+                                ->execute(['id' => $filaOperario['id_operario']]);
+                        }
+                    }
+                }
+            } else {
+                // Cambia la generalización (RN01): borrar la fila hija
+                // vieja primero (el trigger trg_usuario_check_cambio_tipo
+                // bloquea el UPDATE de tipo_usuario mientras siga existiendo),
+                // actualizar el discriminador, y crear la fila hija nueva.
+                // Borrar de OPERARIO además libera automáticamente (por las
+                // FK ON DELETE SET NULL/CASCADE) cualquier cuadrilla estable
+                // donde este usuario fuera chofer o recolector.
+                if ($tipoActual === 'OPERARIO') {
+                    $pdo->prepare('DELETE FROM OPERARIO WHERE ci_usuario = :ci')->execute(['ci' => $ci]);
+                } else {
+                    $pdo->prepare('DELETE FROM ADMINISTRADOR WHERE ci_usuario = :ci')->execute(['ci' => $ci]);
+                }
+                $pdo->prepare('UPDATE USUARIO SET tipo_usuario = :tipo WHERE ci = :ci')
+                    ->execute(['tipo' => $tipoNuevo, 'ci' => $ci]);
+                if ($tipoNuevo === 'OPERARIO') {
+                    $pdo->prepare('INSERT INTO OPERARIO (cargo, ci_usuario) VALUES (:cargo, :ci)')
+                        ->execute(['cargo' => $rolNuevo, 'ci' => $ci]);
+                } else {
+                    $pdo->prepare('INSERT INTO ADMINISTRADOR (ci_usuario) VALUES (:ci)')->execute(['ci' => $ci]);
+                }
             }
-            $cargo = limpiarTexto($entrada['cargo']);
-            if ($cargo === '') {
-                responderJson(['exito' => false, 'mensaje' => 'El cargo no puede quedar vacío.'], 400);
-            }
-            $pdo->prepare('UPDATE OPERARIO SET cargo = :cargo WHERE ci_usuario = :ci')
-                ->execute(['cargo' => $cargo, 'ci' => $ci]);
         }
 
         // Teléfonos: reemplazo completo (mismo patrón que CONTENEDOR_TIPO_RESIDUO).

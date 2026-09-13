@@ -10,7 +10,7 @@
  *   "email": "persona@correo.com",
  *   "nombre_completo": "Juan Pérez",
  *   "tipo_usuario": "OPERARIO" | "ADMINISTRADOR",
- *   "cargo": "Recolector",              // obligatorio solo si tipo_usuario = OPERARIO
+ *   "cargo": "CHOFER" | "RECOLECTOR",   // obligatorio solo si tipo_usuario = OPERARIO
  *   "telefonos": ["099123456", "26001122"]   // opcional, 0 o más
  * }
  *
@@ -33,7 +33,7 @@ $contrasena       = (string) ($entrada['contrasena'] ?? '');
 $email            = limpiarTexto($entrada['email'] ?? '');
 $nombreCompleto   = limpiarTexto($entrada['nombre_completo'] ?? '');
 $tipoUsuario      = strtoupper(limpiarTexto($entrada['tipo_usuario'] ?? ''));
-$cargo            = limpiarTexto($entrada['cargo'] ?? '');
+$cargo            = strtoupper(limpiarTexto($entrada['cargo'] ?? ''));
 $telefonos        = is_array($entrada['telefonos'] ?? null) ? $entrada['telefonos'] : [];
 
 // ---- Validaciones ----
@@ -54,8 +54,8 @@ if ($nombreCompleto === '') {
 if (!in_array($tipoUsuario, ['OPERARIO', 'ADMINISTRADOR'], true)) {
     $errores[] = 'tipo_usuario debe ser OPERARIO o ADMINISTRADOR.';
 }
-if ($tipoUsuario === 'OPERARIO' && $cargo === '') {
-    $errores[] = 'El cargo es obligatorio para un OPERARIO.';
+if ($tipoUsuario === 'OPERARIO' && !in_array($cargo, ['CHOFER', 'RECOLECTOR'], true)) {
+    $errores[] = 'El cargo es obligatorio para un OPERARIO y debe ser CHOFER o RECOLECTOR.';
 }
 
 if ($errores) {
