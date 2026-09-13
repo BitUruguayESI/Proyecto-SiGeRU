@@ -134,7 +134,7 @@ async function cargarAsignaciones() {
   asignacionesPorId = {};
 
   if (!datos.asignaciones.length) {
-    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#777;">No hay asignaciones para este filtro.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--texto-tenue);">No hay asignaciones para este filtro.</td></tr>';
     return;
   }
 
@@ -247,7 +247,7 @@ async function cargarDescargas() {
   if (!datos.exito) return;
 
   if (!datos.descargas.length) {
-    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">Todavía no hay descargas registradas.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--texto-tenue);">Todavía no hay descargas registradas.</td></tr>';
     return;
   }
 
@@ -289,7 +289,7 @@ async function cargarMantenimiento() {
   if (!datos.exito) return;
 
   if (!datos.mantenimientos.length) {
-    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No hay mantenimientos registrados.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--texto-tenue);">No hay mantenimientos registrados.</td></tr>';
     return;
   }
 

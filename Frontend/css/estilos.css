@@ -1,10 +1,25 @@
 :root {
-  --azul: #1F4E79;
-  --azul-claro: #3B9DE8;
-  --verde: #2E7D32;
-  --rojo: #C0392B;
-  --gris-fondo: #F4F6F8;
-  --gris-borde: #D0D5DB;
+  --fondo: #100e1a;
+  --superficie: #1c1830;
+  --superficie-2: #14111f;
+  --borde: rgba(255, 255, 255, 0.10);
+  --texto: #f2f1f7;
+  --texto-tenue: #9996ad;
+
+  --azul: #3a5bc7;
+  --azul-claro: #4f7df9;
+  --azul-fondo: rgba(79, 125, 249, 0.16);
+  --verde: #22c55e;
+  --verde-fondo: rgba(34, 197, 94, 0.16);
+  --rojo: #f0524a;
+  --rojo-fondo: rgba(240, 82, 74, 0.16);
+  --ambar: #f5b400;
+  --ambar-fondo: rgba(245, 180, 0, 0.16);
+
+  /* Nombres históricos, mantenidos para no tener que tocar cada regla:
+     ahora apuntan a los tonos oscuros de arriba. */
+  --gris-fondo: var(--superficie-2);
+  --gris-borde: var(--borde);
 }
 
 * { box-sizing: border-box; }
@@ -12,12 +27,14 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: var(--gris-fondo);
-  color: #222;
+  background: var(--fondo);
+  color: var(--texto);
+  color-scheme: dark;
 }
 
 header.banner {
-  background: var(--azul-claro);
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
   padding: 18px 32px;
   display: flex;
   align-items: center;
@@ -26,32 +43,33 @@ header.banner {
   flex-wrap: wrap;
 }
 header.banner h1 {
-  color: #fff;
+  color: var(--texto);
   margin: 0;
   font-size: 22px;
 }
 header.banner a.enlace-header {
-  color: #fff;
+  color: var(--texto);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.6);
+  border: 1px solid var(--borde);
   border-radius: 5px;
   padding: 7px 14px;
   white-space: nowrap;
 }
-header.banner a.enlace-header:hover { background: rgba(255,255,255,0.15); }
+header.banner a.enlace-header:hover { background: rgba(255,255,255,0.08); }
 
 main {
   max-width: 480px;
   margin: 40px auto;
-  background: #fff;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
   border-radius: 8px;
   padding: 28px 32px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
 }
 
-h2 { margin-top: 0; color: var(--azul); }
+h2 { margin-top: 0; color: var(--texto); }
 
 label {
   display: block;
@@ -59,14 +77,22 @@ label {
   margin-top: 14px;
   margin-bottom: 4px;
   font-size: 14px;
+  color: var(--texto);
 }
 
-input, select {
+input, select, textarea {
   width: 100%;
   padding: 9px 10px;
-  border: 1px solid var(--gris-borde);
+  border: 1px solid var(--borde);
   border-radius: 5px;
   font-size: 14px;
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+input::placeholder, textarea::placeholder { color: var(--texto-tenue); }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--azul-claro);
 }
 
 .fila-telefono {
@@ -84,6 +110,7 @@ button {
   border: none;
   border-radius: 5px;
   font-size: 14px;
+  font-family: inherit;
 }
 
 button.principal {
@@ -97,10 +124,12 @@ button.principal {
 button.principal:hover { background: var(--azul); }
 
 button.secundario {
-  background: var(--gris-borde);
-  color: #333;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  color: var(--texto);
   padding: 8px 10px;
 }
+button.secundario:hover { background: rgba(255,255,255,0.06); }
 
 .mensaje {
   margin-top: 16px;
@@ -109,8 +138,8 @@ button.secundario {
   font-size: 14px;
   display: none;
 }
-.mensaje.exito { background: #E3F3E3; color: var(--verde); display: block; }
-.mensaje.error { background: #FBE3E3; color: var(--rojo); display: block; }
+.mensaje.exito { background: var(--verde-fondo); color: var(--verde); display: block; }
+.mensaje.error { background: var(--rojo-fondo); color: var(--rojo); display: block; }
 
 .enlace-secundario {
   display: block;
@@ -146,17 +175,17 @@ main.panel { max-width: 960px; }
   gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--gris-borde);
+  border-bottom: 1px solid var(--borde);
 }
 .pestanias button {
   background: none;
   padding: 10px 16px;
   font-weight: 600;
-  color: #666;
+  color: var(--texto-tenue);
   border-bottom: 3px solid transparent;
 }
 .pestanias button.activa {
-  color: var(--azul);
+  color: var(--texto);
   border-bottom-color: var(--azul-claro);
 }
 
@@ -170,21 +199,22 @@ table.tabla-datos {
   font-size: 13px;
 }
 table.tabla-datos th, table.tabla-datos td {
-  border: 1px solid var(--gris-borde);
+  border: 1px solid var(--borde);
   padding: 7px 9px;
   text-align: left;
+  color: var(--texto);
 }
-table.tabla-datos th { background: #EEF2F6; }
+table.tabla-datos th { background: var(--superficie-2); color: var(--texto-tenue); font-weight: 600; }
 table.tabla-datos select { padding: 4px; font-size: 12px; }
 
 .formulario-alta {
-  background: #FAFBFC;
-  border: 1px solid var(--gris-borde);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
   border-radius: 6px;
   padding: 16px 18px;
   margin-top: 10px;
 }
-.formulario-alta h3 { margin-top: 0; font-size: 15px; color: var(--azul); }
+.formulario-alta h3 { margin-top: 0; font-size: 15px; color: var(--texto); }
 .formulario-alta .fila-doble { display: flex; gap: 12px; }
 .formulario-alta .fila-doble > div { flex: 1; }
 
@@ -193,7 +223,8 @@ button.chico { padding: 5px 9px; font-size: 12px; background: var(--azul-claro);
 
 /* ---- Nav admin (dashboard, panel de gestión, etc.) ---- */
 nav.nav-admin {
-  background: var(--azul);
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
   padding: 0 32px;
   display: flex;
   align-items: center;
@@ -201,29 +232,29 @@ nav.nav-admin {
   flex-wrap: wrap;
 }
 nav.nav-admin a {
-  color: #DCEEFB;
+  color: var(--texto-tenue);
   text-decoration: none;
   padding: 14px 14px;
   font-size: 14px;
   font-weight: 600;
   border-bottom: 3px solid transparent;
 }
-nav.nav-admin a:hover { color: #fff; }
-nav.nav-admin a.activa { color: #fff; border-bottom-color: var(--azul-claro); }
-nav.nav-admin a.deshabilitada { color: #6E93B4; pointer-events: none; }
+nav.nav-admin a:hover { color: var(--texto); }
+nav.nav-admin a.activa { color: var(--texto); border-bottom-color: var(--azul-claro); }
+nav.nav-admin a.deshabilitada { color: #5b5870; pointer-events: none; }
 nav.nav-admin a.deshabilitada .etiqueta-proximamente { font-size: 10px; display: block; font-weight: 400; }
 nav.nav-admin .separador { flex: 1; }
-nav.nav-admin .usuario-actual { color: #DCEEFB; font-size: 13px; margin-right: 10px; }
+nav.nav-admin .usuario-actual { color: var(--texto-tenue); font-size: 13px; margin-right: 10px; }
 nav.nav-admin button.cerrar-sesion {
   background: none;
-  color: #DCEEFB;
+  color: var(--texto-tenue);
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
-  border: 1px solid #4C7BA6;
+  border: 1px solid var(--borde);
   border-radius: 5px;
 }
-nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
+nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.08); color: var(--texto); }
 
 .tarjetas-estadisticas {
   display: grid;
@@ -232,15 +263,15 @@ nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
   margin: 24px 0 32px;
 }
 .tarjeta-estadistica {
-  background: #fff;
-  border: 1px solid var(--gris-borde);
-  border-radius: 8px;
-  padding: 18px;
-  text-align: center;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 16px 18px;
+  text-align: left;
 }
-.tarjeta-estadistica .numero { font-size: 30px; font-weight: 800; color: var(--azul); }
-.tarjeta-estadistica .etiqueta { font-size: 13px; color: #555; margin-top: 4px; }
-.tarjeta-estadistica.alerta .numero { color: var(--rojo); }
+.tarjeta-estadistica .numero { font-size: 26px; font-weight: 800; color: var(--texto); }
+.tarjeta-estadistica .etiqueta { font-size: 13px; color: var(--texto-tenue); margin-top: 4px; }
+.tarjeta-estadistica.alerta .numero { color: var(--ambar); }
 
 /* ---- Paneles del Dashboard: gráfico de estados + incidencias recientes ---- */
 .fila-paneles-dashboard {
@@ -253,20 +284,21 @@ nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
   .fila-paneles-dashboard { grid-template-columns: 1fr; }
 }
 .bloque-dashboard {
-  background: #fff;
-  border: 1px solid var(--gris-borde);
-  border-radius: 8px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
   padding: 18px 20px;
 }
-.bloque-dashboard h3 { margin: 0 0 14px; font-size: 15px; color: var(--azul); }
+.bloque-dashboard h3 { margin: 0 0 14px; font-size: 15px; color: var(--texto); }
 .bloque-dashboard table.tabla-datos { margin-bottom: 10px; font-size: 12px; }
+.bloque-dashboard p { color: var(--texto-tenue); }
 
 .grafico-estados { display: flex; flex-direction: column; gap: 14px; }
 .barra-estado { font-size: 13px; }
-.barra-etiqueta { display: flex; justify-content: space-between; margin-bottom: 5px; color: #444; }
-.barra-valor { font-weight: 700; color: #222; }
+.barra-etiqueta { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--texto); }
+.barra-valor { font-weight: 700; color: var(--texto); }
 .barra-pista {
-  background: var(--gris-fondo);
+  background: var(--superficie-2);
   border-radius: 4px;
   height: 14px;
   overflow: hidden;
@@ -284,25 +316,24 @@ nav.nav-admin button.cerrar-sesion:hover { background: rgba(255,255,255,0.1); }
 /* ---- Mapa de contenedores (Leaflet, RF13) ---- */
 .mapa-contenedores {
   height: 340px;
-  border: 1px solid var(--gris-borde);
+  border: 1px solid var(--borde);
   border-radius: 8px;
   margin-bottom: 10px;
-  background: var(--gris-fondo);
+  background: var(--superficie-2);
 }
 .aviso-mapa {
   font-size: 13px;
-  color: #777;
+  color: var(--texto-tenue);
   margin: 0 0 18px;
 }
 .ficha-cuadrilla {
-  background: #EEF2F6;
-  border: 1px solid var(--gris-borde);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
   border-radius: 6px;
   padding: 10px 14px;
   margin: 0 0 14px;
   font-size: 13px;
-  color: #333;
+  color: var(--texto);
   line-height: 1.6;
 }
-.ficha-cuadrilla.vacia { color: #777; background: none; border-style: dashed; }
-.ficha-cuadrilla p { margin: 0; }
+.ficha-cuadrilla.vacia { color: var(--texto-tenue); background: none; border-style: dashed; }

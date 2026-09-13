@@ -248,7 +248,7 @@ async function cargarContenedores() {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${c.id_contenedor}</td>
-      <td>${c.direccion || '<em style="color:#999;">sin dirección cargada</em>'}</td>
+      <td>${c.direccion || '<em style="color:var(--texto-tenue);">sin dirección cargada</em>'}</td>
       <td>
         <select data-id="${c.id_contenedor}" class="select-estado-contenedor">
           <option value="OPERATIVO" ${c.estado === 'OPERATIVO' ? 'selected' : ''}>Operativo</option>
