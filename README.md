@@ -179,12 +179,12 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-20 tests de integración (usuarios, CRUD de contenedores + autorización
+23 tests de integración (usuarios, CRUD de contenedores + autorización
 por rol, máquina de estados de incidencias de 3 pasos + quién puede
-resolver, rol editable y cuadrilla estable) contra una base de datos de
-test separada (`sigeru_test`, nunca toca la de desarrollo). Ver
-`tests/README.md` para el detalle de qué cubren y cómo correrlos con
-PHPUnit real.
+resolver, rol editable y cuadrilla estable, alta/edición de asignación
+diaria) contra una base de datos de test separada (`sigeru_test`, nunca
+toca la de desarrollo). Ver `tests/README.md` para el detalle de qué
+cubren y cómo correrlos con PHPUnit real.
 
 ## Notas de diseño
 
@@ -240,12 +240,18 @@ PHPUnit real.
 - Asignación diaria (RF23): la crea el Administrador (se resuelve
   `id_administrador` a partir de su sesión) y junta cuadrilla + ruta +
   camión + una lista de operarios con rol ("Chofer"/"Recolector") vía
-  `ASIGNACION_OPERARIO`. La API sigue pidiendo `id_camion` y `operarios`
-  en el POST, pero en el formulario (`panel_recoleccion.js`) ya no se
-  eligen a mano: al elegir la Cuadrilla se completan solos con su camión
-  y chofer estables (`cuadrillas.php` ya los trae en la lista), y el
-  select de Recolectores se limita a los de esa cuadrilla, todos
-  premarcados por si alguno falta ese día. RF25 ("consultar rutas
+  `ASIGNACION_OPERARIO`. También se puede editar (PUT, mismo endpoint):
+  reemplaza fecha/turno/cuadrilla/ruta/camión y la lista completa de
+  operarios (borra y vuelve a insertar en `ASIGNACION_OPERARIO`, mismo
+  patrón "reemplazar todo" que se usa en `CUADRILLA_RECOLECTOR`), así se
+  puede corregir una asignación sin borrarla y crearla de nuevo. La API
+  sigue pidiendo `id_camion` y `operarios` tanto en el POST como en el
+  PUT, pero en el formulario (`panel_recoleccion.js`) ya no se eligen a
+  mano: al elegir la Cuadrilla se completan solos con su camión y chofer
+  estables (`cuadrillas.php` ya los trae en la lista), y el select de
+  Recolectores se limita a los de esa cuadrilla, todos premarcados por
+  si alguno falta ese día (al editar, se preseleccionan los que
+  realmente quedaron en esa asignación). RF25 ("consultar rutas
   asignadas") se resuelve con `?mias=1` en `asignaciones.php`, que
   filtra por el `id_operario` del usuario logueado — así el Operario ve
   solo lo suyo sin necesitar un endpoint aparte.

@@ -11,6 +11,9 @@
  *        OPERARIO logueado (RF25 desde su propia perspectiva).
  * POST   { fecha, turno, id_cuadrilla, id_ruta, id_camion,
  *          operarios: [{ id_operario, rol_en_asignacion }] }   — solo Administrador
+ * PUT    { id_asignacion, fecha, turno, id_cuadrilla, id_ruta, id_camion,
+ *          operarios: [{ id_operario, rol_en_asignacion }] }   — solo Administrador
+ *          (reemplaza la lista de operarios completa, igual que el POST)
  * DELETE { id_asignacion }   — solo Administrador
  */
 
@@ -155,6 +158,77 @@ if ($metodo === 'POST') {
     }
 
     responderJson(['exito' => true, 'mensaje' => 'Asignación diaria creada.', 'id_asignacion' => $idAsignacion], 201);
+}
+
+if ($metodo === 'PUT') {
+    requerirRolAdministrador();
+    $entrada = obtenerJsonEntrada();
+
+    $idAsignacion = (int) ($entrada['id_asignacion'] ?? 0);
+    if ($idAsignacion <= 0) {
+        responderJson(['exito' => false, 'mensaje' => 'id_asignacion es obligatorio.'], 400);
+    }
+
+    $existente = $pdo->prepare('SELECT id_asignacion FROM ASIGNACION_DIARIA WHERE id_asignacion = :id');
+    $existente->execute(['id' => $idAsignacion]);
+    if (!$existente->fetch()) {
+        responderJson(['exito' => false, 'mensaje' => 'Asignación no encontrada.'], 404);
+    }
+
+    $fecha = limpiarTexto($entrada['fecha'] ?? '');
+    $turno = strtoupper(limpiarTexto($entrada['turno'] ?? ''));
+    $idCuadrilla = (int) ($entrada['id_cuadrilla'] ?? 0);
+    $idRuta = (int) ($entrada['id_ruta'] ?? 0);
+    $idCamion = (int) ($entrada['id_camion'] ?? 0);
+    $operarios = is_array($entrada['operarios'] ?? null) ? $entrada['operarios'] : [];
+
+    $errores = [];
+    if ($fecha === '') $errores[] = 'La fecha es obligatoria.';
+    if (!in_array($turno, $turnosValidos, true)) $errores[] = 'Turno inválido.';
+    if ($idCuadrilla <= 0) $errores[] = 'Tenés que elegir una cuadrilla.';
+    if ($idRuta <= 0) $errores[] = 'Tenés que elegir una ruta.';
+    if ($idCamion <= 0) $errores[] = 'Tenés que elegir un camión.';
+    if ($errores) {
+        responderJson(['exito' => false, 'mensaje' => implode(' ', $errores)], 400);
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $pdo->prepare(
+            'UPDATE ASIGNACION_DIARIA
+                SET fecha = :fecha, turno = :turno, id_cuadrilla = :cuadrilla,
+                    id_ruta = :ruta, id_camion = :camion
+              WHERE id_asignacion = :id'
+        )->execute([
+            'fecha' => $fecha, 'turno' => $turno, 'cuadrilla' => $idCuadrilla,
+            'ruta' => $idRuta, 'camion' => $idCamion, 'id' => $idAsignacion,
+        ]);
+
+        // Reemplazo total de la lista de operarios (mismo patrón que el POST).
+        $pdo->prepare('DELETE FROM ASIGNACION_OPERARIO WHERE id_asignacion = :id')->execute(['id' => $idAsignacion]);
+
+        if ($operarios) {
+            $insertarOperario = $pdo->prepare(
+                'INSERT INTO ASIGNACION_OPERARIO (id_asignacion, id_operario, rol_en_asignacion)
+                 VALUES (:asignacion, :operario, :rol)'
+            );
+            foreach ($operarios as $op) {
+                $idOperario = (int) ($op['id_operario'] ?? 0);
+                $rol = limpiarTexto($op['rol_en_asignacion'] ?? '');
+                if ($idOperario > 0 && $rol !== '') {
+                    $insertarOperario->execute(['asignacion' => $idAsignacion, 'operario' => $idOperario, 'rol' => $rol]);
+                }
+            }
+        }
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        responderJson(['exito' => false, 'mensaje' => 'No se pudo actualizar la asignación: ' . $e->getMessage()], 500);
+    }
+
+    responderJson(['exito' => true, 'mensaje' => 'Asignación diaria actualizada.']);
 }
 
 if ($metodo === 'DELETE') {

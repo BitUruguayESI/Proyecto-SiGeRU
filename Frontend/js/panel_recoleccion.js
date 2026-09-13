@@ -120,6 +120,10 @@ document.getElementById('asig_cuadrilla').addEventListener('change', actualizarI
 // ---------------------------------------------------------------
 // ASIGNACIÓN DIARIA
 // ---------------------------------------------------------------
+// Asignaciones cargadas, indexadas por id_asignacion — para completar el
+// formulario al editar (ver btn-editar-asignacion más abajo).
+let asignacionesPorId = {};
+
 async function cargarAsignaciones() {
   const mias = document.getElementById('filtroMias').checked ? '?mias=1' : '';
   const datos = await llamar(`${BASE_REC}/asignaciones.php${mias}`);
@@ -127,23 +131,52 @@ async function cargarAsignaciones() {
   cuerpo.innerHTML = '';
   if (!datos.exito) return;
 
+  asignacionesPorId = {};
+
   if (!datos.asignaciones.length) {
     cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#777;">No hay asignaciones para este filtro.</td></tr>';
     return;
   }
 
   datos.asignaciones.forEach(a => {
+    asignacionesPorId[a.id_asignacion] = a;
     const operarios = a.operarios.map(o => `${o.nombre_completo} (${o.rol_en_asignacion})`).join(', ') || '—';
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${a.id_asignacion}</td><td>${a.fecha}</td><td>${a.turno}</td>
       <td>${a.nombre_cuadrilla}</td><td>${a.nombre_zona}</td><td>${a.matricula}</td>
       <td>${operarios}</td>
-      <td><button class="peligro btn-eliminar-asignacion" data-id="${a.id_asignacion}">Eliminar</button></td>
+      <td>
+        <button class="chico btn-editar-asignacion" data-id="${a.id_asignacion}">Editar</button>
+        <button class="peligro btn-eliminar-asignacion" data-id="${a.id_asignacion}">Eliminar</button>
+      </td>
     `;
     cuerpo.appendChild(fila);
   });
 
+  cuerpo.querySelectorAll('.btn-editar-asignacion').forEach(boton => {
+    boton.addEventListener('click', () => {
+      const a = asignacionesPorId[boton.dataset.id];
+      document.getElementById('asig_id').value = a.id_asignacion;
+      document.getElementById('asig_fecha').value = a.fecha;
+      document.getElementById('asig_turno').value = a.turno;
+      document.getElementById('asig_cuadrilla').value = String(a.id_cuadrilla);
+      actualizarInfoCuadrilla();
+      document.getElementById('asig_ruta').value = String(a.id_ruta);
+      // Sobreescribe la preselección "todos los recolectores de la
+      // cuadrilla" con los que realmente quedaron en esta asignación.
+      const idsRecolectores = a.operarios
+        .filter(o => o.rol_en_asignacion === 'Recolector')
+        .map(o => String(o.id_operario));
+      Array.from(document.getElementById('asig_recolectores').options).forEach(opcion => {
+        opcion.selected = idsRecolectores.includes(opcion.value);
+      });
+      document.getElementById('asig_titulo_form').textContent = `Editar asignación #${a.id_asignacion}`;
+      document.getElementById('asig_boton_submit').textContent = 'Guardar cambios';
+      document.getElementById('asig_cancelar').hidden = false;
+      document.getElementById('formAsignacion').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
   cuerpo.querySelectorAll('.btn-eliminar-asignacion').forEach(boton => {
     boton.addEventListener('click', async () => {
       const resultado = await llamar(`${BASE_REC}/asignaciones.php`, {
@@ -151,6 +184,9 @@ async function cargarAsignaciones() {
         body: JSON.stringify({ id_asignacion: Number(boton.dataset.id) }),
       });
       mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      if (String(document.getElementById('asig_id').value) === String(boton.dataset.id)) {
+        salirModoEdicionAsignacion();
+      }
       cargarAsignaciones();
     });
   });
@@ -158,9 +194,20 @@ async function cargarAsignaciones() {
 
 document.getElementById('filtroMias').addEventListener('change', cargarAsignaciones);
 
+function salirModoEdicionAsignacion() {
+  document.getElementById('formAsignacion').reset();
+  document.getElementById('asig_id').value = '';
+  document.getElementById('asig_titulo_form').textContent = 'Crear asignación diaria (RF23)';
+  document.getElementById('asig_boton_submit').textContent = 'Crear asignación';
+  document.getElementById('asig_cancelar').hidden = true;
+  actualizarInfoCuadrilla();
+}
+document.getElementById('asig_cancelar').addEventListener('click', salirModoEdicionAsignacion);
+
 document.getElementById('formAsignacion').addEventListener('submit', async (evento) => {
   evento.preventDefault();
 
+  const idAsignacion = document.getElementById('asig_id').value;
   const idCuadrilla = document.getElementById('asig_cuadrilla').value;
   const cuadrilla = cuadrillasPorId[idCuadrilla];
   if (!cuadrilla || !cuadrilla.id_camion || !cuadrilla.id_chofer) {
@@ -173,19 +220,21 @@ document.getElementById('formAsignacion').addEventListener('submit', async (even
     operarios.push({ id_operario: Number(o.value), rol_en_asignacion: 'Recolector' });
   });
 
-  const resultado = await llamar(`${BASE_REC}/asignaciones.php`, {
-    method: 'POST',
-    body: JSON.stringify({
-      fecha: document.getElementById('asig_fecha').value,
-      turno: document.getElementById('asig_turno').value,
-      id_cuadrilla: Number(idCuadrilla),
-      id_ruta: Number(document.getElementById('asig_ruta').value),
-      id_camion: Number(cuadrilla.id_camion),
-      operarios,
-    }),
-  });
+  const cuerpo = {
+    fecha: document.getElementById('asig_fecha').value,
+    turno: document.getElementById('asig_turno').value,
+    id_cuadrilla: Number(idCuadrilla),
+    id_ruta: Number(document.getElementById('asig_ruta').value),
+    id_camion: Number(cuadrilla.id_camion),
+    operarios,
+  };
+
+  const resultado = idAsignacion
+    ? await llamar(`${BASE_REC}/asignaciones.php`, { method: 'PUT', body: JSON.stringify({ id_asignacion: Number(idAsignacion), ...cuerpo }) })
+    : await llamar(`${BASE_REC}/asignaciones.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
+
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-  if (resultado.exito) { document.getElementById('formAsignacion').reset(); actualizarInfoCuadrilla(); cargarAsignaciones(); }
+  if (resultado.exito) { salirModoEdicionAsignacion(); cargarAsignaciones(); }
 });
 
 // ---------------------------------------------------------------

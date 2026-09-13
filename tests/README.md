@@ -30,6 +30,10 @@ Cubren:
   sí mismo; rol inválido rechazado; alta/edición de una cuadrilla con
   camión + chofer + recolectores editable; y que no se pueda asignar el
   mismo chofer a dos cuadrillas.
+- **AsignacionesApiTest** — alta de una asignación diaria (RF23) y su
+  edición (PUT: cambiar fecha/turno/ruta y la lista de operarios sin
+  borrar y recrear la asignación), que editar una asignación inexistente
+  devuelva 404, y que un Operario no pueda editar asignaciones (403).
 
 ## Cómo correrlos
 
@@ -64,4 +68,4 @@ test**. `tests/bootstrap.php` elige automáticamente uno u otro: usa
 PHPUnit real si existe `vendor/autoload.php`, o el shim si no.
 
 Corrida en este entorno (con el runner incluido, ver más arriba):
-`Tests: 20, Fallos: 0`.
+`Tests: 23, Fallos: 0`.
