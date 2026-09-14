@@ -19,6 +19,15 @@ body {
     color-scheme: dark;
 }
 
+/* El texto de los <select> es blanco (ver más abajo), pero la lista
+   desplegable de <option> la dibuja el navegador con su propio fondo:
+   en algunos navegadores/SO ese fondo queda blanco igual, y el texto
+   blanco se vuelve invisible. Se fuerza acá para que siempre se vea. */
+select option {
+    background-color: #1a153a;
+    color: #ffffff;
+}
+
 /* Clase de ayuda para centrar las páginas de Login y Registro */
 body.centered-body {
     justify-content: center;
