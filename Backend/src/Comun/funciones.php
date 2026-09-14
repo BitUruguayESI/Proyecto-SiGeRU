@@ -24,6 +24,17 @@ function esCedulaValida(string $ci): bool
     return (bool) preg_match('/^\d{7,8}$/', $ci);
 }
 
+/**
+ * Valida que una fecha venga en formato "YYYY-MM-DD" y sea una fecha de
+ * calendario real (rechaza cosas como "2026-02-30"). Se usa para
+ * vencimientos (carnet de salud, licencia de conducir).
+ */
+function esFechaValida(string $fecha): bool
+{
+    $partes = DateTime::createFromFormat('Y-m-d', $fecha);
+    return $partes !== false && $partes->format('Y-m-d') === $fecha;
+}
+
 function responderJson(array $datos, int $codigoHttp = 200): void
 {
     http_response_code($codigoHttp);

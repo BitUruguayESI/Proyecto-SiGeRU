@@ -132,6 +132,7 @@ final class MaquinariaApiTest extends TestCase
             'ci' => $ciOperario, 'contrasena' => 'clave12345',
             'email' => "op-maq{$ciOperario}@sigeru.uy", 'nombre_completo' => 'Operario Maquinaria',
             'tipo_usuario' => 'OPERARIO', 'cargo' => 'CHOFER',
+            'licencia_categoria' => 'D', 'licencia_vencimiento' => '2027-01-01',
         ]);
         $operario->post('/api-usuarios/login.php', ['ci' => $ciOperario, 'contrasena' => 'clave12345']);
 

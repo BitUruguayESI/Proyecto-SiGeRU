@@ -160,6 +160,7 @@ final class IncidenciasApiTest extends TestCase
             'ci' => $ciChofer, 'contrasena' => 'clave12345',
             'email' => "inc-chofer{$sufijo}@sigeru.uy", 'nombre_completo' => 'Chofer Incidencias',
             'tipo_usuario' => 'OPERARIO', 'cargo' => 'CHOFER',
+            'licencia_categoria' => 'D', 'licencia_vencimiento' => '2027-01-01',
         ]);
         $chofer->post('/api-usuarios/login.php', ['ci' => $ciChofer, 'contrasena' => 'clave12345']);
 

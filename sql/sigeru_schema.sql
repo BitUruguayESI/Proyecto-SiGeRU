@@ -29,13 +29,14 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- en OPERARIO o ADMINISTRADOR según este valor, y evitan que un mismo
 -- C.I. termine en las dos tablas a la vez.
 CREATE TABLE USUARIO (
-    ci               VARCHAR(15)  NOT NULL,
-    contrasena       VARCHAR(255) NOT NULL,             -- hash (bcrypt/argon2), nunca texto plano
-    email            VARCHAR(150) NOT NULL,
-    nombre_completo  VARCHAR(150) NOT NULL,
-    tipo_usuario     ENUM('OPERARIO','ADMINISTRADOR') NOT NULL,
-    fecha_alta       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    estado           ENUM('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+    ci                        VARCHAR(15)  NOT NULL,
+    contrasena                VARCHAR(255) NOT NULL,             -- hash (bcrypt/argon2), nunca texto plano
+    email                     VARCHAR(150) NOT NULL,
+    nombre_completo           VARCHAR(150) NOT NULL,
+    tipo_usuario              ENUM('OPERARIO','ADMINISTRADOR') NOT NULL,
+    fecha_alta                DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado                    ENUM('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+    carnet_salud_vencimiento  DATE NULL,   -- vencimiento del carnet de salud (todo USUARIO, no solo OPERARIO)
     PRIMARY KEY (ci),
     UNIQUE KEY uq_usuario_email (email)
 ) ENGINE=InnoDB;
@@ -56,10 +57,16 @@ CREATE TABLE USUARIO_TELEFONO (
 -- roles de personal de campo que pide el modelo de dashboards por rol);
 -- se resolvió como ENUM (y no texto libre) para que sea un valor cerrado
 -- y editable de forma segura desde el panel de Usuarios.
+-- licencia_categoria/licencia_vencimiento solo aplican al cargo CHOFER
+-- (quedan NULL para RECOLECTOR); se validan a nivel de aplicación, no
+-- con un CHECK, porque MySQL/MariaDB no puede condicionar un CHECK a
+-- otra columna de forma portable en todas las versiones.
 CREATE TABLE OPERARIO (
-    id_operario   INT AUTO_INCREMENT,
-    cargo         ENUM('CHOFER','RECOLECTOR') NOT NULL,
-    ci_usuario    VARCHAR(15) NOT NULL,
+    id_operario           INT AUTO_INCREMENT,
+    cargo                 ENUM('CHOFER','RECOLECTOR') NOT NULL,
+    ci_usuario            VARCHAR(15) NOT NULL,
+    licencia_categoria    VARCHAR(10) NULL,   -- ej: "B", "D", "E" — obligatorio si cargo = CHOFER
+    licencia_vencimiento  DATE NULL,          -- obligatorio si cargo = CHOFER
     PRIMARY KEY (id_operario),
     UNIQUE KEY uq_operario_usuario (ci_usuario),
     CONSTRAINT fk_operario_usuario FOREIGN KEY (ci_usuario)

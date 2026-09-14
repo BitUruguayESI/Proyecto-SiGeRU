@@ -91,6 +91,7 @@ final class CamionesApiTest extends TestCase
             'ci' => $ciOperario, 'contrasena' => 'clave12345',
             'email' => "op-cam{$ciOperario}@sigeru.uy", 'nombre_completo' => 'Operario Camiones',
             'tipo_usuario' => 'OPERARIO', 'cargo' => 'CHOFER',
+            'licencia_categoria' => 'D', 'licencia_vencimiento' => '2027-01-01',
         ]);
         $operario->post('/api-usuarios/login.php', ['ci' => $ciOperario, 'contrasena' => 'clave12345']);
 

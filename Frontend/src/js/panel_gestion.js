@@ -122,8 +122,18 @@ async function abrirEdicionUsuario(ci) {
   document.getElementById('usu_rol').value = u.rol;
   document.getElementById('usu_rol').disabled = esUnoMismo;
   document.getElementById('usu_rol_aviso').hidden = !esUnoMismo;
+  document.getElementById('usu_carnet_salud').value = u.carnet_salud_vencimiento || '';
+  document.getElementById('usu_licencia_categoria').value = u.licencia_categoria || '';
+  document.getElementById('usu_licencia_vencimiento').value = u.licencia_vencimiento || '';
+  actualizarBloqueLicenciaUsuario();
   formUsuario.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+
+function actualizarBloqueLicenciaUsuario() {
+  const esChofer = document.getElementById('usu_rol').value === 'CHOFER';
+  document.getElementById('usu_bloque_licencia').classList.toggle('oculto', !esChofer);
+}
+document.getElementById('usu_rol').addEventListener('change', actualizarBloqueLicenciaUsuario);
 
 document.getElementById('usu_filtro_tipo').addEventListener('change', cargarUsuarios);
 
@@ -132,6 +142,7 @@ document.getElementById('usu_cancelar').addEventListener('click', () => {
   formUsuario.hidden = true;
   document.getElementById('usu_rol').disabled = false;
   document.getElementById('usu_rol_aviso').hidden = true;
+  document.getElementById('usu_bloque_licencia').classList.add('oculto');
   document.getElementById('usu_sin_seleccion').hidden = false;
 });
 
@@ -144,9 +155,14 @@ formUsuario.addEventListener('submit', async (evento) => {
     nombre_completo: document.getElementById('usu_nombre').value.trim(),
     email: document.getElementById('usu_email').value.trim(),
     telefonos,
+    carnet_salud_vencimiento: document.getElementById('usu_carnet_salud').value,
   };
   if (!selectRol.disabled) {
     cuerpo.rol = selectRol.value;
+  }
+  if (!document.getElementById('usu_bloque_licencia').classList.contains('oculto')) {
+    cuerpo.licencia_categoria = document.getElementById('usu_licencia_categoria').value.trim();
+    cuerpo.licencia_vencimiento = document.getElementById('usu_licencia_vencimiento').value;
   }
   const contrasena = document.getElementById('usu_contrasena').value;
   if (contrasena) cuerpo.contrasena = contrasena;

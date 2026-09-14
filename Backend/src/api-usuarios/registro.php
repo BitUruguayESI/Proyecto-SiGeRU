@@ -11,6 +11,9 @@
  *   "nombre_completo": "Juan Pérez",
  *   "tipo_usuario": "OPERARIO" | "ADMINISTRADOR",
  *   "cargo": "CHOFER" | "RECOLECTOR",   // obligatorio solo si tipo_usuario = OPERARIO
+ *   "carnet_salud_vencimiento": "2027-03-15",   // opcional, "YYYY-MM-DD", cualquier tipo de usuario
+ *   "licencia_categoria": "B",           // obligatorio solo si cargo = CHOFER
+ *   "licencia_vencimiento": "2027-03-15", // obligatorio solo si cargo = CHOFER, "YYYY-MM-DD"
  *   "telefonos": ["099123456", "26001122"]   // opcional, 0 o más
  * }
  *
@@ -35,6 +38,9 @@ $nombreCompleto   = limpiarTexto($entrada['nombre_completo'] ?? '');
 $tipoUsuario      = strtoupper(limpiarTexto($entrada['tipo_usuario'] ?? ''));
 $cargo            = strtoupper(limpiarTexto($entrada['cargo'] ?? ''));
 $telefonos        = is_array($entrada['telefonos'] ?? null) ? $entrada['telefonos'] : [];
+$carnetSalud      = limpiarTexto($entrada['carnet_salud_vencimiento'] ?? '');
+$licenciaCategoria = limpiarTexto($entrada['licencia_categoria'] ?? '');
+$licenciaVencimiento = limpiarTexto($entrada['licencia_vencimiento'] ?? '');
 
 // ---- Validaciones ----
 $errores = [];
@@ -57,6 +63,19 @@ if (!in_array($tipoUsuario, ['OPERARIO', 'ADMINISTRADOR'], true)) {
 if ($tipoUsuario === 'OPERARIO' && !in_array($cargo, ['CHOFER', 'RECOLECTOR'], true)) {
     $errores[] = 'El cargo es obligatorio para un OPERARIO y debe ser CHOFER o RECOLECTOR.';
 }
+if ($carnetSalud !== '' && !esFechaValida($carnetSalud)) {
+    $errores[] = 'El vencimiento del carnet de salud debe tener formato AAAA-MM-DD.';
+}
+if ($cargo === 'CHOFER') {
+    if ($licenciaCategoria === '') {
+        $errores[] = 'La categoría de la libreta de conducir es obligatoria para un Chofer.';
+    }
+    if ($licenciaVencimiento === '') {
+        $errores[] = 'El vencimiento de la libreta de conducir es obligatorio para un Chofer.';
+    } elseif (!esFechaValida($licenciaVencimiento)) {
+        $errores[] = 'El vencimiento de la libreta de conducir debe tener formato AAAA-MM-DD.';
+    }
+}
 
 if ($errores) {
     responderJson(['exito' => false, 'mensaje' => implode(' ', $errores)], 400);
@@ -78,8 +97,8 @@ try {
 
     // 1) Fila base en USUARIO (tipo_usuario resuelve RN01 - generalización)
     $insertarUsuario = $pdo->prepare(
-        'INSERT INTO USUARIO (ci, contrasena, email, nombre_completo, tipo_usuario)
-         VALUES (:ci, :contrasena, :email, :nombre_completo, :tipo_usuario)'
+        'INSERT INTO USUARIO (ci, contrasena, email, nombre_completo, tipo_usuario, carnet_salud_vencimiento)
+         VALUES (:ci, :contrasena, :email, :nombre_completo, :tipo_usuario, :carnet_salud_vencimiento)'
     );
     $insertarUsuario->execute([
         'ci'              => $ci,
@@ -87,12 +106,21 @@ try {
         'email'           => $email,
         'nombre_completo' => $nombreCompleto,
         'tipo_usuario'    => $tipoUsuario,
+        'carnet_salud_vencimiento' => $carnetSalud !== '' ? $carnetSalud : null,
     ]);
 
     // 2) Fila hija según el tipo (los triggers de la base validan que coincida con tipo_usuario)
     if ($tipoUsuario === 'OPERARIO') {
-        $insertarHijo = $pdo->prepare('INSERT INTO OPERARIO (cargo, ci_usuario) VALUES (:cargo, :ci)');
-        $insertarHijo->execute(['cargo' => $cargo, 'ci' => $ci]);
+        $insertarHijo = $pdo->prepare(
+            'INSERT INTO OPERARIO (cargo, ci_usuario, licencia_categoria, licencia_vencimiento)
+             VALUES (:cargo, :ci, :licencia_categoria, :licencia_vencimiento)'
+        );
+        $insertarHijo->execute([
+            'cargo' => $cargo,
+            'ci' => $ci,
+            'licencia_categoria' => $cargo === 'CHOFER' ? $licenciaCategoria : null,
+            'licencia_vencimiento' => $cargo === 'CHOFER' ? $licenciaVencimiento : null,
+        ]);
     } else {
         $insertarHijo = $pdo->prepare('INSERT INTO ADMINISTRADOR (ci_usuario) VALUES (:ci)');
         $insertarHijo->execute(['ci' => $ci]);

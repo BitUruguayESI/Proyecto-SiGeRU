@@ -35,11 +35,16 @@ final class AsignacionesApiTest extends TestCase
     private function crearOperario(string $cargo): int
     {
         $ci = $this->ciDePrueba();
-        $this->admin->post('/api-usuarios/registro.php', [
+        $datos = [
             'ci' => $ci, 'contrasena' => 'clave12345',
             'email' => "op{$ci}@sigeru.uy", 'nombre_completo' => "Operario {$ci}",
             'tipo_usuario' => 'OPERARIO', 'cargo' => $cargo,
-        ]);
+        ];
+        if ($cargo === 'CHOFER') {
+            $datos['licencia_categoria'] = 'D';
+            $datos['licencia_vencimiento'] = '2027-01-01';
+        }
+        $this->admin->post('/api-usuarios/registro.php', $datos);
         $listado = $this->admin->get("/api-usuarios/listar_operarios.php?cargo={$cargo}");
         foreach ($listado['cuerpo']['operarios'] as $o) {
             if ($o['ci'] === $ci) {

@@ -10,10 +10,14 @@
  *
  * GET  ?ci=12345678          -> un usuario (con teléfonos)
  * GET  ?tipo_usuario=OPERARIO&estado=ACTIVO  (ambos opcionales) -> lista
- * PUT  { ci, nombre_completo?, email?, rol?, contrasena?, telefonos?, estado? }
+ * PUT  { ci, nombre_completo?, email?, rol?, contrasena?, telefonos?, estado?,
+ *        carnet_salud_vencimiento?, licencia_categoria?, licencia_vencimiento? }
  *      rol: 'ADMINISTRADOR' | 'CHOFER' | 'RECOLECTOR' — el "rol" que ve
  *      el Administrador en el panel de Usuarios. Reemplaza al viejo
  *      "cargo" (ahora es cargo el que vive dentro de rol, para OPERARIO).
+ *      carnet_salud_vencimiento: "YYYY-MM-DD", aplica a cualquier usuario.
+ *      licencia_categoria/licencia_vencimiento: solo válidos si el cargo
+ *      final (después de aplicar "rol", si vino) es CHOFER — si no, 400.
  * DELETE { ci }              -> baja lógica: USUARIO.estado = INACTIVO
  *
  * Cambiar de rol entre Administrador y Recolector/Chofer SÍ cambia
@@ -40,7 +44,8 @@ function usuarioConDetalle(PDO $pdo, string $ci): ?array
 {
     $consulta = $pdo->prepare(
         'SELECT u.ci, u.email, u.nombre_completo, u.tipo_usuario, u.estado, u.fecha_alta,
-                o.cargo
+                u.carnet_salud_vencimiento,
+                o.cargo, o.licencia_categoria, o.licencia_vencimiento
          FROM USUARIO u
          LEFT JOIN OPERARIO o ON o.ci_usuario = u.ci
          WHERE u.ci = :ci'
@@ -85,7 +90,9 @@ if ($metodo === 'GET') {
     $whereSql = $condiciones ? ('WHERE ' . implode(' AND ', $condiciones)) : '';
 
     $consulta = $pdo->prepare(
-        "SELECT u.ci, u.email, u.nombre_completo, u.tipo_usuario, u.estado, u.fecha_alta, o.cargo
+        "SELECT u.ci, u.email, u.nombre_completo, u.tipo_usuario, u.estado, u.fecha_alta,
+                u.carnet_salud_vencimiento,
+                o.cargo, o.licencia_categoria, o.licencia_vencimiento
          FROM USUARIO u
          LEFT JOIN OPERARIO o ON o.ci_usuario = u.ci
          $whereSql
@@ -158,6 +165,16 @@ if ($metodo === 'PUT') {
         $valores['estado'] = $estado;
     }
 
+    // Carnet de salud: aplica a cualquier tipo de usuario.
+    if (isset($entrada['carnet_salud_vencimiento'])) {
+        $carnetSalud = limpiarTexto($entrada['carnet_salud_vencimiento']);
+        if ($carnetSalud !== '' && !esFechaValida($carnetSalud)) {
+            responderJson(['exito' => false, 'mensaje' => 'El vencimiento del carnet de salud debe tener formato AAAA-MM-DD.'], 400);
+        }
+        $campos[] = 'carnet_salud_vencimiento = :carnet_salud_vencimiento';
+        $valores['carnet_salud_vencimiento'] = $carnetSalud !== '' ? $carnetSalud : null;
+    }
+
     // Rol: ADMINISTRADOR, CHOFER o RECOLECTOR. Se valida acá (antes de la
     // transacción) para responder rápido con 400/409 sin dejar nada a medio
     // aplicar; el cambio de fila hija (si corresponde) se hace más abajo.
@@ -172,6 +189,35 @@ if ($metodo === 'PUT') {
             responderJson(['exito' => false, 'mensaje' => 'No podés cambiar tu propio rol.'], 409);
         }
         $tipoNuevo = $rolNuevo === 'ADMINISTRADOR' ? 'ADMINISTRADOR' : 'OPERARIO';
+    }
+
+    // Licencia de conducir: solo tiene sentido para un Chofer. Se valida
+    // contra el cargo FINAL (el nuevo, si se está cambiando de rol; si no,
+    // el que ya tiene en la base).
+    $licenciaCategoria = isset($entrada['licencia_categoria']) ? limpiarTexto((string) $entrada['licencia_categoria']) : null;
+    $licenciaVencimiento = isset($entrada['licencia_vencimiento']) ? limpiarTexto((string) $entrada['licencia_vencimiento']) : null;
+    $licenciaProvista = $licenciaCategoria !== null || $licenciaVencimiento !== null;
+
+    $cargoFinal = null;
+    if ($rolNuevo !== null) {
+        $cargoFinal = in_array($rolNuevo, ['CHOFER', 'RECOLECTOR'], true) ? $rolNuevo : null;
+    } elseif ($usuarioActual['tipo_usuario'] === 'OPERARIO') {
+        $cargoActual = $pdo->prepare('SELECT cargo FROM OPERARIO WHERE ci_usuario = :ci');
+        $cargoActual->execute(['ci' => $ci]);
+        $filaCargo = $cargoActual->fetch();
+        $cargoFinal = $filaCargo ? $filaCargo['cargo'] : null;
+    }
+
+    if ($licenciaProvista && $cargoFinal !== 'CHOFER') {
+        responderJson(['exito' => false, 'mensaje' => 'Los datos de licencia de conducir solo aplican a un Chofer.'], 400);
+    }
+    if ($licenciaProvista && $cargoFinal === 'CHOFER') {
+        if (($licenciaCategoria ?? '') === '') {
+            responderJson(['exito' => false, 'mensaje' => 'La categoría de la libreta de conducir no puede quedar vacía.'], 400);
+        }
+        if (($licenciaVencimiento ?? '') === '' || !esFechaValida($licenciaVencimiento)) {
+            responderJson(['exito' => false, 'mensaje' => 'El vencimiento de la libreta debe tener formato AAAA-MM-DD.'], 400);
+        }
     }
 
     try {
@@ -230,6 +276,18 @@ if ($metodo === 'PUT') {
                     $pdo->prepare('INSERT INTO ADMINISTRADOR (ci_usuario) VALUES (:ci)')->execute(['ci' => $ci]);
                 }
             }
+        }
+
+        // Licencia de conducir: si el cargo final no es CHOFER (pasó a
+        // Administrador o a Recolector), se limpia — no le corresponde.
+        // Si es CHOFER y se mandaron datos nuevos, se aplican.
+        if ($rolNuevo !== null && $rolNuevo !== 'CHOFER') {
+            $pdo->prepare('UPDATE OPERARIO SET licencia_categoria = NULL, licencia_vencimiento = NULL WHERE ci_usuario = :ci')
+                ->execute(['ci' => $ci]);
+        }
+        if ($cargoFinal === 'CHOFER' && $licenciaProvista) {
+            $pdo->prepare('UPDATE OPERARIO SET licencia_categoria = :cat, licencia_vencimiento = :ven WHERE ci_usuario = :ci')
+                ->execute(['cat' => $licenciaCategoria, 'ven' => $licenciaVencimiento, 'ci' => $ci]);
         }
 
         // Teléfonos: reemplazo completo (mismo patrón que CONTENEDOR_TIPO_RESIDUO).
