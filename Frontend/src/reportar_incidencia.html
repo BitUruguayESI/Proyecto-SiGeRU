@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Reportar incidencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+  <header class="header-vecino">
+    <a class="logo" href="landing.html" style="text-decoration:none;">
+      <img src="img/logo.jpg" alt="SiGeRU">
+      <span>SiGeRU</span>
+    </a>
+    <a class="nav-item" href="landing.html">Volver al inicio</a>
+  </header>
+
+  <div class="dashboard-con-header">
+    <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+      <div class="form-container" style="max-width:520px;">
+        <h1 class="brand-title">Reportar una incidencia</h1>
+        <p class="form-subtitle">No hace falta tener cuenta. Te avisamos las novedades a tu email.</p>
+
+        <form id="formIncidencia" class="form-vecino" novalidate>
+          <div>
+            <label for="direccionContenedor">Dirección del contenedor</label>
+            <input type="text" id="direccionContenedor" list="listaDirecciones" autocomplete="off"
+                   placeholder="Empezá a escribir la dirección...">
+            <datalist id="listaDirecciones"></datalist>
+            <input type="hidden" id="contenedor">
+            <p id="avisoContenedor" class="aviso-mapa" hidden></p>
+            <div id="mapaReporte" class="mapa-contenedores" hidden></div>
+          </div>
+
+          <div>
+            <label for="tipo">Tipo de incidencia</label>
+            <select id="tipo" required>
+              <option value="Desborde">Contenedor desbordado</option>
+              <option value="Dañado">Contenedor dañado</option>
+              <option value="Fuera de lugar">Contenedor fuera de lugar</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" rows="4" required></textarea>
+          </div>
+
+          <div>
+            <label for="email">Tu email</label>
+            <input type="email" id="email" required>
+          </div>
+
+          <button type="submit" class="btn-enviar-reporte">Reportar incidencia</button>
+          <div id="mensaje" class="mensaje"></div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/reportar_incidencia.js"></script>
+</body>
+</html>

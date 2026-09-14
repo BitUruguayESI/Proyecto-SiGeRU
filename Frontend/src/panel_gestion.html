@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Panel de gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body data-pagina="gestion">
+  <header class="banner"><h1>Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main class="panel">
+    <h2 style="margin-top:0;">Gestión de recursos</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
+
+    <nav class="pestanias">
+      <button data-seccion="usuarios">Usuarios</button>
+      <button data-seccion="contenedores" class="activa">Contenedores</button>
+      <button data-seccion="rutas">Rutas</button>
+      <button data-seccion="cuadrillas">Cuadrillas</button>
+      <button data-seccion="camiones">Camiones</button>
+      <button data-seccion="instalaciones">Instalaciones</button>
+      <button data-seccion="maquinaria">Maquinaria</button>
+      <button data-seccion="retiros">Retiros especiales</button>
+    </nav>
+
+    <!-- ===================== USUARIOS ===================== -->
+    <section id="seccion-usuarios" class="seccion-panel">
+      <a href="registro.html" class="boton-enlace">Registrar nuevo usuario</a>
+      <label>Filtrar por rol</label>
+      <select id="usu_filtro_tipo" style="max-width:260px; margin-bottom:12px;">
+        <option value="">Todos</option>
+        <option value="ADMINISTRADOR">Administrador</option>
+        <option value="RECOLECTOR">Recolector</option>
+        <option value="CHOFER">Chofer</option>
+      </select>
+      <table class="tabla-datos">
+        <thead><tr><th>CI</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaUsuarios"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3>Editar usuario</h3>
+        <p id="usu_sin_seleccion" style="color:#a0aec0;">Elegí "Editar" en un usuario de la tabla para modificarlo acá.</p>
+        <form id="formUsuario" hidden>
+          <input type="hidden" id="usu_ci">
+          <p><strong>CI: <span id="usu_ci_visible"></span></strong></p>
+          <label>Nombre completo</label>
+          <input type="text" id="usu_nombre" required>
+          <label>Email</label>
+          <input type="email" id="usu_email" required>
+          <label>Rol</label>
+          <select id="usu_rol">
+            <option value="ADMINISTRADOR">Administrador</option>
+            <option value="RECOLECTOR">Recolector</option>
+            <option value="CHOFER">Chofer</option>
+          </select>
+          <p id="usu_rol_aviso" class="aviso-mapa" hidden>No podés cambiar tu propio rol.</p>
+          <div id="usu_bloque_licencia" class="oculto">
+            <label>Categoría de la libreta de conducir</label>
+            <input type="text" id="usu_licencia_categoria" placeholder="Ej: B, D, E">
+            <label>Vencimiento de la libreta</label>
+            <input type="date" id="usu_licencia_vencimiento">
+          </div>
+          <label>Vencimiento del carnet de salud</label>
+          <input type="date" id="usu_carnet_salud">
+          <label>Teléfonos </label>
+          <input type="text" id="usu_telefonos" placeholder="099123456, 26001122">
+          <label>Nueva contraseña (dejar vacío para no cambiarla)</label>
+          <input type="password" id="usu_contrasena" minlength="8">
+          <div class="fila-doble" style="margin-top:10px;">
+            <button type="submit" class="principal">Guardar cambios</button>
+            <button type="button" id="usu_cancelar" class="secundario">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== CONTENEDORES ===================== -->
+    <section id="seccion-contenedores" class="seccion-panel activa">
+      <h3 style="margin-top:0;">Mapa de contenedores</h3>
+      <div id="mapaContenedores" class="mapa-contenedores"></div>
+      <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
+
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Dirección</th><th>Estado</th><th>Nivel (%)</th><th>Ruta</th><th>Tipos de residuo</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaContenedores"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="cont_titulo_form">Registrar contenedor</h3>
+        <form id="formContenedor">
+          <input type="hidden" id="cont_id">
+          <div class="fila-doble">
+            <div><label>Dirección</label><input type="text" id="cont_direccion" placeholder="Bulevar Artigas 1234, Montevideo" required></div>
+            <div><label>Ruta</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Nivel de llenado inicial (%)</label><input type="number" id="cont_nivel" min="0" max="100" value="0"></div>
+            <div><label>Tipos de residuo </label><input type="text" id="cont_tipos" placeholder="organico, plastico"></div>
+          </div>
+          <button type="submit" class="principal" id="cont_boton_submit">Registrar contenedor</button>
+          <button type="button" class="secundario" id="cont_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== RUTAS ===================== -->
+    <section id="seccion-rutas" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Zona</th><th>Frecuencia</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaRutas"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="ruta_titulo_form">Registrar ruta</h3>
+        <form id="formRuta">
+          <input type="hidden" id="ruta_id">
+          <div class="fila-doble">
+            <div><label>Zona</label><input type="text" id="ruta_zona" placeholder="Zona Centro" required></div>
+            <div><label>Frecuencia</label><input type="text" id="ruta_frecuencia" placeholder="diaria / lunes y jueves" required></div>
+          </div>
+          <button type="submit" class="principal" id="ruta_boton_submit">Registrar ruta</button>
+          <button type="button" class="secundario" id="ruta_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== CUADRILLAS ===================== -->
+    <section id="seccion-cuadrillas" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+       
+      </p>
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaCuadrillas"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="cuad_titulo_form">Registrar cuadrilla</h3>
+        <form id="formCuadrilla">
+          <input type="hidden" id="cuad_id">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="cuad_nombre" required></div>
+            <div><label>Cantidad de integrantes</label><input type="number" id="cuad_cantidad" min="0" value="0"></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Camión</label><select id="cuad_camion"><option value="">Sin asignar</option></select></div>
+            <div><label>Chofer</label><select id="cuad_chofer"><option value="">Sin asignar</option></select></div>
+          </div>
+          <label>Recolectores</label>
+          <select id="cuad_recolectores" multiple size="4"></select>
+          <label>Rutas habituales</label>
+          <select id="cuad_rutas" multiple size="4"></select>
+          <button type="submit" class="principal" id="cuad_boton_submit">Registrar cuadrilla</button>
+          <button type="button" class="secundario" id="cuad_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== CAMIONES ===================== -->
+    <section id="seccion-camiones" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Matrícula</th><th>Marca/Modelo</th><th>Capacidad</th><th>Estado</th><th>Km</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaCamiones"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="cam_titulo_form">Registrar camión</h3>
+        <form id="formCamion">
+          <input type="hidden" id="cam_id">
+          <div class="fila-doble">
+            <div><label>Matrícula</label><input type="text" id="cam_matricula" required></div>
+            <div><label>Capacidad de carga (kg)</label><input type="number" id="cam_capacidad" min="1" required></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Marca</label><input type="text" id="cam_marca" required></div>
+            <div><label>Modelo</label><input type="text" id="cam_modelo" required></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Kilometraje</label><input type="number" id="cam_kilometraje" min="0" value="0"></div>
+          </div>
+          <button type="submit" class="principal" id="cam_boton_submit">Registrar camión</button>
+          <button type="button" class="secundario" id="cam_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== INSTALACIONES ===================== -->
+    <section id="seccion-instalaciones" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Coordenadas</th><th>Capacidad</th><th>Residuos aceptados</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaInstalaciones"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="inst_titulo_form">Registrar centro de acopio</h3>
+        <form id="formInstalacion">
+          <input type="hidden" id="inst_id">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="inst_nombre" required></div>
+            <div><label>Tipo</label>
+              <select id="inst_tipo" required>
+                <option value="CENTRO_ACOPIO">Centro de acopio</option>
+                <option value="VERTEDERO">Vertedero</option>
+              </select>
+            </div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Dirección</label><input type="text" id="inst_coordenadas" required></div>
+            <div><label>Capacidad máxima</label><input type="number" id="inst_capacidad" min="1" required></div>
+          </div>
+          <label>Residuos aceptados</label>
+          <input type="text" id="inst_residuos" placeholder="organico, plastico, vidrio" required>
+          <button type="submit" class="principal" id="inst_boton_submit">Registrar instalación</button>
+          <button type="button" class="secundario" id="inst_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+    <!-- ===================== MAQUINARIA ===================== -->
+    <section id="seccion-maquinaria" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Instalación</th><th>Repuestos</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaMaquinaria"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="maq_titulo_form">Registrar maquinaria</h3>
+        <form id="formMaquinaria">
+          <input type="hidden" id="maq_id">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="maq_nombre" placeholder="Compactadora 1" required></div>
+            <div><label>Tipo</label><input type="text" id="maq_tipo" placeholder="Compactadora, prensa, cinta..." required></div>
+          </div>
+          <label>Instalación</label>
+          <select id="maq_id_centro" required></select>
+          <label>Estado</label>
+          <select id="maq_estado">
+            <option value="OPERATIVA">Operativa</option>
+            <option value="EN_MANTENIMIENTO">En mantenimiento</option>
+            <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+          </select>
+          <label>Repuestos asociados</label>
+          <select id="maq_repuestos" multiple size="4"></select>
+          <button type="submit" class="principal" id="maq_boton_submit">Registrar maquinaria</button>
+          <button type="button" class="secundario" id="maq_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+
+      <div class="formulario-alta" style="margin-top:16px;">
+        <h3 id="rep_titulo_form">Catálogo de repuestos</h3>
+        <table class="tabla-datos">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tablaRepuestos"></tbody>
+        </table>
+        <form id="formRepuesto">
+          <input type="hidden" id="rep_id">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="rep_nombre" required></div>
+            <div><label>Tipo</label><input type="text" id="rep_tipo" required></div>
+          </div>
+          <label>Stock</label>
+          <input type="number" id="rep_stock" min="0" value="0">
+          <label>Estado</label>
+          <select id="rep_estado">
+            <option value="DISPONIBLE">Disponible</option>
+            <option value="AGOTADO">Agotado</option>
+            <option value="DESCONTINUADO">Descontinuado</option>
+          </select>
+          <button type="submit" class="principal" id="rep_boton_submit">Registrar repuesto</button>
+          <button type="button" class="secundario" id="rep_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== RETIROS ESPECIALES ===================== -->
+    <section id="seccion-retiros" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+        Solicitudes públicas de retiro </p>
+        
+      <label for="ret_filtro_estado">Filtrar por estado</label>
+      <select id="ret_filtro_estado" style="max-width:260px; margin-bottom:12px;">
+        <option value="">Todos</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="RETIRADO">Retirado</option>
+      </select>
+      <table class="tabla-datos">
+        <thead>
+          <tr><th>ID</th><th>Tipo de residuo</th><th>Dirección</th><th>Descripción</th><th>Email</th><th>Estado</th><th>Cuadrilla</th><th>Fecha solicitud</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaRetiros"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
+  <script src="js/panel_gestion.js"></script>
+</body>
+</html>

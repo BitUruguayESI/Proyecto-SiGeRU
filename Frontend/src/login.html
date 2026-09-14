@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU Iniciar sesión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="centered-body">
+  <div class="form-container">
+    <h1 class="brand-title">SiGeRU</h1>
+    <p class="form-subtitle">Iniciar sesión</p>
+
+    <form id="formLogin" novalidate>
+      <div class="input-group">
+        <label for="ci">Cédula de identidad</label>
+        <input type="text" id="ci" name="ci" required>
+      </div>
+
+      <div class="input-group">
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Ingresar</button>
+      <div id="mensaje" class="mensaje"></div>
+      <div class="form-footer">
+        <a href="landing.html">Volver al inicio</a>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/login.js"></script>
+</body>
+</html>

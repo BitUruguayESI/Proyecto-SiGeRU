@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Solicitar retiro de residuos especiales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="header-vecino">
+    <a class="logo" href="landing.html" style="text-decoration:none;">
+      <img src="img/logo.jpg" alt="SiGeRU">
+      <span>SiGeRU</span>
+    </a>
+    <a class="nav-item" href="landing.html">Volver al inicio</a>
+  </header>
+
+  <div class="dashboard-con-header">
+    <main class="contenedor-retiro">
+      <div class="form-container">
+        <h1 class="brand-title">Solicitar retiro de residuos especiales</h1>
+        <p class="form-subtitle">Poda, residuos eléctricos, escombros, muebles y otros residuos que no van al contenedor. Coordinamos el retiro por email.</p>
+
+        <form id="formRetiro" class="form-vecino" novalidate>
+          <div>
+            <label for="tipoResiduo">Tipo de residuo</label>
+            <select id="tipoResiduo" required>
+              <option value="" disabled selected>Elegí una opción</option>
+              <option value="Poda">Poda / restos de jardín</option>
+              <option value="Residuos electrónicos">Residuos electrónicos</option>
+              <option value="Escombros">Escombros</option>
+              <option value="Muebles">Muebles</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="direccion">Dirección de retiro</label>
+            <input type="text" id="direccion" required placeholder="Calle y número">
+          </div>
+
+          <div>
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" rows="4" placeholder="Cantidad aproximada, detalles que ayuden a coordinar el retiro..."></textarea>
+          </div>
+
+          <div>
+            <label for="email">Tu email</label>
+            <input type="email" id="email" required>
+          </div>
+
+          <button type="submit" class="btn-enviar-reporte">Enviar solicitud</button>
+          <div id="mensaje" class="mensaje"></div>
+        </form>
+      </div>
+
+      <div class="imagen-zonas-wrapper">
+        <img src="img/mapa-zonas.png" alt="Mapa de zonas de recolección de BitUruguay">
+        <p>Coordinamos el día y horario del retiro por email una vez que recibimos tu solicitud.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/solicitar_retiro.js"></script>
+</body>
+</html>

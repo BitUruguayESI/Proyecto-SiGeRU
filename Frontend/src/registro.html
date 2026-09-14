@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar usuario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="registro">
+  <header class="banner"><h1>Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main>
+    <h2>Registrar nuevo usuario</h2>
+    <p style="font-size:14px; color:#a0aec0; margin-top:-6px;">
+      Solo un Administrador puede crear cuentas de Operario o Administrador.
+    </p>
+    <form id="formRegistro" novalidate>
+      <label for="ci">Cédula de identidad</label>
+      <input type="text" id="ci" name="ci" placeholder="Sin puntos ni guion" required>
+
+      <label for="nombre_completo">Nombre completo</label>
+      <input type="text" id="nombre_completo" name="nombre_completo" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="contrasena">Contraseña</label>
+      <input type="password" id="contrasena" name="contrasena" minlength="8" required>
+
+      <label for="confirmar_contrasena">Confirmar contraseña</label>
+      <input type="password" id="confirmar_contrasena" required>
+
+      <label for="tipo_usuario">Tipo de usuario</label>
+      <select id="tipo_usuario" name="tipo_usuario" required>
+        <option value="">Seleccionar...</option>
+        <option value="OPERARIO">Operario</option>
+        <option value="ADMINISTRADOR">Administrador</option>
+      </select>
+
+      <div id="bloqueCargo" class="oculto">
+        <label for="cargo">Cargo</label>
+        <select id="cargo" name="cargo">
+          <option value="">Seleccionar...</option>
+          <option value="RECOLECTOR">Recolector</option>
+          <option value="CHOFER">Chofer</option>
+        </select>
+      </div>
+
+      <div id="bloqueLicencia" class="oculto">
+        <label for="licencia_categoria">Categoría de la libreta de conducir</label>
+        <input type="text" id="licencia_categoria" placeholder="Ej: B, D, E">
+
+        <label for="licencia_vencimiento">Vencimiento de la libreta</label>
+        <input type="date" id="licencia_vencimiento">
+      </div>
+
+      <label for="carnet_salud_vencimiento">Vencimiento del carnet de salud (opcional)</label>
+      <input type="date" id="carnet_salud_vencimiento">
+
+      <label>Teléfono(s)</label>
+      <div id="listaTelefonos"></div>
+      <button type="button" id="btnAgregarTelefono" class="secundario" style="margin-top:6px;">+ Agregar teléfono</button>
+
+      <button type="submit" class="principal">Registrar usuario</button>
+      <div id="mensaje" class="mensaje"></div>
+      <a class="enlace-secundario" href="panel_gestion.html#usuarios">Volver a Gestión de recursos</a>
+    </form>
+  </main>
+
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
+  <script src="js/registro.js"></script>
+</body>
+</html>
