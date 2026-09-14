@@ -14,7 +14,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
-  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <header class="banner"><h1>Sistema de Gestión de Residuos Urbanos</h1></header>
   <div id="navAdmin"></div>
 
   <main class="panel">
@@ -34,7 +34,7 @@
 
     <!-- ===================== USUARIOS ===================== -->
     <section id="seccion-usuarios" class="seccion-panel">
-      <a href="registro.html" class="boton-enlace">+ Registrar nuevo usuario</a>
+      <a href="registro.html" class="boton-enlace">Registrar nuevo usuario</a>
       <label>Filtrar por rol</label>
       <select id="usu_filtro_tipo" style="max-width:260px; margin-bottom:12px;">
         <option value="">Todos</option>
@@ -69,9 +69,9 @@
             <label>Vencimiento de la libreta</label>
             <input type="date" id="usu_licencia_vencimiento">
           </div>
-          <label>Vencimiento del carnet de salud (opcional)</label>
+          <label>Vencimiento del carnet de salud</label>
           <input type="date" id="usu_carnet_salud">
-          <label>Teléfonos (separados por coma, opcional)</label>
+          <label>Teléfonos </label>
           <input type="text" id="usu_telefonos" placeholder="099123456, 26001122">
           <label>Nueva contraseña (dejar vacío para no cambiarla)</label>
           <input type="password" id="usu_contrasena" minlength="8">
@@ -85,7 +85,7 @@
 
     <!-- ===================== CONTENEDORES ===================== -->
     <section id="seccion-contenedores" class="seccion-panel activa">
-      <h3 style="margin-top:0;">Mapa de contenedores (RF13)</h3>
+      <h3 style="margin-top:0;">Mapa de contenedores</h3>
       <div id="mapaContenedores" class="mapa-contenedores"></div>
       <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
 
@@ -94,16 +94,16 @@
         <tbody id="tablaContenedores"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="cont_titulo_form">Registrar contenedor (RF07)</h3>
+        <h3 id="cont_titulo_form">Registrar contenedor</h3>
         <form id="formContenedor">
           <input type="hidden" id="cont_id">
           <div class="fila-doble">
             <div><label>Dirección</label><input type="text" id="cont_direccion" placeholder="Bulevar Artigas 1234, Montevideo" required></div>
-            <div><label>Ruta (opcional)</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
+            <div><label>Ruta</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
           </div>
           <div class="fila-doble">
             <div><label>Nivel de llenado inicial (%)</label><input type="number" id="cont_nivel" min="0" max="100" value="0"></div>
-            <div><label>Tipos de residuo (separados por coma)</label><input type="text" id="cont_tipos" placeholder="organico, plastico"></div>
+            <div><label>Tipos de residuo </label><input type="text" id="cont_tipos" placeholder="organico, plastico"></div>
           </div>
           <button type="submit" class="principal" id="cont_boton_submit">Registrar contenedor</button>
           <button type="button" class="secundario" id="cont_cancelar" hidden>Cancelar edición</button>
@@ -118,7 +118,7 @@
         <tbody id="tablaRutas"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="ruta_titulo_form">Registrar ruta (RF17 / RF22)</h3>
+        <h3 id="ruta_titulo_form">Registrar ruta</h3>
         <form id="formRuta">
           <input type="hidden" id="ruta_id">
           <div class="fila-doble">
@@ -134,8 +134,7 @@
     <!-- ===================== CUADRILLAS ===================== -->
     <section id="seccion-cuadrillas" class="seccion-panel">
       <p style="color:#a0aec0; font-size:13px; margin-top:0;">
-        La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
-        el Chofer y los Recolectores en su panel "Mi día".
+       
       </p>
       <table class="tabla-datos">
         <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
@@ -153,7 +152,7 @@
             <div><label>Camión</label><select id="cuad_camion"><option value="">Sin asignar</option></select></div>
             <div><label>Chofer</label><select id="cuad_chofer"><option value="">Sin asignar</option></select></div>
           </div>
-          <label>Recolectores (podés elegir varios)</label>
+          <label>Recolectores</label>
           <select id="cuad_recolectores" multiple size="4"></select>
           <label>Rutas habituales</label>
           <select id="cuad_rutas" multiple size="4"></select>
@@ -170,7 +169,7 @@
         <tbody id="tablaCamiones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="cam_titulo_form">Registrar camión (RF26)</h3>
+        <h3 id="cam_titulo_form">Registrar camión</h3>
         <form id="formCamion">
           <input type="hidden" id="cam_id">
           <div class="fila-doble">
@@ -197,7 +196,7 @@
         <tbody id="tablaInstalaciones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="inst_titulo_form">Registrar centro de acopio / vertedero (RF10 / RF11)</h3>
+        <h3 id="inst_titulo_form">Registrar centro de acopio</h3>
         <form id="formInstalacion">
           <input type="hidden" id="inst_id">
           <div class="fila-doble">
@@ -210,7 +209,7 @@
             </div>
           </div>
           <div class="fila-doble">
-            <div><label>Coordenadas</label><input type="text" id="inst_coordenadas" required></div>
+            <div><label>Dirección</label><input type="text" id="inst_coordenadas" required></div>
             <div><label>Capacidad máxima</label><input type="number" id="inst_capacidad" min="1" required></div>
           </div>
           <label>Residuos aceptados</label>
@@ -242,7 +241,7 @@
             <option value="EN_MANTENIMIENTO">En mantenimiento</option>
             <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
           </select>
-          <label>Repuestos asociados (opcional)</label>
+          <label>Repuestos asociados</label>
           <select id="maq_repuestos" multiple size="4"></select>
           <button type="submit" class="principal" id="maq_boton_submit">Registrar maquinaria</button>
           <button type="button" class="secundario" id="maq_cancelar" hidden>Cancelar edición</button>
@@ -278,11 +277,8 @@
     <!-- ===================== RETIROS ESPECIALES ===================== -->
     <section id="seccion-retiros" class="seccion-panel">
       <p style="color:#a0aec0; font-size:13px; margin-top:0;">
-        Solicitudes públicas de retiro de residuos que no van al contenedor común
-        (poda, residuos electrónicos, escombros, muebles, etc.). No tienen un día
-        fijo: coordiná el retiro con el vecino por email y marcá la solicitud como
-        retirada cuando se complete.
-      </p>
+        Solicitudes públicas de retiro </p>
+        
       <label for="ret_filtro_estado">Filtrar por estado</label>
       <select id="ret_filtro_estado" style="max-width:260px; margin-bottom:12px;">
         <option value="">Todos</option>
