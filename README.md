@@ -138,14 +138,22 @@ viajan igual que si fuera un único servidor.
    php -S 127.0.0.1:8000 -t Backend/src
    ```
 
-5. Servir el frontend apuntando al mismo origen que el backend — para
-   probar rápido sin nginx, la forma más simple es servir todo con un
-   único `php -S` cuyo document root sea `Frontend/src`, y hacer que el
-   backend "aparezca" en el mismo puerto con un proxy (eso es
-   justamente lo que hace `Frontend/nginx.conf` en Docker). Para
-   levantar los 3 contenedores reales (con ese proxy ya armado), ver
-   "Levantarlo con Docker" abajo — es la forma recomendada de probar
-   esto local, porque reproduce la separación real de contenedores.
+5. Servir el frontend apuntando al mismo origen que el backend. Sin
+   Docker, no alcanza con abrir la carpeta del proyecto directo en
+   Apache/XAMPP: como el sitio ahora vive repartido en `Backend/src` y
+   `Frontend/src` (no hay `index.php` en la raíz), vas a ver el listado
+   de archivos en vez de la página. La forma más simple de probarlo
+   local sin instalar nginx es con el `router.php` incluido en la raíz
+   del proyecto (hace exactamente lo que hace el proxy de
+   `Frontend/nginx.conf` en Docker, pero para el servidor built-in de
+   PHP): parado en la raíz del proyecto,
+   ```
+   php -S localhost:8080 -t Frontend/src router.php
+   ```
+   y abrir `http://localhost:8080/`. Para levantar los 3 contenedores
+   reales (con ese proxy ya armado), ver "Levantarlo con Docker" abajo
+   — es la forma recomendada, porque reproduce la separación real de
+   contenedores.
 
 ## Levantarlo con Docker (recomendado)
 
