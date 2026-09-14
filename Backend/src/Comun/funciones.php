@@ -110,6 +110,33 @@ function requerirPuedeResolverIncidencia(PDO $pdo): array
 }
 
 /**
+ * Igual que requerirPuedeResolverIncidencia(), pero para confirmar un
+ * retiro de residuos especiales (SOLICITUD_RETIRO): solo ADMINISTRADOR o
+ * el OPERARIO con cargo CHOFER pueden marcarlo como RETIRADO (es quien
+ * maneja el camión y lo retira efectivamente; el Recolector puede ver la
+ * solicitud, pero no cerrarla).
+ */
+function requerirPuedeConfirmarRetiro(PDO $pdo): array
+{
+    $sesion = requerirSesionActiva();
+    if ($sesion['tipo_usuario'] === 'ADMINISTRADOR') {
+        return $sesion;
+    }
+
+    $consulta = $pdo->prepare('SELECT cargo FROM OPERARIO WHERE ci_usuario = :ci');
+    $consulta->execute(['ci' => $sesion['ci_usuario']]);
+    $fila = $consulta->fetch();
+
+    if (!$fila || $fila['cargo'] !== 'CHOFER') {
+        responderJson([
+            'exito' => false,
+            'mensaje' => 'Solo un Administrador o el Chofer pueden marcar un retiro como realizado.',
+        ], 403);
+    }
+    return $sesion;
+}
+
+/**
  * Geocodifica una dirección de texto ("Bulevar Artigas 1234, Montevideo")
  * a coordenadas "lat,lon" usando Nominatim (OpenStreetMap), para el mapa
  * interactivo de contenedores (RF13).

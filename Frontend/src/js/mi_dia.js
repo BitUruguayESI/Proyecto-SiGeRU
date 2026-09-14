@@ -11,6 +11,7 @@
 const BASE_GES = '../api-gestion';
 const BASE_REC = '../api-recoleccion';
 const BASE_INC = '../api-incidencias';
+const BASE_RET = '../api-retiros';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 
 function mostrarMensajeGlobal(texto, tipo) {
@@ -119,6 +120,54 @@ async function cargarMisIncidencias(idCuadrilla, puedeResolver) {
   });
 }
 
+const ETIQUETAS_ESTADO_RETIRO = { PENDIENTE: 'Pendiente', RETIRADO: 'Retirado' };
+
+async function cargarMisRetiros(idCuadrilla, puedeConfirmar) {
+  const cuerpo = document.getElementById('tablaMisRetiros');
+  cuerpo.innerHTML = '';
+
+  if (!idCuadrilla) {
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">Sin cuadrilla asignada todavía.</td></tr>';
+    return;
+  }
+
+  const datos = await llamar(`${BASE_RET}/listar.php?id_cuadrilla=${idCuadrilla}`);
+  const solicitudes = datos.exito ? datos.solicitudes : [];
+
+  if (!solicitudes.length) {
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">Tu cuadrilla no tiene retiros especiales asignados.</td></tr>';
+    return;
+  }
+
+  solicitudes.forEach(sol => {
+    const fila = document.createElement('tr');
+    const acciones = sol.estado === 'PENDIENTE' && puedeConfirmar
+      ? `<button class="chico btn-confirmar-retiro" data-id="${sol.id_solicitud}">Marcar retirado</button>`
+      : (sol.estado === 'RETIRADO' ? `Retirado el ${sol.fecha_retiro || '—'}` : '—');
+    fila.innerHTML = `
+      <td>${sol.id_solicitud}</td>
+      <td>${sol.tipo_residuo}</td>
+      <td>${sol.direccion}</td>
+      <td>${sol.descripcion || '—'}</td>
+      <td>${ETIQUETAS_ESTADO_RETIRO[sol.estado] || sol.estado}</td>
+      <td>${sol.fecha_registro}</td>
+      <td>${acciones}</td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.btn-confirmar-retiro').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE_RET}/actualizar_estado.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ id_solicitud: Number(boton.dataset.id), id_cuadrilla: idCuadrilla }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      if (resultado.exito) cargarMisRetiros(idCuadrilla, puedeConfirmar);
+    });
+  });
+}
+
 (async function iniciar() {
   const sesion = await obtenerSesion();
   if (!sesion) return;
@@ -130,4 +179,5 @@ async function cargarMisIncidencias(idCuadrilla, puedeResolver) {
   const cuadrilla = await cargarMiCuadrilla();
   await cargarMiAsignacion();
   await cargarMisIncidencias(cuadrilla ? cuadrilla.id_cuadrilla : null, esChofer);
+  await cargarMisRetiros(cuadrilla ? cuadrilla.id_cuadrilla : null, esChofer);
 })();

@@ -1,11 +1,14 @@
 <?php
 /**
  * api-retiros/actualizar_estado.php
- * Marca una solicitud de retiro como RETIRADO. Solo el Administrador
- * (es quien coordina y despacha las cuadrillas para estos retiros
- * puntuales, caso a caso).
+ * Marca una solicitud de retiro como RETIRADO. Puede hacerlo el
+ * Administrador (coordina y despacha las cuadrillas para estos retiros
+ * puntuales, caso a caso) o el Chofer de la cuadrilla que efectivamente
+ * lo retira — ver Comun/funciones.php::requerirPuedeConfirmarRetiro().
  *
- * PUT { "id_solicitud": 1, "id_cuadrilla": 2 }   (id_cuadrilla es opcional)
+ * PUT { "id_solicitud": 1, "id_cuadrilla": 2 }   (id_cuadrilla es opcional:
+ * si no se manda, se conserva la cuadrilla que ya tuviera asignada —
+ * ver api-retiros/asignar_cuadrilla.php — para no perderla sin querer)
  */
 
 declare(strict_types=1);
@@ -17,9 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     responderJson(['exito' => false, 'mensaje' => 'Método no permitido.'], 405);
 }
 
-requerirRolAdministrador();
-
 $pdo = obtenerConexion();
+
+requerirPuedeConfirmarRetiro($pdo);
 
 $entrada = obtenerJsonEntrada();
 $idSolicitud = (int) ($entrada['id_solicitud'] ?? 0);
@@ -56,7 +59,8 @@ try {
 
     $pdo->prepare(
         "UPDATE SOLICITUD_RETIRO
-         SET estado = 'RETIRADO', fecha_retiro = NOW(), id_cuadrilla = :id_cuadrilla
+         SET estado = 'RETIRADO', fecha_retiro = NOW(),
+             id_cuadrilla = COALESCE(:id_cuadrilla, id_cuadrilla)
          WHERE id_solicitud = :id"
     )->execute([
         'id_cuadrilla' => $idCuadrilla,

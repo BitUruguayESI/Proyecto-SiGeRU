@@ -5,7 +5,7 @@
  * panel de gestión. Solo staff (Operario o Administrador) — requiere
  * sesión activa.
  *
- * GET  ?estado=PENDIENTE   (opcional)
+ * GET  ?estado=PENDIENTE&id_cuadrilla=2   (ambos opcionales)
  */
 
 declare(strict_types=1);
@@ -28,6 +28,10 @@ $estadosValidos = ['PENDIENTE', 'RETIRADO'];
 if (!empty($_GET['estado']) && in_array($_GET['estado'], $estadosValidos, true)) {
     $condiciones[] = 'r.estado = :estado';
     $valores['estado'] = $_GET['estado'];
+}
+if (!empty($_GET['id_cuadrilla'])) {
+    $condiciones[] = 'r.id_cuadrilla = :id_cuadrilla';
+    $valores['id_cuadrilla'] = (int) $_GET['id_cuadrilla'];
 }
 
 $sql = 'SELECT r.id_solicitud, r.tipo_residuo, r.direccion, r.descripcion, r.estado,

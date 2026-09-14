@@ -453,6 +453,7 @@ async function cargarReferenciasCuadrilla() {
 
 async function cargarCuadrillas() {
   const datos = await llamar(`${BASE}/cuadrillas.php`);
+  cuadrillasDisponiblesRetiro = datos.exito ? datos.cuadrillas : []; // la usa la sección de Retiros especiales
   const cuerpo = document.getElementById('tablaCuadrillas');
   cuerpo.innerHTML = '';
   if (!datos.exito) return;
@@ -900,6 +901,28 @@ document.getElementById('formMaquinaria').addEventListener('submit', async (even
 // ---------------------------------------------------------------
 const BASE_RET = '../api-retiros';
 const ETIQUETAS_ESTADO_RETIRO = { PENDIENTE: 'Pendiente', RETIRADO: 'Retirado' };
+let cuadrillasDisponiblesRetiro = []; // se llena en cargarCuadrillas(), la reusa esta sección
+
+function selectCuadrillasRetiro(idSolicitud) {
+  const opciones = cuadrillasDisponiblesRetiro
+    .map(c => `<option value="${c.id_cuadrilla}">${c.nombre_cuadrilla}</option>`)
+    .join('');
+  return `<select data-id-solicitud="${idSolicitud}" class="select-cuadrilla-retiro"><option value="">Elegir cuadrilla...</option>${opciones}</select>`;
+}
+
+function accionesRetiro(s) {
+  if (s.estado === 'RETIRADO') {
+    return `Retirado el ${s.fecha_retiro || '—'}`;
+  }
+  // PENDIENTE: si todavía no tiene cuadrilla asignada, primero hay que
+  // asignarle una (la ve el Chofer en "Mi día"); si ya la tiene, el
+  // Administrador también puede marcarla retirada directamente.
+  if (!s.id_cuadrilla) {
+    return `${selectCuadrillasRetiro(s.id_solicitud)}
+            <button class="chico btn-asignar-retiro" data-id="${s.id_solicitud}">Asignar</button>`;
+  }
+  return `<button class="chico btn-marcar-retirado" data-id="${s.id_solicitud}">Marcar retirado</button>`;
+}
 
 async function cargarRetiros() {
   const estado = document.getElementById('ret_filtro_estado').value;
@@ -910,7 +933,7 @@ async function cargarRetiros() {
   if (!datos.exito) return;
 
   if (!datos.solicitudes.length) {
-    cuerpo.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#a0aec0;">No hay solicitudes para este filtro.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#a0aec0;">No hay solicitudes para este filtro.</td></tr>';
     return;
   }
 
@@ -923,12 +946,28 @@ async function cargarRetiros() {
       <td>${s.descripcion || '—'}</td>
       <td>${s.vecino_email || '—'}</td>
       <td>${ETIQUETAS_ESTADO_RETIRO[s.estado] || s.estado}</td>
+      <td>${s.nombre_cuadrilla || '—'}</td>
       <td>${s.fecha_registro}</td>
-      <td>${s.estado === 'PENDIENTE'
-        ? `<button class="chico btn-marcar-retirado" data-id="${s.id_solicitud}">Marcar retirado</button>`
-        : `Retirado el ${s.fecha_retiro || '—'}`}</td>
+      <td>${accionesRetiro(s)}</td>
     `;
     cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.btn-asignar-retiro').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const fila = boton.closest('tr');
+      const select = fila.querySelector('.select-cuadrilla-retiro');
+      if (!select.value) {
+        mostrarMensajeGlobal('Elegí una cuadrilla primero.', 'error');
+        return;
+      }
+      const resultado = await llamar(`${BASE_RET}/asignar_cuadrilla.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ id_solicitud: Number(boton.dataset.id), id_cuadrilla: Number(select.value) }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarRetiros();
+    });
   });
 
   cuerpo.querySelectorAll('.btn-marcar-retirado').forEach(boton => {
