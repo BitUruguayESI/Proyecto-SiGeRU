@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Incidencias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="incidencias">
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main class="panel">
+    <h2 style="margin-top:0;">Incidencias</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
+
+    <!-- ===================== INFORME: ABIERTAS VS. CERRADAS ===================== -->
+    <h3 style="margin-top:0;">Informe: abiertas vs. cerradas</h3>
+    <div class="tarjetas-estadisticas" id="tarjetasInformeIncidencias" style="margin-bottom:22px;">
+      <div class="tarjeta-estadistica alerta">
+        <div class="etiqueta">Abiertas (pendiente + en proceso)</div>
+        <div class="numero" id="informeInc_abiertas">—</div>
+      </div>
+      <div class="tarjeta-estadistica">
+        <div class="etiqueta">Cerradas (resueltas)</div>
+        <div class="numero" id="informeInc_cerradas">—</div>
+      </div>
+      <div class="tarjeta-estadistica">
+        <div class="etiqueta">Total registradas</div>
+        <div class="numero" id="informeInc_total">—</div>
+      </div>
+    </div>
+
+    <div class="fila-doble" style="margin-bottom:26px;">
+      <div>
+        <h4 style="margin-bottom:6px;">Abiertas</h4>
+        <table class="tabla-datos">
+          <thead><tr><th>ID</th><th>Contenedor</th><th>Tipo</th><th>Estado</th><th>Registrada</th></tr></thead>
+          <tbody id="tablaInformeAbiertas"></tbody>
+        </table>
+      </div>
+      <div>
+        <h4 style="margin-bottom:6px;">Cerradas</h4>
+        <table class="tabla-datos">
+          <thead><tr><th>ID</th><th>Contenedor</th><th>Tipo</th><th>Resuelta</th></tr></thead>
+          <tbody id="tablaInformeCerradas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== GESTIÓN (CRUD) ===================== -->
+    <h3>Gestión de incidencias</h3>
+    <div class="formulario-alta" style="margin-bottom:18px;">
+      <label for="filtroEstado">Filtrar por estado</label>
+      <select id="filtroEstado" style="max-width:260px;">
+        <option value="">Todas</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="EN_PROCESO">En proceso</option>
+        <option value="RESUELTA">Resuelta</option>
+      </select>
+    </div>
+
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>ID</th><th>Contenedor</th><th>Tipo</th><th>Descripción</th>
+          <th>Estado</th><th>Cuadrilla</th><th>Registrada</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaIncidencias"></tbody>
+    </table>
+  </main>
+
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
+  <script src="js/panel_incidencias.js"></script>
+</body>
+</html>

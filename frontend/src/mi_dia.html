@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Mi día</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="mi-dia">
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main class="panel">
+    <h2 style="margin-top:0;">Mi día</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
+
+    <div class="fila-paneles-dashboard">
+      <section class="bloque-dashboard">
+        <h3>Mi cuadrilla</h3>
+        <div id="miCuadrilla">
+          <!-- se completa por JS -->
+        </div>
+      </section>
+
+      <section class="bloque-dashboard">
+        <h3>Mi asignación diaria de hoy</h3>
+        <div id="miAsignacion">
+          <!-- se completa por JS -->
+        </div>
+      </section>
+    </div>
+
+    <section class="bloque-dashboard" style="margin-bottom:24px;">
+      <h3>Incidencias de mi cuadrilla</h3>
+      <table class="tabla-datos">
+        <thead>
+          <tr><th>ID</th><th>Contenedor</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Registrada</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaMisIncidencias"></tbody>
+      </table>
+    </section>
+
+    <section class="bloque-dashboard" style="margin-bottom:24px;">
+      <h3>Retiros especiales de mi cuadrilla</h3>
+      <table class="tabla-datos">
+        <thead>
+          <tr><th>ID</th><th>Tipo</th><th>Dirección</th><th>Descripción</th><th>Estado</th><th>Registrada</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaMisRetiros"></tbody>
+      </table>
+    </section>
+
+    <p id="avisoChofer" class="aviso-mapa" hidden>
+      ¿Tenés que registrar una descarga? Andá a
+      <a href="panel_recoleccion.html">Recolección</a>.
+    </p>
+  </main>
+
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
+  <script src="js/mi_dia.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Recolección</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="recoleccion">
+  <header class="banner"><h1>SiGeRU — Sistema de Gestión de Residuos Urbanos</h1></header>
+  <div id="navAdmin"></div>
+
+  <main class="panel">
+    <h2 style="margin-top:0;">Recolección</h2>
+    <div id="mensajeGlobal" class="mensaje"></div>
+
+    <nav class="pestanias">
+      <button data-seccion="asignaciones" class="activa">Asignación diaria</button>
+      <button data-seccion="descargas">Descargas</button>
+      <button data-seccion="mantenimiento">Mantenimiento</button>
+    </nav>
+
+    <!-- ===================== ASIGNACIÓN DIARIA ===================== -->
+    <section id="seccion-asignaciones" class="seccion-panel activa">
+      <label style="display:inline-block; margin-bottom:10px;">
+        <input type="checkbox" id="filtroMias"> Ver solo mis asignaciones (Operario)
+      </label>
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Fecha</th><th>Turno</th><th>Cuadrilla</th><th>Ruta</th><th>Camión</th><th>Operarios</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaAsignaciones"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="asig_titulo_form">Crear asignación diaria (RF23)</h3>
+        <form id="formAsignacion">
+          <input type="hidden" id="asig_id">
+          <div class="fila-doble">
+            <div><label>Fecha</label><input type="date" id="asig_fecha" required></div>
+            <div><label>Turno</label>
+              <select id="asig_turno" required>
+                <option value="MANANA">Mañana</option>
+                <option value="TARDE">Tarde</option>
+                <option value="NOCTURNO">Nocturno</option>
+              </select>
+            </div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Cuadrilla</label><select id="asig_cuadrilla" required></select></div>
+            <div><label>Ruta</label><select id="asig_ruta" required></select></div>
+          </div>
+          <div id="asig_infoCuadrilla" class="ficha-cuadrilla vacia">Elegí una cuadrilla para ver su camión, chofer y recolectores asignados.</div>
+          <label>Recolectores que van hoy (destildá los que falten)</label>
+          <select id="asig_recolectores" multiple size="4"></select>
+          <button type="submit" class="principal" id="asig_boton_submit">Crear asignación</button>
+          <button type="button" class="secundario" id="asig_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== DESCARGAS ===================== -->
+    <section id="seccion-descargas" class="seccion-panel">
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Camión</th><th>Instalación</th><th>Fecha</th><th>Hora</th><th>Peso (kg)</th><th>Tipo de residuo</th></tr></thead>
+        <tbody id="tablaDescargas"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3>Registrar descarga (RF24)</h3>
+        <form id="formDescarga">
+          <div class="fila-doble">
+            <div><label>Camión</label><select id="desc_camion" required></select></div>
+            <div><label>Instalación</label><select id="desc_instalacion" required></select></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Fecha</label><input type="date" id="desc_fecha" required></div>
+            <div><label>Hora</label><input type="time" id="desc_hora" required></div>
+          </div>
+          <label>Peso (kg)</label>
+          <input type="number" id="desc_peso" min="1" step="0.01" required>
+          <label>Tipo de residuo (opcional — permite calcular el % reciclado)</label>
+          <select id="desc_tipo_residuo">
+            <option value="">Sin clasificar</option>
+          </select>
+          <button type="submit" class="principal">Registrar descarga</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== MANTENIMIENTO ===================== -->
+    <section id="seccion-mantenimiento" class="seccion-panel">
+      <label>Filtrar por camión</label>
+      <select id="filtroMantCamion" style="max-width:300px; margin-bottom:12px;">
+        <option value="">Todos los camiones</option>
+      </select>
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Camión</th><th>Fecha</th><th>Km</th><th>Tipo</th><th>Descripción</th></tr></thead>
+        <tbody id="tablaMantenimiento"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3>Registrar mantenimiento (RF27)</h3>
+        <form id="formMantenimiento">
+          <div class="fila-doble">
+            <div><label>Camión</label><select id="mant_camion" required></select></div>
+            <div><label>Fecha</label><input type="date" id="mant_fecha" required></div>
+          </div>
+          <div class="fila-doble">
+            <div><label>Kilometraje</label><input type="number" id="mant_km" min="0" required></div>
+            <div><label>Tipo</label><input type="text" id="mant_tipo" placeholder="Service, cambio de aceite, frenos..." required></div>
+          </div>
+          <label>Descripción (opcional)</label>
+          <input type="text" id="mant_descripcion">
+          <button type="submit" class="principal">Registrar mantenimiento</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/sesion.js"></script>
+  <script src="js/nav_admin.js"></script>
+  <script src="js/panel_recoleccion.js"></script>
+</body>
+</html>
