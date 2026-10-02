@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU  Consulta pública</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="header-vecino">
+    <a class="logo" href="landing.html" style="text-decoration:none;">
+      <img src="img/logo.jpg" alt="SiGeRU">
+      <span>SiGeRU</span>
+    </a>
+    <a class="nav-item" href="landing.html">Volver al inicio</a>
+  </header>
+
+  <div class="dashboard-con-header">
+    <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+      <div class="form-container">
+        <h1 class="brand-title">Realizar una consulta</h1>
+        <p class="form-subtitle">No hace falta tener cuenta. Te respondemos por email.</p>
+
+        <form id="formConsulta" class="form-vecino" novalidate>
+          <div>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" required>
+          </div>
+
+          <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div>
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-enviar-reporte">Enviar consulta</button>
+          <div id="mensajeEstado" class="mensaje"></div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/consulta.js"></script>
+</body>
+</html>

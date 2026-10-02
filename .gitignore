@@ -137,3 +137,9 @@ package-lock.json
 # dist/
 # build/
 # node_modules/
+
+/.phpunit.cache/
+
+# Contiene tu contraseña de aplicación de Gmail en texto plano — nunca
+# se sube al repositorio.
+/iniciar_servidor.bat
