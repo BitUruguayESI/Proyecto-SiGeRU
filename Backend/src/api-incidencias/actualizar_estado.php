@@ -68,11 +68,19 @@ try {
 
     // Si el contenedor estaba desbordado por esta incidencia, se
     // considera solucionado (simplificación: no chequea si hay otras
-    // incidencias abiertas sobre el mismo contenedor).
+    // incidencias abiertas sobre el mismo contenedor) y su nivel_llenado
+    // vuelve a 0 (queda reflejado también en el historial de lecturas
+    // usado por las predicciones de llenado, nivel avanzado 3.4).
     if ($incidencia['id_contenedor']) {
-        $pdo->prepare(
-            "UPDATE CONTENEDOR SET estado = 'OPERATIVO' WHERE id_contenedor = :id AND estado = 'DESBORDADO'"
-        )->execute(['id' => $incidencia['id_contenedor']]);
+        $actualizarContenedor = $pdo->prepare(
+            "UPDATE CONTENEDOR SET estado = 'OPERATIVO', nivel_llenado = 0 WHERE id_contenedor = :id AND estado = 'DESBORDADO'"
+        );
+        $actualizarContenedor->execute(['id' => $incidencia['id_contenedor']]);
+
+        if ($actualizarContenedor->rowCount() > 0) {
+            $pdo->prepare('INSERT INTO LECTURA_NIVEL_CONTENEDOR (id_contenedor, nivel_llenado) VALUES (:id, 0)')
+                ->execute(['id' => $incidencia['id_contenedor']]);
+        }
     }
 
     $pdo->commit();

@@ -34,6 +34,11 @@ body.centered-body {
     align-items: center;
     padding: 20px;
 }
+body.landing-body {
+    background:
+        linear-gradient(rgba(6, 5, 17, 0.75), rgba(13, 10, 33, 0.85)),
+        url('../img/fondo_landing.png') center/cover no-repeat fixed;
+}
 
 /* ==========================================================================
    2. NAVBAR (PÁGINA PRINCIPAL / INDEX)
@@ -640,12 +645,12 @@ header.header-info nav a:hover {
 }
 
 .modulos-info {
-    max-width: 1000px;
+    max-width: 1100px;
     width: 100%;
     margin: 0 auto 60px auto;
     padding: 0 20px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 30px;
 }
 
@@ -696,6 +701,11 @@ footer.footer-info {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     margin-top: auto;
 }
+/*.card-incidencia {
+    background:
+        linear-gradient(rgba(6, 5, 17, 0.55), rgba(13, 10, 33, 0.75)),
+        url('../img/contenedor.png') center/cover no-repeat;
+}*/
 
 /* ==========================================================================
    12. RESPONSIVIDAD (MEDIA QUERIES)
@@ -877,7 +887,7 @@ button.principal {
 }
 button.principal:hover { background: #4a4fd9; transform: translateY(-1px); }
 
-button.secundario {
+button.secundario, a.secundario {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: #ffffff;
@@ -887,7 +897,8 @@ button.secundario {
     cursor: pointer;
     transition: all 0.3s ease;
 }
-button.secundario:hover { background: rgba(255, 255, 255, 0.12); }
+button.secundario:hover, a.secundario:hover { background: rgba(255, 255, 255, 0.12); }
+a.secundario, a.chico { text-decoration: none; display: inline-block; }
 
 button.peligro {
     background: #e53e3e;
@@ -901,7 +912,7 @@ button.peligro {
 }
 button.peligro:hover { background: #c53030; }
 
-button.chico {
+button.chico, a.chico {
     padding: 6px 10px;
     font-size: 12px;
     background: #5c61f2;
@@ -911,7 +922,8 @@ button.chico {
     font-family: 'Montserrat', sans-serif;
     cursor: pointer;
 }
-button.chico:hover { background: #4a4fd9; }
+button.chico:hover, a.chico:hover { background: #4a4fd9; }
+a.chico.secundario, a.chico.secundario:hover { color: #ffffff; }
 
 a.boton-enlace {
     display: inline-block;
@@ -1038,13 +1050,23 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
     text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 .tarjeta-estadistica:hover { transform: translateY(-3px); border-color: rgba(92, 97, 242, 0.4); }
 .tarjeta-estadistica .numero { font-size: 28px; font-weight: 800; color: #ffffff; }
 .tarjeta-estadistica .etiqueta { font-size: 13px; color: #a0aec0; margin-top: 6px; font-weight: 600; }
 .tarjeta-estadistica.alerta .numero { color: #f6ad55; }
-.tarjeta-estadistica .icono-tarjeta { display: flex; align-items: center; gap: 8px; color: #a0aec0; font-size: 13px; margin-bottom: 14px; font-weight: 600; }
-.tarjeta-estadistica .icono-tarjeta svg { width: 16px; height: 16px; flex: none; }
+.tarjeta-estadistica .icono-tarjeta { display: flex; align-items: center; gap: 8px; color: #a0aec0; font-size: 13px; margin-bottom: 0px; font-weight: 600; }
+.tarjeta-estadistica .icono-tarjeta svg { width: 38px; height: 38px; flex: none; }
+.tarjeta-estadistica .icono-tarjeta .icono-contenedores { width: 38px; height: 38px; }
+.tarjeta-estadistica .icono-tarjeta .icono-camiones { width: 48px; height: 48px; }
+.tarjeta-estadistica .icono-tarjeta .icono-emoji { font-size: 38px; line-height: 1; }
+.tarjeta-estadistica .icono-tarjeta .icono-cuadrillas { width: 36px; height: 36px; }
+.tarjeta-estadistica .icono-tarjeta .icono-rutas { width: 36px; height: 36px; }
+.tarjeta-estadistica .icono-tarjeta .icono-instalaciones { width: 48px; height: 48px; }
+.tarjeta-estadistica .icono-tarjeta .icono-desbordados { width: 40px; height: 40px; }
 
 /* Paneles del Dashboard: distribución de incidencias + incidencias recientes,
    y las secciones de "Mi día" (mi cuadrilla / mi asignación / incidencias) */
@@ -1131,6 +1153,55 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     white-space: nowrap;
 }
 
+/* Top contenedores desbordados (ranking del Dashboard) */
+.lista-top-desbordados { list-style: none; margin: 14px 0 0; padding: 0; }
+.fila-top-desbordado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.fila-top-desbordado:first-child { border-top: none; padding-top: 4px; }
+
+.puesto-top-desbordado {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #a0aec0;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+.fila-top-desbordado:nth-child(1) .puesto-top-desbordado { background: #f6ad55; color: #1a202c; }
+.fila-top-desbordado:nth-child(2) .puesto-top-desbordado { background: #cbd5e0; color: #1a202c; }
+.fila-top-desbordado:nth-child(3) .puesto-top-desbordado { background: #d69e6a; color: #1a202c; }
+
+.info-top-desbordado { flex: 1; min-width: 0; }
+.direccion-top-desbordado {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.conteo-top-desbordado { color: #a0aec0; font-size: 12px; margin-top: 2px; }
+
+.chip-conteo-desbordados {
+    background: rgba(192, 57, 43, 0.18);
+    color: #ff8a80;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    flex: none;
+}
+
 .columna-estado-fecha { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
 .chip-estado-incidencia {
     display: inline-flex;
@@ -1173,6 +1244,29 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     background: rgba(255, 255, 255, 0.03);
 }
 .aviso-mapa { font-size: 13px; color: #a0aec0; margin: 0 0 18px; }
+
+.leyenda-mapa {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12.5px;
+    color: #a0aec0;
+    margin: 0 0 10px;
+}
+.punto-leyenda {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+.icono-incidencia-mapa {
+    font-size: 18px;
+    text-align: center;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
 
 /* Enlace "cerrar sesión" dentro del sidebar */
 .sidebar .cerrar-sesion {
@@ -1254,6 +1348,14 @@ nav.nav-admin {
     align-items: center;
     gap: 4px;
     flex-wrap: wrap;
+    /* backdrop-filter ya crea un contexto de apilamiento acá; sin
+       position+z-index explícitos ese contexto se pinta en el orden
+       normal del documento, así que cualquier cosa dentro de <main>
+       (como el mapa Leaflet) termina tapando el desplegable de
+       notificaciones aunque este tenga z-index alto — lo eleva por
+       completo por encima de <main>. */
+    position: relative;
+    z-index: 2000;
 }
 nav.nav-admin a {
     color: #a0aec0;
@@ -1368,3 +1470,86 @@ body[data-pagina="registro"] main {
         padding: 40px 24px;
     }
 }
+
+/* Columna "Respuesta al vecino" del panel de Retiros especiales */
+.celda-respuesta-retiro { min-width: 220px; max-width: 260px; }
+.texto-respuesta-retiro {
+    color: #e2e8f0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    margin-bottom: 4px;
+}
+.celda-respuesta-retiro textarea.txt-respuesta-retiro {
+    width: 100%;
+    min-width: 200px;
+    resize: vertical;
+}
+
+/* Campana de notificaciones (nivel avanzado 3.1) */
+/* z-index alto: tiene que quedar por encima de los panes de Leaflet
+   (el mapa de Contenedores usa hasta z-index 700, y sus controles de
+   zoom 1000), que si no tapan el panel al desplegarlo en esa pestaña. */
+.campana-notificaciones { position: relative; z-index: 1100; }
+.badge-notificacion {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    background: #e53e3e;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 999px;
+    border: 2px solid #0d0a21;
+}
+.btn-campana {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #2196f3;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+}
+.panel-notificaciones {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 340px;
+    max-height: 420px;
+    overflow-y: auto;
+    background: #1a202c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+    z-index: 50;
+    padding: 12px;
+}
+.panel-notificaciones-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+.panel-notificaciones ul { list-style: none; margin: 0; padding: 0; }
+.item-notificacion {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 12.5px;
+}
+.item-notificacion:last-child { border-bottom: none; }
+.item-notificacion-tipo { font-weight: 700; color: #a0aec0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+.item-notificacion-mensaje { color: #e2e8f0; margin: 4px 0; line-height: 1.4; }
+.item-notificacion-fecha { color: #718096; font-size: 11px; margin-bottom: 6px; }
+.item-notificacion.urgente .item-notificacion-tipo { color: #fc8181; }
+.item-notificacion.no-leida { background: rgba(92, 97, 242, 0.08); border-radius: 8px; }
+.item-notificacion-vacio { color: #a0aec0; font-size: 13px; padding: 10px 8px; }

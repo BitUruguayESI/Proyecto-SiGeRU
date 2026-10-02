@@ -14,7 +14,8 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
-  <header class="banner"><h1>Sistema de Gestión de Residuos Urbanos</h1></header>
+  <header class="banner"><h1>SiGeRU </h1></header>
+  <h2 class="titulo-pagina">Sistema de Gestión de Residuos Urbanos</h2>
   <div id="navAdmin"></div>
 
   <main class="panel">
@@ -30,6 +31,9 @@
       <button data-seccion="instalaciones">Instalaciones</button>
       <button data-seccion="maquinaria">Maquinaria</button>
       <button data-seccion="retiros">Retiros especiales</button>
+      <button data-seccion="consultas">Consultas públicas</button>
+      <button data-seccion="reciclaje">Reciclaje</button>
+      <button data-seccion="predicciones">Predicciones</button>
     </nav>
 
     <!-- ===================== USUARIOS ===================== -->
@@ -69,7 +73,7 @@
             <label>Vencimiento de la libreta</label>
             <input type="date" id="usu_licencia_vencimiento">
           </div>
-          <label>Vencimiento del carnet de salud</label>
+          <label>Vencimiento del carnet de salud (opcional)</label>
           <input type="date" id="usu_carnet_salud">
           <label>Teléfonos </label>
           <input type="text" id="usu_telefonos" placeholder="099123456, 26001122">
@@ -85,7 +89,13 @@
 
     <!-- ===================== CONTENEDORES ===================== -->
     <section id="seccion-contenedores" class="seccion-panel activa">
-      <h3 style="margin-top:0;">Mapa de contenedores</h3>
+      <h3 style="margin-top:0;">Mapa de contenedores e incidencias</h3>
+      <p class="leyenda-mapa">
+        <span><span class="punto-leyenda" style="background:#2E7D32;"></span> Operativo</span>
+        <span><span class="punto-leyenda" style="background:#C0392B;"></span> Desbordado</span>
+        <span><span class="punto-leyenda" style="background:#888888;"></span> Fuera de servicio</span>
+        <span>⚠️ Incidencia pendiente o en proceso</span>
+      </p>
       <div id="mapaContenedores" class="mapa-contenedores"></div>
       <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
 
@@ -99,7 +109,7 @@
           <input type="hidden" id="cont_id">
           <div class="fila-doble">
             <div><label>Dirección</label><input type="text" id="cont_direccion" placeholder="Bulevar Artigas 1234, Montevideo" required></div>
-            <div><label>Ruta</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
+            <div><label>Ruta (opcional)</label><select id="cont_id_ruta"><option value="">Sin ruta</option></select></div>
           </div>
           <div class="fila-doble">
             <div><label>Nivel de llenado inicial (%)</label><input type="number" id="cont_nivel" min="0" max="100" value="0"></div>
@@ -134,7 +144,8 @@
     <!-- ===================== CUADRILLAS ===================== -->
     <section id="seccion-cuadrillas" class="seccion-panel">
       <p style="color:#a0aec0; font-size:13px; margin-top:0;">
-       
+        La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
+        el Chofer y los Recolectores en su panel "Mi día".
       </p>
       <table class="tabla-datos">
         <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
@@ -152,7 +163,7 @@
             <div><label>Camión</label><select id="cuad_camion"><option value="">Sin asignar</option></select></div>
             <div><label>Chofer</label><select id="cuad_chofer"><option value="">Sin asignar</option></select></div>
           </div>
-          <label>Recolectores</label>
+          <label>Recolectores (podés elegir varios)</label>
           <select id="cuad_recolectores" multiple size="4"></select>
           <label>Rutas habituales</label>
           <select id="cuad_rutas" multiple size="4"></select>
@@ -169,7 +180,7 @@
         <tbody id="tablaCamiones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="cam_titulo_form">Registrar camión</h3>
+        <h3 id="cam_titulo_form">Registrar camión </h3>
         <form id="formCamion">
           <input type="hidden" id="cam_id">
           <div class="fila-doble">
@@ -196,7 +207,7 @@
         <tbody id="tablaInstalaciones"></tbody>
       </table>
       <div class="formulario-alta">
-        <h3 id="inst_titulo_form">Registrar centro de acopio</h3>
+        <h3 id="inst_titulo_form">Registrar centro de acopio / vertedero</h3>
         <form id="formInstalacion">
           <input type="hidden" id="inst_id">
           <div class="fila-doble">
@@ -209,7 +220,7 @@
             </div>
           </div>
           <div class="fila-doble">
-            <div><label>Dirección</label><input type="text" id="inst_coordenadas" required></div>
+            <div><label>Coordenadas</label><input type="text" id="inst_coordenadas" required></div>
             <div><label>Capacidad máxima</label><input type="number" id="inst_capacidad" min="1" required></div>
           </div>
           <label>Residuos aceptados</label>
@@ -272,13 +283,66 @@
           <button type="button" class="secundario" id="rep_cancelar" hidden>Cancelar edición</button>
         </form>
       </div>
+
+      <!-- Nivel avanzado 3.2: historial de reparaciones y traslados -->
+      <div class="formulario-alta" style="margin-top:16px;">
+        <h3>Reparaciones y traslados de maquinaria</h3>
+        <label>Máquina</label>
+        <select id="maqav_maquinaria" style="max-width:400px;"></select>
+
+        <div class="fila-doble" style="margin-top:12px;">
+          <div>
+            <h4 style="margin-bottom:6px;">Registrar reparación/mantenimiento</h4>
+            <form id="formMantenimientoMaquinaria">
+              <label>Fecha</label>
+              <input type="date" id="maqav_mant_fecha" required>
+              <label>Tipo</label>
+              <input type="text" id="maqav_mant_tipo" placeholder="Correctivo, preventivo..." required>
+              <label>Descripción (opcional)</label>
+              <textarea id="maqav_mant_descripcion" rows="2"></textarea>
+              <label>Costo (opcional)</label>
+              <input type="number" id="maqav_mant_costo" min="0" step="0.01">
+              <button type="submit" class="chico principal">Registrar reparación</button>
+            </form>
+          </div>
+          <div>
+            <h4 style="margin-bottom:6px;">Registrar traslado</h4>
+            <form id="formTrasladoMaquinaria">
+              <label>Fecha</label>
+              <input type="date" id="maqav_tras_fecha" required>
+              <label>Instalación de destino</label>
+              <select id="maqav_tras_destino" required></select>
+              <label>Observaciones (opcional)</label>
+              <textarea id="maqav_tras_observaciones" rows="2"></textarea>
+              <button type="submit" class="chico principal">Registrar traslado</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="fila-doble" style="margin-top:12px;">
+          <div>
+            <h4 style="margin-bottom:6px;">Historial de reparaciones</h4>
+            <table class="tabla-datos">
+              <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Costo</th></tr></thead>
+              <tbody id="tablaMantenimientoMaquinaria"></tbody>
+            </table>
+          </div>
+          <div>
+            <h4 style="margin-bottom:6px;">Historial de traslados</h4>
+            <table class="tabla-datos">
+              <thead><tr><th>Fecha</th><th>Origen</th><th>Destino</th></tr></thead>
+              <tbody id="tablaTrasladosMaquinaria"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ===================== RETIROS ESPECIALES ===================== -->
     <section id="seccion-retiros" class="seccion-panel">
       <p style="color:#a0aec0; font-size:13px; margin-top:0;">
-        Solicitudes públicas de retiro </p>
-        
+       
+      </p>
       <label for="ret_filtro_estado">Filtrar por estado</label>
       <select id="ret_filtro_estado" style="max-width:260px; margin-bottom:12px;">
         <option value="">Todos</option>
@@ -287,9 +351,102 @@
       </select>
       <table class="tabla-datos">
         <thead>
-          <tr><th>ID</th><th>Tipo de residuo</th><th>Dirección</th><th>Descripción</th><th>Email</th><th>Estado</th><th>Cuadrilla</th><th>Fecha solicitud</th><th>Acciones</th></tr>
+          <tr><th>ID</th><th>Tipo de residuo</th><th>Dirección</th><th>Descripción</th><th>Email</th><th>Estado</th><th>Cuadrilla</th><th>Fecha solicitud</th><th>Respuesta al vecino</th><th>Acciones</th></tr>
         </thead>
         <tbody id="tablaRetiros"></tbody>
+      </table>
+    </section>
+
+    <!-- ===================== CONSULTAS PÚBLICAS ===================== -->
+    <section id="seccion-consultas" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+       
+      </p>
+      <label for="con_filtro_estado">Filtrar por estado</label>
+      <select id="con_filtro_estado" style="max-width:260px; margin-bottom:12px;">
+        <option value="">Todas</option>
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="RESPONDIDA">Respondida</option>
+      </select>
+      <table class="tabla-datos">
+        <thead>
+          <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Mensaje</th><th>Fecha</th><th>Estado</th><th>Respuesta</th></tr>
+        </thead>
+        <tbody id="tablaConsultas"></tbody>
+      </table>
+    </section>
+
+    <!-- ===================== RECICLAJE (nivel avanzado 3.3) ===================== -->
+    <section id="seccion-reciclaje" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+       
+      </p>
+
+      <div class="tarjetas-estadisticas" id="tarjetasReciclaje">
+        <div class="tarjeta-estadistica">
+          <div class="etiqueta">Peso reciclable</div>
+          <div class="numero" id="repRec_reciclable">—</div>
+        </div>
+        <div class="tarjeta-estadistica">
+          <div class="etiqueta">Peso no reciclable</div>
+          <div class="numero" id="repRec_noReciclable">—</div>
+        </div>
+        <div class="tarjeta-estadistica">
+          <div class="etiqueta">Sin clasificar</div>
+          <div class="numero" id="repRec_sinClasificar">—</div>
+        </div>
+        <div class="tarjeta-estadistica">
+          <div class="etiqueta">% reciclado</div>
+          <div class="numero" id="repRec_porcentaje">—</div>
+        </div>
+      </div>
+
+      <h3>Detalle por tipo de residuo</h3>
+      <table class="tabla-datos">
+        <thead><tr><th>Tipo</th><th>Reciclable</th><th>Peso total (kg)</th></tr></thead>
+        <tbody id="tablaReporteReciclaje"></tbody>
+      </table>
+
+      <h3>Catálogo de tipos de residuo</h3>
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Reciclable</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaTiposResiduo"></tbody>
+      </table>
+      <div class="formulario-alta">
+        <h3 id="tr_titulo_form">Registrar tipo de residuo</h3>
+        <form id="formTipoResiduo">
+          <input type="hidden" id="tr_id">
+          <div class="fila-doble">
+            <div><label>Nombre</label><input type="text" id="tr_nombre" placeholder="Plástico, vidrio, orgánico..." required></div>
+            <div>
+              <label>¿Es reciclable?</label>
+              <select id="tr_reciclable">
+                <option value="1">Sí</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="principal" id="tr_boton_submit">Registrar tipo</button>
+          <button type="button" class="secundario" id="tr_cancelar" hidden>Cancelar edición</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== PREDICCIONES (nivel avanzado 3.4) ===================== -->
+    <section id="seccion-predicciones" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+            </p>
+
+      <h3>Días estimados para llenarse, por contenedor</h3>
+      <table class="tabla-datos">
+        <thead><tr><th>ID</th><th>Dirección</th><th>Nivel actual</th><th>Tasa diaria estimada</th><th>Días para llenarse</th></tr></thead>
+        <tbody id="tablaPrediccionesContenedores"></tbody>
+      </table>
+
+      <h3>Generación de residuos por zona (últimos 30 días)</h3>
+      <table class="tabla-datos">
+        <thead><tr><th>Zona / ruta</th><th>Promedio diario (kg)</th><th>Proyección próx. 30 días (kg)</th></tr></thead>
+        <tbody id="tablaPrediccionesZonas"></tbody>
       </table>
     </section>
   </main>

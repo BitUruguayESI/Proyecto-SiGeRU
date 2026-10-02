@@ -164,9 +164,10 @@ if ($metodo === 'DELETE') {
         responderJson(['exito' => false, 'mensaje' => 'id_maquinaria es obligatorio.'], 400);
     }
 
-    // No hay tabla de historial (mantenimientos/descargas) que referencie
-    // MAQUINARIA todavía, así que se borra físicamente; los repuestos
-    // asociados se desvinculan en cascada (MAQUINARIA_REPUESTO).
+    // Borrado físico: los repuestos asociados se desvinculan en cascada
+    // (MAQUINARIA_REPUESTO), y el historial de mantenimientos/traslados
+    // (nivel avanzado 3.2) se borra en cascada también, ya que no tiene
+    // sentido conservarlo sin la máquina a la que pertenece.
     $eliminar = $pdo->prepare('DELETE FROM MAQUINARIA WHERE id_maquinaria = :id');
     $eliminar->execute(['id' => $idMaquinaria]);
 

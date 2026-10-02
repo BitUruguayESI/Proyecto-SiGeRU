@@ -33,6 +33,16 @@ services:
       SIGERU_DB_NAME: sigeru
       SIGERU_DB_USER: sigeru_app
       SIGERU_DB_PASS: sigeru_pass_dev
+      # Envío real de emails (responder a vecinos desde el panel — ver
+      # "Envío de emails" en el README). Se toman del entorno donde se
+      # corre `docker compose up` (ej. exportadas antes, o en un .env);
+      # si no están seteadas quedan vacías y el envío avisa que falta
+      # configurarlo, en vez de fallar sin explicación.
+      SIGERU_SMTP_HOST: ${SIGERU_SMTP_HOST:-}
+      SIGERU_SMTP_PORT: ${SIGERU_SMTP_PORT:-587}
+      SIGERU_SMTP_USER: ${SIGERU_SMTP_USER:-}
+      SIGERU_SMTP_PASS: ${SIGERU_SMTP_PASS:-}
+      SIGERU_SMTP_FROM: ${SIGERU_SMTP_FROM:-}
     ports:
       - "8081:80"   # opcional, solo para pegarle directo a la API al debuggear
 

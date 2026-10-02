@@ -37,7 +37,8 @@ if (!empty($_GET['id_cuadrilla'])) {
 $sql = 'SELECT r.id_solicitud, r.tipo_residuo, r.direccion, r.descripcion, r.estado,
                r.fecha_registro, r.fecha_retiro,
                r.id_vecino, v.email AS vecino_email,
-               r.id_cuadrilla, cu.nombre_cuadrilla
+               r.id_cuadrilla, cu.nombre_cuadrilla,
+               r.respuesta_admin, r.fecha_respuesta
         FROM SOLICITUD_RETIRO r
         LEFT JOIN VECINO v ON v.id_vecino = r.id_vecino
         LEFT JOIN CUADRILLA cu ON cu.id_cuadrilla = r.id_cuadrilla';

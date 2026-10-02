@@ -4,6 +4,12 @@
  * RF14 (listado filtrable) y RF21 (historial por contenedor/zona).
  * Solo staff (Operario o Administrador) — requiere sesión activa.
  *
+ * No incluye contenedor_coordenadas a propósito: al staff se le muestra
+ * la dirección, no coordenadas crudas (ver IncidenciasApiTest::
+ * testDireccionSeVeEnVezDeCoordenadas). Para ubicar las incidencias en el
+ * mapa interactivo (RF13), el frontend cruza id_contenedor con la lista
+ * de contenedores que ya carga por separado (esa sí trae coordenadas).
+ *
  * GET  ?estado=PENDIENTE&id_contenedor=1&id_cuadrilla=2   (todos opcionales)
  */
 

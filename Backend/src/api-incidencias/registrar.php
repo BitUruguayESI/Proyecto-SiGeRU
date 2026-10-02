@@ -12,7 +12,9 @@
  * Si tipo_incidencia sugiere desborde, el contenedor pasa a estado
  * DESBORDADO automáticamente (simplificación: alcanza con la palabra
  * "desborde" en el tipo; se puede afinar más adelante con un campo
- * booleano explícito en el formulario).
+ * booleano explícito en el formulario), y su nivel_llenado se lleva a
+ * 100 (queda reflejado también en el historial de lecturas usado por
+ * las predicciones de llenado, nivel avanzado 3.4).
  */
 
 declare(strict_types=1);
@@ -76,7 +78,9 @@ try {
     $idIncidencia = (int) $pdo->lastInsertId();
 
     if (stripos($tipoIncidencia, 'desborde') !== false) {
-        $pdo->prepare("UPDATE CONTENEDOR SET estado = 'DESBORDADO' WHERE id_contenedor = :id")
+        $pdo->prepare("UPDATE CONTENEDOR SET estado = 'DESBORDADO', nivel_llenado = 100 WHERE id_contenedor = :id")
+            ->execute(['id' => $idContenedor]);
+        $pdo->prepare('INSERT INTO LECTURA_NIVEL_CONTENEDOR (id_contenedor, nivel_llenado) VALUES (:id, 100)')
             ->execute(['id' => $idContenedor]);
     }
 

@@ -52,11 +52,12 @@ if (location.hash) {
 let cuadrillasPorId = {};
 
 async function cargarReferencias() {
-  const [cuadrillas, rutas, camiones, instalaciones] = await Promise.all([
+  const [cuadrillas, rutas, camiones, instalaciones, tiposResiduo] = await Promise.all([
     llamar(`${BASE_GES}/cuadrillas.php`),
     llamar(`${BASE_GES}/rutas.php`),
     llamar(`${BASE_GES}/camiones.php`),
     llamar(`${BASE_GES}/instalaciones.php`),
+    llamar(`${BASE_GES}/tipos_residuo.php`),
   ]);
 
   const llenar = (idSelect, lista, campoValor, campoTexto) => {
@@ -75,6 +76,9 @@ async function cargarReferencias() {
     camiones.camiones.forEach(c => filtro.appendChild(new Option(c.matricula, c.id_camion)));
   }
   if (instalaciones.exito) llenar('desc_instalacion', instalaciones.instalaciones, 'id_centro', 'nombre');
+  if (tiposResiduo.exito) {
+    llenar('desc_tipo_residuo', tiposResiduo.tipos_residuo, 'id_tipo_residuo', 'nombre');
+  }
 
   actualizarInfoCuadrilla();
 }
@@ -247,7 +251,7 @@ async function cargarDescargas() {
   if (!datos.exito) return;
 
   if (!datos.descargas.length) {
-    cuerpo.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#a0aec0;">Todavía no hay descargas registradas.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">Todavía no hay descargas registradas.</td></tr>';
     return;
   }
 
@@ -256,6 +260,7 @@ async function cargarDescargas() {
     fila.innerHTML = `
       <td>${d.id_descarga}</td><td>${d.matricula}</td><td>${d.instalacion}</td>
       <td>${d.fecha_descarga}</td><td>${d.hora_descarga}</td><td>${d.peso}</td>
+      <td>${d.nombre_tipo_residuo || '<em style="color:#a0aec0;">sin clasificar</em>'}</td>
     `;
     cuerpo.appendChild(fila);
   });
@@ -263,6 +268,7 @@ async function cargarDescargas() {
 
 document.getElementById('formDescarga').addEventListener('submit', async (evento) => {
   evento.preventDefault();
+  const idTipoResiduo = document.getElementById('desc_tipo_residuo').value;
   const resultado = await llamar(`${BASE_REC}/descargas.php`, {
     method: 'POST',
     body: JSON.stringify({
@@ -271,6 +277,7 @@ document.getElementById('formDescarga').addEventListener('submit', async (evento
       fecha_descarga: document.getElementById('desc_fecha').value,
       hora_descarga: document.getElementById('desc_hora').value,
       peso: Number(document.getElementById('desc_peso').value),
+      id_tipo_residuo: idTipoResiduo ? Number(idTipoResiduo) : null,
     }),
   });
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');

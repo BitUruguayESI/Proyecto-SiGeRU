@@ -13,13 +13,14 @@ const COLOR_ESTADO_INC = {
 };
 
 const ICONOS_TARJETA = {
-  usuarios: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  contenedores: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-  camiones: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11"/><path d="M15 9h4l3 3v5h-7z"/><circle cx="6" cy="18.5" r="1.8"/><circle cx="17.5" cy="18.5" r="1.8"/></svg>',
-  incidencias: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-  cuadrillas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  rutas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M6 17V9a4 4 0 0 1 4-4h8"/></svg>',
-  instalaciones: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>',
+  usuarios: '<svg viewBox="0 0 100 100" width="36" height="36"><defs><linearGradient id="gradUsuarios" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4facfe"/><stop offset="100%" stop-color="#1565c0"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="url(#gradUsuarios)"/><circle cx="50" cy="38" r="16" fill="#ffffff"/><path d="M20 84c0-17 13.5-29 30-29s30 12 30 29" fill="#ffffff"/></svg>',
+  contenedores: '<img src="img/icono_contenedores.png" alt="Contenedores" class="icono-img icono-contenedores">',
+  camiones: '<img src="img/icono_camiones.png" alt="Camiones" class="icono-img icono-camiones">',
+  incidencias: '<span class="icono-emoji">⚠️</span>',
+  cuadrillas: '<img src="img/imagen.cuadrilla.png" alt="Cuadrillas" class="icono-img icono-cuadrillas">',
+  rutas: '<img src="img/imagen.rutas.png" alt="Rutas" class="icono-img icono-rutas">',
+  instalaciones: '<img src="img/imagen.instalaciones.png" alt="Instalaciones" class="icono-img icono-instalaciones">',
+  contenedores_desbordados: '<img src="img/imagen.contenedores_desbordados.png" alt="Contenedores desbordados" class="icono-img icono-desbordados">',
 };
 
 async function pedir(url) {
@@ -118,6 +119,62 @@ function renderIncidenciasRecientes(incidencias) {
   });
 }
 
+// Top de contenedores desbordados del mes (panel de control con
+// estadísticas — 3ra entrega). No hay endpoint de stats dedicado: se
+// calcula acá mismo, en el cliente, a partir de las incidencias ya
+// cargadas — mismo criterio que el resto del Dashboard.
+function calcularTopDesbordados(incidencias, dias = 30) {
+  const limite = new Date();
+  limite.setDate(limite.getDate() - dias);
+
+  const conteos = new Map(); // id_contenedor -> { direccion, total }
+
+  incidencias
+    .filter(inc => (inc.tipo_incidencia || '').toLowerCase().includes('desborde'))
+    .filter(inc => {
+      const fecha = new Date((inc.fecha_registro || '').replace(' ', 'T'));
+      return !Number.isNaN(fecha.getTime()) && fecha >= limite;
+    })
+    .forEach(inc => {
+      const clave = inc.id_contenedor;
+      const actual = conteos.get(clave) || {
+        direccion: inc.contenedor_direccion || `Contenedor #${inc.id_contenedor}`,
+        total: 0,
+      };
+      actual.total += 1;
+      conteos.set(clave, actual);
+    });
+
+  return [...conteos.values()].sort((a, b) => b.total - a.total).slice(0, 5);
+}
+
+function renderTopDesbordados(incidencias) {
+  const lista = document.getElementById('listaTopDesbordados');
+  if (!lista) return;
+  lista.innerHTML = '';
+
+  const top = calcularTopDesbordados(incidencias);
+
+  if (!top.length) {
+    lista.innerHTML = '<li class="nota-pie-oscura">Sin desbordes reportados en los últimos 30 días.</li>';
+    return;
+  }
+
+  top.forEach((item, indice) => {
+    const fila = document.createElement('li');
+    fila.className = 'fila-top-desbordado';
+    fila.innerHTML = `
+      <span class="puesto-top-desbordado">${indice + 1}</span>
+      <div class="info-top-desbordado">
+        <div class="direccion-top-desbordado">${item.direccion}</div>
+        <div class="conteo-top-desbordado">${item.total === 1 ? '1 desborde reportado' : `${item.total} desbordes reportados`}</div>
+      </div>
+      <span class="chip-conteo-desbordados">${item.total}×</span>
+    `;
+    lista.appendChild(fila);
+  });
+}
+
 function actualizarHoraInfo() {
   const elemento = document.getElementById('infoActualizada');
   if (elemento) {
@@ -159,14 +216,16 @@ function actualizarHoraInfo() {
 
   contenedorTarjetas.appendChild(tarjeta('usuarios', 'Usuarios', listaUsuarios.length));
   contenedorTarjetas.appendChild(tarjeta('contenedores', 'Contenedores', listaContenedores.length));
+  contenedorTarjetas.appendChild(tarjeta('contenedores_desbordados', 'Contenedores desbordados', desbordados, desbordados > 0));
   contenedorTarjetas.appendChild(tarjeta('camiones', 'Camiones', `${camionesDisponibles} / ${listaCamiones.length}`));
   contenedorTarjetas.appendChild(tarjeta('incidencias', 'Incidencias', listaIncidencias.length));
-  contenedorTarjetas.appendChild(tarjeta('contenedores', 'Contenedores desbordados', desbordados, desbordados > 0));
   contenedorTarjetas.appendChild(tarjeta('cuadrillas', 'Cuadrillas', listaCuadrillas.length));
   contenedorTarjetas.appendChild(tarjeta('rutas', 'Rutas definidas', listaRutas.length));
   contenedorTarjetas.appendChild(tarjeta('instalaciones', 'Instalaciones', listaInstalaciones.length));
+  
 
   actualizarHoraInfo();
   renderGraficoEstados(listaIncidencias);
   renderIncidenciasRecientes(listaIncidencias);
+  renderTopDesbordados(listaIncidencias);
 })();

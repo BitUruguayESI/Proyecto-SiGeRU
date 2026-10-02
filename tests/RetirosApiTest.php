@@ -211,4 +211,35 @@ final class RetirosApiTest extends TestCase
         self::assertSame(409, $repetido['codigo']);
         self::assertFalse($repetido['cuerpo']['exito']);
     }
+
+    public function testSoloAdministradorPuedeResponderYElEnvioDeEmailEsObligatorio(): void
+    {
+        [$chofer] = $this->crearChoferConCuadrilla();
+        $id = $this->solicitarRetiro();
+
+        // El Chofer no puede dejar la respuesta al vecino (es tarea del Administrador).
+        $rechazado = $chofer->put('/api-retiros/responder.php', [
+            'id_solicitud' => $id, 'respuesta' => 'Coordinamos el jueves 10hs.',
+        ]);
+        self::assertSame(403, $rechazado['codigo']);
+
+        $vacia = $this->admin->put('/api-retiros/responder.php', ['id_solicitud' => $id, 'respuesta' => '']);
+        self::assertSame(400, $vacia['codigo']);
+
+        // En el entorno de tests no hay SMTP configurado (SIGERU_SMTP_*), así
+        // que responder.php debe fallar de forma clara en vez de guardar una
+        // respuesta que en realidad nunca se le llegó a mandar al vecino.
+        $sinSmtp = $this->admin->put('/api-retiros/responder.php', [
+            'id_solicitud' => $id, 'respuesta' => 'Coordinamos el jueves 10hs.',
+        ]);
+        self::assertSame(502, $sinSmtp['codigo']);
+        self::assertFalse($sinSmtp['cuerpo']['exito']);
+        self::assertStringContainsString('no está configurado', $sinSmtp['cuerpo']['mensaje']);
+
+        // Como el envío falló, no debe haber quedado nada guardado.
+        $listado = $this->admin->get('/api-retiros/listar.php?estado=PENDIENTE');
+        $encontrada = current(array_filter($listado['cuerpo']['solicitudes'], fn($s) => (int) $s['id_solicitud'] === $id));
+        self::assertTrue(empty($encontrada['respuesta_admin']));
+        self::assertTrue(empty($encontrada['fecha_respuesta']));
+    }
 }

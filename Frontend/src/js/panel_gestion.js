@@ -193,6 +193,7 @@ const MONTEVIDEO_ZOOM = 12;
 
 let mapaContenedores = null;
 let capaMarcadoresContenedores = null;
+let capaMarcadoresIncidencias = null;
 
 function iniciarMapaContenedores() {
   if (mapaContenedores || typeof L === 'undefined') return;
@@ -202,6 +203,60 @@ function iniciarMapaContenedores() {
     maxZoom: 19,
   }).addTo(mapaContenedores);
   capaMarcadoresContenedores = L.layerGroup().addTo(mapaContenedores);
+  capaMarcadoresIncidencias = L.layerGroup().addTo(mapaContenedores);
+}
+
+// Incidencias sobre el mismo mapa (RF13 + registro/seguimiento de
+// incidencias): se ubican en las coordenadas de su contenedor asociado,
+// con un ícono distinto (⚠️) para no confundirlas con los contenedores.
+// Solo se muestran las que siguen abiertas (PENDIENTE/EN_PROCESO) — una
+// vez resuelta, ya no aporta nada verla en el mapa.
+//
+// listar.php (a propósito) no devuelve las coordenadas del contenedor
+// -junto a la incidencia (ver su comentario), así que acá se cruza cada
+// incidencia con `contenedoresPorId` — el mismo mapa que ya arma
+// cargarContenedores() para la tabla y para pintar los contenedores.
+const ETIQUETAS_ESTADO_INCIDENCIA_MAPA = { PENDIENTE: 'Pendiente', EN_PROCESO: 'En proceso' };
+
+function actualizarMapaIncidencias(incidencias, contenedoresPorId) {
+  if (!mapaContenedores || !capaMarcadoresIncidencias) return;
+  capaMarcadoresIncidencias.clearLayers();
+
+  incidencias
+    .filter(i => i.estado !== 'RESUELTA')
+    .forEach(i => {
+      const contenedor = contenedoresPorId[i.id_contenedor];
+      if (!contenedor || !contenedor.coordenadas) return;
+      const [lat, lon] = contenedor.coordenadas.split(',').map(Number);
+      if (Number.isNaN(lat) || Number.isNaN(lon)) return;
+
+      L.marker([lat, lon], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div class="icono-incidencia-mapa">⚠️</div>',
+          iconSize: [22, 22],
+          iconAnchor: [11, 20],
+          popupAnchor: [0, -18],
+        }),
+      })
+        .bindPopup(`
+          <strong>${i.tipo_incidencia}</strong> (${ETIQUETAS_ESTADO_INCIDENCIA_MAPA[i.estado] || i.estado})<br>
+          ${i.contenedor_direccion ? `Contenedor: ${i.contenedor_direccion}<br>` : ''}
+          ${i.descripcion}<br>
+          <span style="color:#a0aec0; font-size:11px;">Reportada: ${i.fecha_registro}</span>
+        `)
+        .addTo(capaMarcadoresIncidencias);
+    });
+}
+
+async function cargarIncidenciasParaMapa(contenedoresPorId) {
+  try {
+    const datos = await llamar('../api-incidencias/listar.php');
+    if (datos.exito) actualizarMapaIncidencias(datos.incidencias, contenedoresPorId);
+  } catch (error) {
+    // Silencioso: si falla, el mapa simplemente no muestra incidencias
+    // (los contenedores igual se cargan bien).
+  }
 }
 
 function actualizarMapaContenedores(contenedores) {
@@ -220,6 +275,11 @@ function actualizarMapaContenedores(contenedores) {
     const [lat, lon] = c.coordenadas.split(',').map(Number);
     if (Number.isNaN(lat) || Number.isNaN(lon)) return;
 
+    // Un contenedor DESBORDADO se muestra siempre al 100% en el mapa,
+    // sin importar qué nivel_llenado tenga guardado (puede quedar en 0
+    // si se marcó desbordado a mano sin actualizar el nivel).
+    const nivelMostrado = c.estado === 'DESBORDADO' ? 100 : c.nivel_llenado;
+
     L.circleMarker([lat, lon], {
       radius: 8,
       color: '#fff',
@@ -227,7 +287,7 @@ function actualizarMapaContenedores(contenedores) {
       fillColor: COLOR_ESTADO_CONTENEDOR[c.estado] || '#888',
       fillOpacity: 0.9,
     })
-      .bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Estado: ${c.estado}<br>Nivel de llenado: ${c.nivel_llenado}%`)
+      .bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Estado: ${c.estado}<br>Nivel de llenado: ${nivelMostrado}%`)
       .addTo(capaMarcadoresContenedores);
     puntos.push([lat, lon]);
   });
@@ -284,6 +344,7 @@ async function cargarContenedores() {
   });
 
   actualizarMapaContenedores(datos.contenedores);
+  cargarIncidenciasParaMapa(contenedoresPorId);
 
   cuerpo.querySelectorAll('.select-estado-contenedor').forEach(select => {
     select.addEventListener('change', async () => {
@@ -895,6 +956,101 @@ document.getElementById('formMaquinaria').addEventListener('submit', async (even
 });
 
 // ---------------------------------------------------------------
+// MAQUINARIA — nivel avanzado 3.2: reparaciones y traslados
+// ---------------------------------------------------------------
+async function cargarSelectsMaquinariaAvanzada() {
+  const selectMaquina = document.getElementById('maqav_maquinaria');
+  const seleccionPrevia = selectMaquina.value;
+  selectMaquina.innerHTML = '';
+  Object.values(maquinariasPorId).forEach(m => {
+    selectMaquina.appendChild(new Option(`${m.nombre} (${m.tipo})`, m.id_maquinaria));
+  });
+  if (seleccionPrevia && maquinariasPorId[seleccionPrevia]) selectMaquina.value = seleccionPrevia;
+
+  const selectDestino = document.getElementById('maqav_tras_destino');
+  const datos = await llamar(`${BASE}/instalaciones.php`);
+  selectDestino.innerHTML = '';
+  if (datos.exito) {
+    datos.instalaciones.forEach(i => selectDestino.appendChild(new Option(i.nombre, i.id_centro)));
+  }
+}
+
+async function cargarHistorialMaquinariaAvanzada() {
+  const idMaquinaria = document.getElementById('maqav_maquinaria').value;
+  const cuerpoMant = document.getElementById('tablaMantenimientoMaquinaria');
+  const cuerpoTras = document.getElementById('tablaTrasladosMaquinaria');
+  cuerpoMant.innerHTML = '';
+  cuerpoTras.innerHTML = '';
+  if (!idMaquinaria) return;
+
+  const [mantenimientos, traslados] = await Promise.all([
+    llamar(`${BASE}/mantenimiento_maquinaria.php?id_maquinaria=${idMaquinaria}`),
+    llamar(`${BASE}/traslados_maquinaria.php?id_maquinaria=${idMaquinaria}`),
+  ]);
+
+  if (mantenimientos.exito) {
+    mantenimientos.mantenimientos.forEach(m => {
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${m.fecha}</td><td>${m.tipo_mantenimiento}</td>
+        <td>${m.descripcion || '—'}</td><td>${m.costo != null ? '$' + m.costo : '—'}</td>
+      `;
+      cuerpoMant.appendChild(fila);
+    });
+  }
+  if (traslados.exito) {
+    traslados.traslados.forEach(t => {
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${t.fecha}</td><td>${t.nombre_origen}</td><td>${t.nombre_destino}</td>
+      `;
+      cuerpoTras.appendChild(fila);
+    });
+  }
+}
+
+document.getElementById('maqav_maquinaria').addEventListener('change', cargarHistorialMaquinariaAvanzada);
+
+document.getElementById('formMantenimientoMaquinaria').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const idMaquinaria = document.getElementById('maqav_maquinaria').value;
+  if (!idMaquinaria) { mostrarMensajeGlobal('Elegí una máquina primero.', 'error'); return; }
+  const cuerpo = {
+    id_maquinaria: Number(idMaquinaria),
+    fecha: document.getElementById('maqav_mant_fecha').value,
+    tipo_mantenimiento: document.getElementById('maqav_mant_tipo').value.trim(),
+    descripcion: document.getElementById('maqav_mant_descripcion').value.trim() || null,
+    costo: document.getElementById('maqav_mant_costo').value ? Number(document.getElementById('maqav_mant_costo').value) : null,
+  };
+  const resultado = await llamar(`${BASE}/mantenimiento_maquinaria.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) {
+    document.getElementById('formMantenimientoMaquinaria').reset();
+    cargarHistorialMaquinariaAvanzada();
+  }
+});
+
+document.getElementById('formTrasladoMaquinaria').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const idMaquinaria = document.getElementById('maqav_maquinaria').value;
+  if (!idMaquinaria) { mostrarMensajeGlobal('Elegí una máquina primero.', 'error'); return; }
+  const cuerpo = {
+    id_maquinaria: Number(idMaquinaria),
+    id_centro_destino: Number(document.getElementById('maqav_tras_destino').value),
+    fecha: document.getElementById('maqav_tras_fecha').value,
+    observaciones: document.getElementById('maqav_tras_observaciones').value.trim() || null,
+  };
+  const resultado = await llamar(`${BASE}/traslados_maquinaria.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) {
+    document.getElementById('formTrasladoMaquinaria').reset();
+    await cargarMaquinaria(); // el id_centro de la máquina cambió
+    await cargarSelectsMaquinariaAvanzada();
+    cargarHistorialMaquinariaAvanzada();
+  }
+});
+
+// ---------------------------------------------------------------
 // RETIROS ESPECIALES (solicitudes públicas: poda, residuos electrónicos,
 // escombros, muebles, etc. — no tienen día fijo, se coordinan por
 // solicitud; acá solo se listan y se marcan como retiradas)
@@ -912,7 +1068,7 @@ function selectCuadrillasRetiro(idSolicitud) {
 
 function accionesRetiro(s) {
   if (s.estado === 'RETIRADO') {
-    return `Retirado el ${s.fecha_retiro || '—'}`;
+    return `<span class="nota-pie-oscura">Retirado el ${s.fecha_retiro || '—'}</span>`;
   }
   // PENDIENTE: si todavía no tiene cuadrilla asignada, primero hay que
   // asignarle una (la ve el Chofer en "Mi día"); si ya la tiene, el
@@ -924,6 +1080,36 @@ function accionesRetiro(s) {
   return `<button class="chico btn-marcar-retirado" data-id="${s.id_solicitud}">Marcar retirado</button>`;
 }
 
+// Columna "Respuesta al vecino": muestra la última respuesta enviada
+// (si hay) y un botón para escribir y mandar una nueva por email real
+// desde la app (api-retiros/responder.php habla SMTP directo, ver
+// Comun/correo.php) — ya no depende de que el Administrador tenga
+// abierto su propio cliente de correo.
+function celdaRespuesta(s) {
+  const textoActual = s.respuesta_admin
+    ? `<div class="texto-respuesta-retiro">${s.respuesta_admin}</div>
+       <div class="nota-pie-oscura">Enviado por email el ${s.fecha_respuesta || '—'}</div>`
+    : `<div class="nota-pie-oscura">Sin respuesta todavía</div>`;
+  return `
+    <div class="celda-respuesta-retiro" data-id="${s.id_solicitud}">
+      <div class="vista-respuesta-retiro">
+        ${textoActual}
+        <button class="chico btn-responder-retiro">${s.respuesta_admin ? 'Volver a responder' : 'Responder por email'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function formularioRespuesta(idSolicitud, respuestaActual) {
+  return `
+    <textarea class="txt-respuesta-retiro" rows="3" placeholder="Ej: coordinamos el retiro para el jueves 10hs...">${respuestaActual || ''}</textarea>
+    <div style="display:flex; gap:8px; margin-top:6px;">
+      <button class="chico btn-guardar-respuesta" data-id="${idSolicitud}">Enviar por email</button>
+      <button class="chico secundario btn-cancelar-respuesta">Cancelar</button>
+    </div>
+  `;
+}
+
 async function cargarRetiros() {
   const estado = document.getElementById('ret_filtro_estado').value;
   const url = estado ? `${BASE_RET}/listar.php?estado=${encodeURIComponent(estado)}` : `${BASE_RET}/listar.php`;
@@ -933,7 +1119,7 @@ async function cargarRetiros() {
   if (!datos.exito) return;
 
   if (!datos.solicitudes.length) {
-    cuerpo.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#a0aec0;">No hay solicitudes para este filtro.</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#a0aec0;">No hay solicitudes para este filtro.</td></tr>';
     return;
   }
 
@@ -948,9 +1134,35 @@ async function cargarRetiros() {
       <td>${ETIQUETAS_ESTADO_RETIRO[s.estado] || s.estado}</td>
       <td>${s.nombre_cuadrilla || '—'}</td>
       <td>${s.fecha_registro}</td>
+      <td>${celdaRespuesta(s)}</td>
       <td>${accionesRetiro(s)}</td>
     `;
     cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.celda-respuesta-retiro').forEach(celda => {
+    const idSolicitud = celda.dataset.id;
+    const solicitud = datos.solicitudes.find(s => String(s.id_solicitud) === idSolicitud);
+
+    celda.querySelector('.btn-responder-retiro').addEventListener('click', () => {
+      celda.innerHTML = formularioRespuesta(idSolicitud, solicitud.respuesta_admin);
+
+      celda.querySelector('.btn-cancelar-respuesta').addEventListener('click', () => cargarRetiros());
+
+      celda.querySelector('.btn-guardar-respuesta').addEventListener('click', async () => {
+        const texto = celda.querySelector('.txt-respuesta-retiro').value.trim();
+        if (!texto) {
+          mostrarMensajeGlobal('Escribí una respuesta antes de guardar.', 'error');
+          return;
+        }
+        const resultado = await llamar(`${BASE_RET}/responder.php`, {
+          method: 'PUT',
+          body: JSON.stringify({ id_solicitud: Number(idSolicitud), respuesta: texto }),
+        });
+        mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+        cargarRetiros();
+      });
+    });
   });
 
   cuerpo.querySelectorAll('.btn-asignar-retiro').forEach(boton => {
@@ -985,6 +1197,231 @@ async function cargarRetiros() {
 document.getElementById('ret_filtro_estado').addEventListener('change', cargarRetiros);
 
 // ---------------------------------------------------------------
+// CONSULTAS PÚBLICAS (formulario "Realizar una consulta" de la Landing
+// Page, sin cuenta — el Administrador le responde por email real desde
+// la propia app: api-gestion/responder_consulta.php manda el correo
+// por SMTP directo, ver Comun/correo.php, y solo si se envía bien la
+// marca como respondida)
+// ---------------------------------------------------------------
+const BASE_GES = '../api-gestion';
+const ETIQUETAS_ESTADO_CONSULTA = { PENDIENTE: 'Pendiente', RESPONDIDA: 'Respondida' };
+
+function celdaRespuestaConsulta(c) {
+  const textoActual = c.respuesta_admin
+    ? `<div class="texto-respuesta-retiro">${c.respuesta_admin}</div>
+       <div class="nota-pie-oscura">Enviado por email el ${c.fecha_respuesta || '—'}</div>`
+    : `<div class="nota-pie-oscura">Sin respuesta todavía</div>`;
+  const boton = c.estado === 'RESPONDIDA'
+    ? ''
+    : `<button class="chico btn-responder-consulta">Responder por email</button>`;
+  return `
+    <div class="celda-respuesta-retiro" data-id="${c.id_consulta}">
+      <div class="vista-respuesta-retiro">
+        ${textoActual}
+        ${boton}
+      </div>
+    </div>
+  `;
+}
+
+function formularioRespuestaConsulta(idConsulta) {
+  return `
+    <textarea class="txt-respuesta-retiro" rows="3" placeholder="Escribí la respuesta que le vas a enviar por mail..."></textarea>
+    <div style="display:flex; gap:8px; margin-top:6px;">
+      <button class="chico btn-guardar-respuesta-consulta" data-id="${idConsulta}">Enviar por email</button>
+      <button class="chico secundario btn-cancelar-respuesta">Cancelar</button>
+    </div>
+  `;
+}
+
+async function cargarConsultas() {
+  const estado = document.getElementById('con_filtro_estado').value;
+  const url = estado ? `${BASE_GES}/listar_consultas.php?estado=${encodeURIComponent(estado)}` : `${BASE_GES}/listar_consultas.php`;
+  const datos = await llamar(url);
+  const cuerpo = document.getElementById('tablaConsultas');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  if (!datos.consultas.length) {
+    cuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0;">No hay consultas para este filtro.</td></tr>';
+    return;
+  }
+
+  datos.consultas.forEach(c => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${c.id_consulta}</td>
+      <td>${c.nombre}</td>
+      <td>${c.email}</td>
+      <td>${c.mensaje}</td>
+      <td>${c.fecha}</td>
+      <td>${ETIQUETAS_ESTADO_CONSULTA[c.estado] || c.estado}</td>
+      <td>${celdaRespuestaConsulta(c)}</td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.celda-respuesta-retiro').forEach(celda => {
+    const btnResponder = celda.querySelector('.btn-responder-consulta');
+    if (!btnResponder) return; // ya respondida: no hay nada para wire-ar acá
+    const idConsulta = celda.dataset.id;
+
+    btnResponder.addEventListener('click', () => {
+      celda.innerHTML = formularioRespuestaConsulta(idConsulta);
+
+      celda.querySelector('.btn-cancelar-respuesta').addEventListener('click', () => cargarConsultas());
+
+      celda.querySelector('.btn-guardar-respuesta-consulta').addEventListener('click', async () => {
+        const texto = celda.querySelector('.txt-respuesta-retiro').value.trim();
+        if (!texto) {
+          mostrarMensajeGlobal('Escribí una respuesta antes de enviar.', 'error');
+          return;
+        }
+        const resultado = await llamar(`${BASE_GES}/responder_consulta.php`, {
+          method: 'PUT',
+          body: JSON.stringify({ id_consulta: Number(idConsulta), respuesta: texto }),
+        });
+        mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+        cargarConsultas();
+      });
+    });
+  });
+}
+
+document.getElementById('con_filtro_estado').addEventListener('change', cargarConsultas);
+
+// ---------------------------------------------------------------
+// RECICLAJE — nivel avanzado 3.3: catálogo de tipos de residuo + reporte
+// ---------------------------------------------------------------
+let tiposResiduoPorId = {};
+
+async function cargarTiposResiduo() {
+  const datos = await llamar(`${BASE}/tipos_residuo.php`);
+  const cuerpo = document.getElementById('tablaTiposResiduo');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  tiposResiduoPorId = {};
+  datos.tipos_residuo.forEach(t => {
+    tiposResiduoPorId[t.id_tipo_residuo] = t;
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${t.id_tipo_residuo}</td><td>${t.nombre}</td><td>${t.reciclable ? 'Sí' : 'No'}</td>
+      <td>
+        <button class="chico btn-editar-tipo-residuo" data-id="${t.id_tipo_residuo}">Editar</button>
+        <button class="peligro btn-eliminar-tipo-residuo" data-id="${t.id_tipo_residuo}">Eliminar</button>
+      </td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+
+  cuerpo.querySelectorAll('.btn-editar-tipo-residuo').forEach(boton => {
+    boton.addEventListener('click', () => {
+      const t = tiposResiduoPorId[boton.dataset.id];
+      document.getElementById('tr_id').value = t.id_tipo_residuo;
+      document.getElementById('tr_nombre').value = t.nombre;
+      document.getElementById('tr_reciclable').value = t.reciclable ? '1' : '0';
+      document.getElementById('tr_titulo_form').textContent = `Editar tipo de residuo #${t.id_tipo_residuo}`;
+      document.getElementById('tr_boton_submit').textContent = 'Guardar cambios';
+      document.getElementById('tr_cancelar').hidden = false;
+      document.getElementById('formTipoResiduo').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+  cuerpo.querySelectorAll('.btn-eliminar-tipo-residuo').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const resultado = await llamar(`${BASE}/tipos_residuo.php`, {
+        method: 'DELETE',
+        body: JSON.stringify({ id_tipo_residuo: Number(boton.dataset.id) }),
+      });
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarTiposResiduo();
+      cargarReporteReciclaje();
+    });
+  });
+}
+
+function salirModoEdicionTipoResiduo() {
+  document.getElementById('formTipoResiduo').reset();
+  document.getElementById('tr_id').value = '';
+  document.getElementById('tr_titulo_form').textContent = 'Registrar tipo de residuo';
+  document.getElementById('tr_boton_submit').textContent = 'Registrar tipo';
+  document.getElementById('tr_cancelar').hidden = true;
+}
+document.getElementById('tr_cancelar').addEventListener('click', salirModoEdicionTipoResiduo);
+
+document.getElementById('formTipoResiduo').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const idTipo = document.getElementById('tr_id').value;
+  const cuerpo = {
+    nombre: document.getElementById('tr_nombre').value.trim(),
+    reciclable: document.getElementById('tr_reciclable').value === '1',
+  };
+  const resultado = idTipo
+    ? await llamar(`${BASE}/tipos_residuo.php`, { method: 'PUT', body: JSON.stringify({ id_tipo_residuo: Number(idTipo), ...cuerpo }) })
+    : await llamar(`${BASE}/tipos_residuo.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
+  mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+  if (resultado.exito) {
+    salirModoEdicionTipoResiduo();
+    cargarTiposResiduo();
+    cargarReporteReciclaje();
+  }
+});
+
+async function cargarReporteReciclaje() {
+  const datos = await llamar(`${BASE}/reporte_reciclaje.php`);
+  if (!datos.exito) return;
+
+  const r = datos.resumen;
+  document.getElementById('repRec_reciclable').textContent = `${r.peso_reciclable} kg`;
+  document.getElementById('repRec_noReciclable').textContent = `${r.peso_no_reciclable} kg`;
+  document.getElementById('repRec_sinClasificar').textContent = `${r.peso_sin_clasificar} kg`;
+  document.getElementById('repRec_porcentaje').textContent = r.porcentaje_reciclado !== null ? `${r.porcentaje_reciclado}%` : 'Sin datos';
+
+  const cuerpo = document.getElementById('tablaReporteReciclaje');
+  cuerpo.innerHTML = '';
+  datos.por_tipo.forEach(t => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `<td>${t.nombre}</td><td>${t.reciclable ? 'Sí' : 'No'}</td><td>${t.peso_total} kg</td>`;
+    cuerpo.appendChild(fila);
+  });
+}
+
+// ---------------------------------------------------------------
+// PREDICCIONES — nivel avanzado 3.4
+// ---------------------------------------------------------------
+async function cargarPredicciones() {
+  const datos = await llamar(`${BASE}/predicciones.php`);
+  if (!datos.exito) return;
+
+  const cuerpoContenedores = document.getElementById('tablaPrediccionesContenedores');
+  cuerpoContenedores.innerHTML = '';
+  datos.contenedores.forEach(c => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${c.id_contenedor}</td><td>${c.direccion}</td><td>${c.nivel_llenado}%</td>
+      <td>${c.tasa_diaria_pct !== null ? c.tasa_diaria_pct + ' pts/día' : 'Sin datos suficientes'}</td>
+      <td>${c.dias_estimados_para_lleno !== null ? c.dias_estimados_para_lleno : '—'}</td>
+    `;
+    cuerpoContenedores.appendChild(fila);
+  });
+
+  const cuerpoZonas = document.getElementById('tablaPrediccionesZonas');
+  cuerpoZonas.innerHTML = '';
+  datos.zonas.forEach(z => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${z.nombre_zona}</td><td>${z.generacion_promedio_diaria_kg} kg</td><td>${z.proyeccion_proximos_30_dias_kg} kg</td>
+    `;
+    cuerpoZonas.appendChild(fila);
+  });
+}
+
+// Nota: la campana de notificaciones (nivel avanzado 3.1) se mudó a la
+// barra de navegación compartida (js/nav_admin.js), para que se vea
+// desde cualquier pantalla del staff y no solo desde esta página — ver
+// crearCampanaNotificaciones()/cargarNotificacionesNav() ahí.
+
+// ---------------------------------------------------------------
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
@@ -1002,5 +1439,11 @@ document.getElementById('ret_filtro_estado').addEventListener('change', cargarRe
   await cargarInstalaciones();
   await cargarRepuestos();   // antes de maquinaria, porque llena el <select> de repuestos
   await cargarMaquinaria();
+  await cargarSelectsMaquinariaAvanzada(); // usa maquinariasPorId, ya cargado arriba
+  await cargarHistorialMaquinariaAvanzada();
   await cargarRetiros();
+  await cargarConsultas();
+  await cargarTiposResiduo();
+  await cargarReporteReciclaje();
+  await cargarPredicciones();
 })();

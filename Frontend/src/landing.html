@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body>
+<body class="landing-body">
   <nav class="navbar">
     <div class="nav-links">
       <a class="nav-item" href="login.html">Iniciar sesión</a>
@@ -20,11 +20,8 @@
     <div class="col-left">
       <h1 class="main-title">SiGeRU </h1>
       <h2 class="subtitle">Sistema de Gestión de Residuos Urbanos</h2>
-      
-      <div style="display:flex; gap:20px; flex-wrap:wrap;">
-        <a class="btn btn-primary" href="reportar_incidencia.html">Reportar una incidencia</a>
-        <a class="btn btn-secondary" href="solicitar_retiro.html">Solicitar retiro de residuos especiales</a>
-      </div>
+      <p class="subtitle"> La ciudad mas limpia la cuidamos entre todos! </p>
+
     </div>
     <div class="col-right">
       <div class="logo-wrapper">
@@ -34,19 +31,23 @@
   </div>
 
   <div class="modulos-info">
-    <div class="card-info">
+    <a class="card-info" href="reportar_incidencia.html">      
       <h3>Reportar una incidencia</h3>
-      <p>Contenedor desbordado, dañado o fuera de servicio.</p>
-    </div>
+      <p>Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.</p>
+    </a>
+    
     <a class="card-info" href="solicitar_retiro.html">
       <h3>Solicitar retiro de residuos especiales</h3>
       <p>Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor.</p>
     </a>
+    <a class="card-info" href="consulta.html">
+      <h3>Realizar una consulta</h3>
+      <p>¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.</p>
+    </a>
   </div>
 
   <footer class="footer">
-   Intendencia de Montevideo. 
-   Tu ciudad mas limpia. La cuidamos entretodos.
+    SiGeRU Sistema de Gestión de Residuos Urbanos
   </footer>
 </body>
 </html>

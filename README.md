@@ -155,6 +155,51 @@ viajan igual que si fuera un único servidor.
    — es la forma recomendada, porque reproduce la separación real de
    contenedores.
 
+## Envío de emails (respuesta a vecinos)
+
+Desde el panel de gestión, el Administrador puede responderle por email
+real a un vecino directamente desde la app — tanto en "Retiros
+especiales" como en "Consultas públicas" — sin necesidad de abrir su
+propio cliente de correo. El envío lo hace `Backend/src/Comun/correo.php`
+hablando SMTP directo por sockets (sin librerías externas, para no
+depender de tener Composer instalado). Se configura con las mismas
+variables de entorno que la conexión a la base de datos:
+
+```
+export SIGERU_SMTP_HOST=smtp.gmail.com
+export SIGERU_SMTP_PORT=587
+export SIGERU_SMTP_USER=tu-cuenta@gmail.com
+export SIGERU_SMTP_PASS=una-contraseña-de-aplicación-de-16-caracteres
+export SIGERU_SMTP_FROM=tu-cuenta@gmail.com
+```
+
+Si no se configuran, responder por email devuelve un error claro
+("El envío de emails no está configurado en este servidor...") en vez
+de fallar sin explicación — el sistema nunca marca algo como
+"respondido" si el email no se llegó a mandar.
+
+**Con Gmail:** hay que generar una "contraseña de aplicación" (no sirve
+la contraseña normal de la cuenta, porque Gmail exige verificación en
+dos pasos + autenticación por app para SMTP):
+1. Activar la verificación en dos pasos en la cuenta de Google, si no
+   está activada (https://myaccount.google.com/security).
+2. Ir a https://myaccount.google.com/apppasswords, elegir un nombre
+   (por ejemplo "SiGeRU") y generar la contraseña de 16 caracteres.
+3. Usar esa contraseña (sin espacios) como `SIGERU_SMTP_PASS`, nunca la
+   contraseña normal de la cuenta de Gmail.
+
+**Para probar sin usar una cuenta de email real:** se recomienda
+[Mailtrap](https://mailtrap.io) (tiene un plan gratuito pensado
+justamente para testing) — te da un `SIGERU_SMTP_HOST`,
+`SIGERU_SMTP_PORT`, usuario y contraseña de prueba, y los emails
+"enviados" quedan atrapados en una bandeja de entrada de prueba en vez
+de salir de verdad, para revisarlos sin arriesgarse a mandarle un email
+real a nadie mientras se está probando.
+
+Nunca subas estos valores al repositorio (van como variables de
+entorno, igual que `SIGERU_DB_PASS`) ni se los compartas a nadie fuera
+de quien vaya a correr el servidor.
+
 ## Levantarlo con Docker (recomendado)
 
 Con Docker no hace falta instalar MySQL/MariaDB, PHP ni nginx a mano:
@@ -214,6 +259,18 @@ igual — solo que sin ubicación en el mapa todavía — y el aviso arriba de l
 tabla te dice cuántos quedaron así; podés reintentar editándolos con una
 dirección más precisa una vez que haya internet.
 
+Ese mismo mapa (3ra entrega) también dibuja las **incidencias** abiertas
+(PENDIENTE/EN_PROCESO) con un ícono ⚠️ propio, en la ubicación de su
+contenedor asociado — una vez RESUELTA deja de mostrarse, porque ya no
+aporta nada verla ahí. A propósito, `api-incidencias/listar.php` **no**
+devuelve las coordenadas del contenedor junto a cada incidencia (al
+staff se le sigue mostrando la dirección, no coordenadas crudas — ver
+`IncidenciasApiTest::testDireccionSeVeEnVezDeCoordenadas`); en cambio,
+`panel_gestion.js` cruza el `id_contenedor` de cada incidencia con la
+lista de contenedores que ya cargó por separado para el propio mapa
+(esa sí trae `coordenadas`). Hay una leyenda arriba del mapa que explica
+los colores de los contenedores y el ícono de incidencia.
+
 Del lado del vecino, `reportar_incidencia.html` (público, sin sesión) usa
 esa misma dirección para identificar el contenedor: en vez de un `<select>`
 con "Contenedor #N" y la `coordenadas` cruda, hay un campo de texto con
@@ -254,6 +311,29 @@ La consulta pública original (`consulta.html`, RN21) no se eliminó:
 sigue funcionando igual que antes, solo dejó de estar linkeada desde
 la landing.
 
+## Informes y panel de estadísticas (3ra entrega)
+
+Dos funcionalidades pedidas para la 3ra entrega ("Informes simples" y
+"Panel de control con estadísticas"), agregadas sobre lo ya existente:
+
+- **Informe de incidencias abiertas/cerradas**: nueva pestaña arriba de
+  la tabla de gestión en `panel_incidencias.html`, con 3 tarjetas
+  (abiertas, cerradas, total) y dos tablas separadas. Es de solo
+  lectura — para asignar cuadrilla o resolver una incidencia se sigue
+  usando la tabla de gestión de siempre, más abajo en la misma página.
+  Backend: `api-incidencias/reporte.php` (GET, requiere sesión de
+  staff), agrupa lo que ya devuelve `listar.php` en "abiertas"
+  (PENDIENTE + EN_PROCESO) vs. "cerradas" (RESUELTA) con un resumen de
+  conteos.
+- **Top de contenedores desbordados del mes**: nuevo bloque al final del
+  Dashboard (`dashboard.html`), con el ranking de los contenedores que
+  más incidencias de tipo "Desborde" acumularon en los últimos 30 días.
+  No hay un endpoint de estadísticas dedicado — igual que el resto del
+  Dashboard, se calcula en el cliente (`dashboard.js`,
+  `calcularTopDesbordados()`) a partir de las incidencias que ya se
+  traen para el gráfico de estados y la lista de recientes, agrupando
+  por `id_contenedor` y ordenando de mayor a menor.
+
 ## Datos de prueba
 
 `sql/datos_prueba.sql` carga usuarios, rutas, cuadrillas, contenedores,
@@ -271,14 +351,21 @@ Todos los usuarios de prueba (`10000001`/`10000002` Administradores,
 bash tests/run-tests.sh
 ```
 
-42 tests de integración (usuarios, CRUD de contenedores + autorización
+67 tests de integración (usuarios, CRUD de contenedores + autorización
 por rol, máquina de estados de incidencias de 3 pasos + quién puede
-resolver, rol editable y cuadrilla estable, alta/edición de asignación
-diaria, reporte de incidencias por dirección, el ciclo de vida
-completo — alta/edición/baja + control de acceso por rol — de
-camiones, instalaciones, maquinaria y repuestos, y solicitudes de
-retiro de residuos especiales) contra una base de datos de test
-separada (`sigeru_test`, nunca toca la de desarrollo).
+resolver — incluye que el contenedor pase a 100% de nivel de llenado al
+reportarse un Desborde y vuelva a 0% al resolverse la incidencia —, rol
+editable y cuadrilla estable, alta/edición de asignación diaria, reporte
+de incidencias por dirección, el informe de incidencias abiertas/
+cerradas (`reporte.php`), el ciclo de vida completo — alta/edición/baja +
+control de acceso por rol — de camiones, instalaciones, maquinaria y
+repuestos, solicitudes de retiro de residuos especiales, y las 4
+funcionalidades de nivel avanzado: notificaciones/alertas, reparaciones y
+traslados de maquinaria, catálogo/reporte de reciclaje, y predicciones de
+llenado/generación por zona — ver `NotificacionesApiTest.php`,
+`MaquinariaAvanzadaApiTest.php`, `ReciclajeApiTest.php` y
+`PrediccionesApiTest.php`) contra una base de datos de test separada
+(`sigeru_test`, nunca toca la de desarrollo).
 Ver `tests/README.md` para el detalle de qué cubren y cómo correrlos
 con PHPUnit real.
 
@@ -330,9 +417,12 @@ con PHPUnit real.
   cargo CHOFER (`requerirPuedeResolverIncidencia()` en `Comun/
   funciones.php` — el Recolector puede ver el estado pero no cerrarla). Si
   el tipo de incidencia es "Desborde", el contenedor pasa a DESBORDADO
-  automáticamente al reportarse, y vuelve a OPERATIVO al resolverse
-  (simplificación: no chequea si hay otra incidencia abierta sobre el
-  mismo contenedor).
+  **y `nivel_llenado` a 100** automáticamente al reportarse, y vuelve a
+  OPERATIVO **con `nivel_llenado` en 0** al resolverse (cada cambio
+  también se registra en `LECTURA_NIVEL_CONTENEDOR`, igual que un cambio
+  manual desde el panel de gestión, para no romper las Predicciones de
+  llenado de "Nivel avanzado"). Simplificación: no chequea si hay otra
+  incidencia abierta sobre el mismo contenedor.
 - Asignación diaria (RF23): la crea el Administrador (se resuelve
   `id_administrador` a partir de su sesión) y junta cuadrilla + ruta +
   camión + una lista de operarios con rol ("Chofer"/"Recolector") vía
@@ -427,11 +517,71 @@ están conectados entre sí (ej: `panel_recoleccion.html` usa cuadrillas y
 camiones de api-gestion, y operarios de api-usuarios, para armar la
 asignación diaria).
 
+## Nivel avanzado (3.1 - 3.4)
+
+Las 4 funcionalidades del "nivel avanzado" del alcance sugerido ya están
+implementadas de punta a punta (schema + endpoints + tests + UI en
+`panel_gestion.html`/`panel_recoleccion.html`):
+
+- **3.1 Notificaciones/alertas**: `Comun/notificaciones.php` genera
+  alertas "a demanda" (se calculan al pedir el listado, no hay
+  cron/worker en este stack) cada vez que el Administrador abre/consulta
+  la campana 🔔 del panel de gestión: contenedores DESBORDADO,
+  incidencias PENDIENTE, solicitudes de retiro y consultas sin
+  responder, y carnets de salud/licencias de conducir que vencen en los
+  próximos 30 días. Se deduplican por (usuario, tipo, mensaje) para no
+  repetir la misma alerta en cada refresco, y las urgentes
+  (`CONTENEDOR_DESBORDADO`, `CARNET_POR_VENCER`, `LICENCIA_POR_VENCER`)
+  además mandan un email real con el mismo `Comun/correo.php` que ya se
+  usa para responder retiros/consultas. Se pueden marcar como leídas una
+  por una o todas juntas. Endpoint: `api-gestion/notificaciones.php`.
+- **3.2 Gestión avanzada de logística**: dos tablas nuevas,
+  `MANTENIMIENTO_MAQUINARIA` (historial de reparaciones, análogo al de
+  camiones) y `TRASLADO_MAQUINARIA` (mover una máquina entre
+  instalaciones, actualiza `MAQUINARIA.id_centro` en la misma
+  transacción). UI en la pestaña Maquinaria de `panel_gestion.html`,
+  debajo del alta de maquinaria. Endpoints:
+  `api-gestion/mantenimiento_maquinaria.php` y
+  `api-gestion/traslados_maquinaria.php`.
+- **3.3 Reciclaje y clasificación de residuos**: catálogo opcional
+  `TIPO_RESIDUO` (nombre + si es reciclable) que se puede asignar al
+  registrar una descarga (`api-recoleccion/descargas.php`,
+  `desc_tipo_residuo` en `panel_recoleccion.html`) — es aditivo, no
+  reemplaza los campos de texto libre que ya existían
+  (`CONTENEDOR_TIPO_RESIDUO`, `SOLICITUD_RETIRO.tipo_residuo`). El
+  reporte de % reciclado (pestaña Reciclaje de `panel_gestion.html`)
+  suma el peso reciclable vs. no reciclable vs. sin clasificar; las
+  descargas sin clasificar no afectan el porcentaje. Endpoints:
+  `api-gestion/tipos_residuo.php` (CRUD, solo Administrador) y
+  `api-gestion/reporte_reciclaje.php`.
+- **3.4 Predicciones de llenado y generación por zona**: heurística
+  simple, no un modelo predictivo real. Por contenedor, se guarda una
+  lectura de nivel (`LECTURA_NIVEL_CONTENEDOR`) cada vez que se da de
+  alta o se actualiza su `nivel_llenado`; con esas lecturas se calcula
+  una tasa de llenado diaria (desde el último "vaciado" detectado) y se
+  proyectan los días que faltan para el 100%. Para la generación por
+  zona, se cruza `DESCARGA` con `ASIGNACION_DIARIA` (mismo camión +
+  fecha) para inferir de qué ruta/zona vino cada descarga de los
+  últimos 30 días, y se proyecta el próximo mes. UI en la nueva pestaña
+  Predicciones de `panel_gestion.html`. Endpoint:
+  `api-gestion/predicciones.php`.
+
+Si ya tenés una base de datos local de antes de esta funcionalidad (por
+ejemplo la que venís usando para probar en XAMPP), corré
+`sql/migracion_nivel_avanzado.sql` para agregarle las tablas y la
+columna nuevas sin perder los datos que ya cargaste:
+
+```
+"C:\xampp\mysql\bin\mysql.exe" -u root -p sigeru < sql\migracion_nivel_avanzado.sql
+```
+
+(cambiá `sigeru` si tu base local se llama distinto). Es seguro
+correrlo más de una vez. Si preferís empezar de cero, alcanza con
+reimportar `sql/sigeru_schema.sql` completo (y `sql/datos_prueba.sql`
+si querés los datos de ejemplo).
+
 ## Próximos pasos sugeridos
 
-- Notificaciones (RF33-RF35): hoy la tabla NOTIFICACION existe pero nada la
-  escribe todavía; se puede insertar una fila ahí cuando cambia el estado
-  de una incidencia, se asigna una cuadrilla, o se crea una asignación diaria.
 - Reportes exportables (RF15, PDF/Excel) para el Dashboard.
 - El mapa interactivo (RF13) hoy vive en la pestaña Contenedores del panel
   de gestión; se podría replicar/enlazar también desde el Dashboard, y

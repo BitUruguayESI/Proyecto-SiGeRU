@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SiGeRU Dashboard</title>
+<title>SiGeRU  Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,20 +11,21 @@
 <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body data-pagina="dashboard">
-  <header class="banner"><h1>Sistema de Gestión de Residuos Urbanos</h1></header>
+  <header class="banner"><h1>SiGeRU </h1></header>
+  <h2 class="titulo-pagina">Sistema de Gestión de Residuos Urbanos</h2>
   <div id="navAdmin"></div>
 
   <main class="panel panel-oscuro">
     <div class="encabezado-panel-oscuro">
       <h2>Panel de Control</h2>
-      <div class="pildora-rol" id="pildoraRol">👤 Personal Municipal</div>
+      
     </div>
     <h3 class="subtitulo-panel-oscuro">Panel Principal</h3>
 
     <div class="tarjetas-estadisticas tarjetas-oscuras" id="tarjetasEstadisticas">
       <!-- se completan por JS -->
     </div>
-    <p class="info-actualizada" id="infoActualizada">Información actualizada: —</p>
+    <p class="info-actualizada" id="infoActualizada">Información actualizada: </p>
 
     <div class="fila-paneles-dashboard paneles-oscuros">
       <section class="bloque-dashboard bloque-oscuro">
@@ -45,9 +46,15 @@
       </section>
     </div>
 
-    <p class="nota-pie-oscura">
-      
-    </p>
+    <section class="bloque-dashboard bloque-oscuro" style="margin-bottom:30px;">
+      <div class="encabezado-bloque-oscuro">
+        <h3>Top contenedores desbordados (últimos 30 días)</h3>
+        <a href="panel_gestion.html#contenedores" class="enlace-ver-todas">Ver mapa</a>
+      </div>
+      <ol class="lista-top-desbordados" id="listaTopDesbordados">
+        <!-- se completa por JS -->
+      </ol>
+    </section>
   </main>
 
   <script src="js/sesion.js"></script>

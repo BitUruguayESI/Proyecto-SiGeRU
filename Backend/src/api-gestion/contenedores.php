@@ -101,6 +101,11 @@ if ($metodo === 'POST') {
         ]);
         $idContenedor = (int) $pdo->lastInsertId();
 
+        // Primera lectura del historial de llenado (nivel avanzado 3.4:
+        // predicciones) — ver LECTURA_NIVEL_CONTENEDOR.
+        $pdo->prepare('INSERT INTO LECTURA_NIVEL_CONTENEDOR (id_contenedor, nivel_llenado) VALUES (:id, :nivel)')
+            ->execute(['id' => $idContenedor, 'nivel' => $nivelLlenado]);
+
         if ($tiposResiduo) {
             $insertarTipo = $pdo->prepare(
                 'INSERT INTO CONTENEDOR_TIPO_RESIDUO (id_contenedor, tipo_residuo) VALUES (:id, :tipo)'
@@ -181,6 +186,13 @@ if ($metodo === 'PUT') {
         if ($campos) {
             $sql = 'UPDATE CONTENEDOR SET ' . implode(', ', $campos) . ' WHERE id_contenedor = :id';
             $pdo->prepare($sql)->execute($valores);
+        }
+
+        // Nueva lectura del historial de llenado (nivel avanzado 3.4:
+        // predicciones) cada vez que cambia nivel_llenado.
+        if (isset($valores['nivel_llenado'])) {
+            $pdo->prepare('INSERT INTO LECTURA_NIVEL_CONTENEDOR (id_contenedor, nivel_llenado) VALUES (:id, :nivel)')
+                ->execute(['id' => $idContenedor, 'nivel' => $valores['nivel_llenado']]);
         }
 
         if (isset($entrada['tipos_residuo']) && is_array($entrada['tipos_residuo'])) {

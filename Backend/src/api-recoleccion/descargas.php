@@ -6,7 +6,12 @@
  * descargar más de una vez, en instalaciones distintas.
  *
  * GET  ?id_camion=&id_centro=&fecha=   (todos opcionales) — staff
- * POST { id_camion, id_centro, fecha_descarga, hora_descarga, peso } — staff
+ * POST { id_camion, id_centro, fecha_descarga, hora_descarga, peso, id_tipo_residuo? } — staff
+ *
+ * id_tipo_residuo es opcional (nivel avanzado 3.3, ver TIPO_RESIDUO):
+ * clasificar la descarga permite calcular el % reciclado en
+ * api-gestion/reporte_reciclaje.php. Sin clasificar, la descarga se
+ * sigue registrando igual (solo queda afuera de ese reporte).
  */
 
 declare(strict_types=1);
@@ -27,10 +32,12 @@ if ($metodo === 'GET') {
     if (!empty($_GET['fecha'])) { $condiciones[] = 'd.fecha_descarga = :fecha'; $valores['fecha'] = $_GET['fecha']; }
 
     $sql = 'SELECT d.id_descarga, d.fecha_descarga, d.hora_descarga, d.peso,
-                   d.id_camion, c.matricula, d.id_centro, i.nombre AS instalacion
+                   d.id_camion, c.matricula, d.id_centro, i.nombre AS instalacion,
+                   d.id_tipo_residuo, t.nombre AS nombre_tipo_residuo, t.reciclable
             FROM DESCARGA d
             JOIN CAMION c ON c.id_camion = d.id_camion
-            JOIN INSTALACION i ON i.id_centro = d.id_centro';
+            JOIN INSTALACION i ON i.id_centro = d.id_centro
+            LEFT JOIN TIPO_RESIDUO t ON t.id_tipo_residuo = d.id_tipo_residuo';
     if ($condiciones) {
         $sql .= ' WHERE ' . implode(' AND ', $condiciones);
     }
@@ -51,6 +58,8 @@ if ($metodo === 'POST') {
     $fecha = limpiarTexto($entrada['fecha_descarga'] ?? '');
     $hora = limpiarTexto($entrada['hora_descarga'] ?? '');
     $peso = (float) ($entrada['peso'] ?? 0);
+    $idTipoResiduo = isset($entrada['id_tipo_residuo']) && $entrada['id_tipo_residuo'] !== ''
+        ? (int) $entrada['id_tipo_residuo'] : null;
 
     $errores = [];
     if ($idCamion <= 0) $errores[] = 'Tenés que elegir un camión.';
@@ -72,12 +81,22 @@ if ($metodo === 'POST') {
     if (!$instalacion->fetch()) {
         responderJson(['exito' => false, 'mensaje' => 'La instalación seleccionada no existe.'], 404);
     }
+    if ($idTipoResiduo !== null) {
+        $tipo = $pdo->prepare('SELECT id_tipo_residuo FROM TIPO_RESIDUO WHERE id_tipo_residuo = :id');
+        $tipo->execute(['id' => $idTipoResiduo]);
+        if (!$tipo->fetch()) {
+            responderJson(['exito' => false, 'mensaje' => 'El tipo de residuo seleccionado no existe.'], 404);
+        }
+    }
 
     $insertar = $pdo->prepare(
-        'INSERT INTO DESCARGA (fecha_descarga, hora_descarga, peso, id_camion, id_centro)
-         VALUES (:fecha, :hora, :peso, :camion, :centro)'
+        'INSERT INTO DESCARGA (fecha_descarga, hora_descarga, peso, id_camion, id_centro, id_tipo_residuo)
+         VALUES (:fecha, :hora, :peso, :camion, :centro, :tipo)'
     );
-    $insertar->execute(['fecha' => $fecha, 'hora' => $hora, 'peso' => $peso, 'camion' => $idCamion, 'centro' => $idCentro]);
+    $insertar->execute([
+        'fecha' => $fecha, 'hora' => $hora, 'peso' => $peso,
+        'camion' => $idCamion, 'centro' => $idCentro, 'tipo' => $idTipoResiduo,
+    ]);
 
     responderJson(['exito' => true, 'mensaje' => 'Descarga registrada.', 'id_descarga' => (int) $pdo->lastInsertId()], 201);
 }

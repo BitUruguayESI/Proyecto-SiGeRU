@@ -50,6 +50,8 @@ function accionesPorEstado(inc) {
 }
 
 async function cargarIncidencias() {
+  cargarInformeIncidencias(); // en paralelo, no bloquea la tabla principal de abajo
+
   const estado = document.getElementById('filtroEstado').value;
   const url = estado ? `${BASE_INC}/listar.php?estado=${encodeURIComponent(estado)}` : `${BASE_INC}/listar.php`;
   const datos = await llamar(url);
@@ -110,6 +112,51 @@ async function cargarIncidencias() {
 }
 
 document.getElementById('filtroEstado').addEventListener('change', cargarIncidencias);
+
+// ---------------------------------------------------------------
+// Informe: abiertas vs. cerradas
+// ---------------------------------------------------------------
+async function cargarInformeIncidencias() {
+  const datos = await llamar(`${BASE_INC}/reporte.php`);
+  if (!datos.exito) return;
+
+  document.getElementById('informeInc_abiertas').textContent = datos.resumen.abiertas;
+  document.getElementById('informeInc_cerradas').textContent = datos.resumen.cerradas;
+  document.getElementById('informeInc_total').textContent = datos.resumen.total;
+
+  const cuerpoAbiertas = document.getElementById('tablaInformeAbiertas');
+  cuerpoAbiertas.innerHTML = '';
+  if (datos.abiertas.length === 0) {
+    cuerpoAbiertas.innerHTML = '<tr><td colspan="5" style="color:#a0aec0;">No hay incidencias abiertas.</td></tr>';
+  }
+  datos.abiertas.forEach(i => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${i.id_incidencia}</td>
+      <td>${i.contenedor_direccion || '—'}</td>
+      <td>${i.tipo_incidencia}</td>
+      <td>${ETIQUETAS_ESTADO[i.estado] || i.estado}</td>
+      <td>${i.fecha_registro}</td>
+    `;
+    cuerpoAbiertas.appendChild(fila);
+  });
+
+  const cuerpoCerradas = document.getElementById('tablaInformeCerradas');
+  cuerpoCerradas.innerHTML = '';
+  if (datos.cerradas.length === 0) {
+    cuerpoCerradas.innerHTML = '<tr><td colspan="4" style="color:#a0aec0;">No hay incidencias cerradas todavía.</td></tr>';
+  }
+  datos.cerradas.forEach(i => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${i.id_incidencia}</td>
+      <td>${i.contenedor_direccion || '—'}</td>
+      <td>${i.tipo_incidencia}</td>
+      <td>${i.fecha_resolucion || '—'}</td>
+    `;
+    cuerpoCerradas.appendChild(fila);
+  });
+}
 
 (async function iniciar() {
   // Este panel (gestión de TODAS las incidencias) es solo para

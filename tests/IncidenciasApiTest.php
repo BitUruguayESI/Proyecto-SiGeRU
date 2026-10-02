@@ -98,6 +98,7 @@ final class IncidenciasApiTest extends TestCase
 
         $contenedor = $this->admin->get("/api-gestion/contenedores.php?id={$this->idContenedor}");
         self::assertSame('DESBORDADO', $contenedor['cuerpo']['contenedor']['estado']);
+        self::assertSame(100, $contenedor['cuerpo']['contenedor']['nivel_llenado']);
     }
 
     public function testNoSePuedeSaltarDePendienteAEnProceso(): void
@@ -139,6 +140,57 @@ final class IncidenciasApiTest extends TestCase
 
         $contenedor = $this->admin->get("/api-gestion/contenedores.php?id={$this->idContenedor}");
         self::assertSame('OPERATIVO', $contenedor['cuerpo']['contenedor']['estado']);
+        self::assertSame(0, $contenedor['cuerpo']['contenedor']['nivel_llenado']);
+    }
+
+    /**
+     * Informe simple (3ra entrega): reporte.php agrupa en abiertas
+     * (PENDIENTE + EN_PROCESO) vs. cerradas (RESUELTA), con conteos que
+     * cuadren con el total.
+     */
+    public function testReporteAgrupaAbiertasYCerradas(): void
+    {
+        $idAbierta = $this->reportarIncidencia();
+        $idParaCerrar = $this->reportarIncidencia();
+
+        $this->admin->put('/api-incidencias/asignar_cuadrilla.php', [
+            'id_incidencia' => $idParaCerrar, 'id_cuadrilla' => $this->idCuadrilla,
+        ]);
+        $this->admin->put('/api-incidencias/actualizar_estado.php', [
+            'id_incidencia' => $idParaCerrar, 'estado' => 'RESUELTA',
+        ]);
+
+        $reporte = $this->admin->get('/api-incidencias/reporte.php');
+        self::assertSame(200, $reporte['codigo']);
+        self::assertTrue($reporte['cuerpo']['exito']);
+
+        $resumen = $reporte['cuerpo']['resumen'];
+        self::assertSame($resumen['abiertas'] + $resumen['cerradas'], $resumen['total']);
+        self::assertGreaterThan(0, $resumen['abiertas']);
+        self::assertGreaterThan(0, $resumen['cerradas']);
+
+        $enAbiertas = array_filter($reporte['cuerpo']['abiertas'], fn($i) => (int) $i['id_incidencia'] === $idAbierta);
+        self::assertNotEmpty($enAbiertas);
+        $enCerradas = array_filter($reporte['cuerpo']['cerradas'], fn($i) => (int) $i['id_incidencia'] === $idParaCerrar);
+        self::assertNotEmpty($enCerradas);
+
+        // Todas las filas de "cerradas" tienen que estar RESUELTA, y
+        // ninguna de "abiertas" puede estarlo (si no, el agrupamiento
+        // estaría mal armado).
+        foreach ($reporte['cuerpo']['abiertas'] as $i) {
+            self::assertFalse('RESUELTA' === $i['estado']);
+        }
+        foreach ($reporte['cuerpo']['cerradas'] as $i) {
+            self::assertSame('RESUELTA', $i['estado']);
+        }
+    }
+
+    /** reporte.php es de solo lectura: sin sesión no se puede consultar. */
+    public function testReporteRequiereSesion(): void
+    {
+        $sinSesion = new ApiClient();
+        $respuesta = $sinSesion->get('/api-incidencias/reporte.php');
+        self::assertSame(401, $respuesta['codigo']);
     }
 
     public function testRecolectorNoPuedeResolverPeroChoferSi(): void
