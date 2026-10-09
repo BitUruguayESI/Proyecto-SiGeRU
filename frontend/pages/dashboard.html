@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - BITURUGUAY</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Navbar Simple -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <div class="logo">
+                <h1>BITURUGUAY - Dashboard</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" id="userName">Usuario</a></li>
+                <li><a href="login.html" class="btn-login" id="logoutLink">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <h1>Panel de Control</h1>
+        </div>
+    </div>
+
+    <!-- Dashboard Navigation -->
+    <div class="container">
+        <div class="dashboard-nav">
+            <a href="#usuarios" class="nav-tab active" onclick="mostrarSeccion('usuarios')">Usuarios</a>
+            <a href="#contenedores" class="nav-tab" onclick="mostrarSeccion('contenedores')">Contenedores</a>
+            <a href="#camiones" class="nav-tab" onclick="mostrarSeccion('camiones')">Camiones</a>
+            <a href="#perfil" class="nav-tab" onclick="mostrarSeccion('perfil')">Mi Perfil</a>
+        </div>
+
+        <!-- Contenido del Dashboard -->
+        <div class="dashboard-content">
+
+            <!-- Sección: Usuarios -->
+            <div id="usuarios" class="seccion" style="display: block;">
+                <h2>Gestión de Usuarios</h2>
+                <button class="btn btn-primary" onclick="mostrarFormularioUsuario()">+ Agregar Usuario</button>
+                
+                <div id="formulario-usuario" style="display: none; margin-top: 1.5rem;">
+                    <h3>Nuevo Usuario</h3>
+                    <form id="formAgregarUsuario">
+                        <div class="form-group">
+                            <label for="usuario-nombre">Nombre:</label>
+                            <input type="text" id="usuario-nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuario-email">Email:</label>
+                            <input type="email" id="usuario-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuario-rol">Rol:</label>
+                            <select id="usuario-rol" required>
+                                <option value="admin">Administrador</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="operador">Operador</option>
+                            </select>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <button type="button" class="btn btn-secondary" onclick="ocultarFormularioUsuario()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección: Contenedores -->
+            <div id="contenedores" class="seccion" style="display: none;">
+                <h2>Gestión de Contenedores</h2>
+                <button class="btn btn-primary" onclick="mostrarFormularioContenedor()">+ Agregar Contenedor</button>
+                
+                <div id="formulario-contenedor" style="display: none; margin-top: 1.5rem;">
+                    <h3>Nuevo Contenedor</h3>
+                    <form id="formAgregarContenedor">
+                        <div class="form-group">
+                            <label for="contenedor-codigo">Código:</label>
+                            <input type="text" id="contenedor-codigo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contenedor-tipo">Tipo:</label>
+                            <select id="contenedor-tipo" required>
+                                <option value="">-- Selecciona un tipo --</option>
+                                <option value="20ft">20 pies</option>
+                                <option value="40ft">40 pies</option>
+                                <option value="high-cube">High Cube</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contenedor-capacidad">Capacidad (kg):</label>
+                            <input type="number" id="contenedor-capacidad" required>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <button type="button" class="btn btn-secondary" onclick="ocultarFormularioContenedor()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Capacidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-contenedores">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Cargando contenedores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección: Camiones -->
+            <div id="camiones" class="seccion" style="display: none;">
+                <h2>Gestión de Camiones</h2>
+                <button class="btn btn-primary" onclick="mostrarFormularioCamion()">+ Agregar Camión</button>
+                
+                <div id="formulario-camion" style="display: none; margin-top: 1.5rem;">
+                    <h3>Nuevo Camión</h3>
+                    <form id="formAgregarCamion">
+                        <div class="form-group">
+                            <label for="camion-patente">Patente:</label>
+                            <input type="text" id="camion-patente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="camion-modelo">Modelo:</label>
+                            <input type="text" id="camion-modelo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="camion-capacidad">Capacidad (kg):</label>
+                            <input type="number" id="camion-capacidad" required>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <button type="button" class="btn btn-secondary" onclick="ocultarFormularioCamion()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patente</th>
+                            <th>Modelo</th>
+                            <th>Capacidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-camiones">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Cargando camiones...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección: Perfil -->
+            <div id="perfil" class="seccion" style="display: none;">
+                <h2>Mi Perfil</h2>
+                <div class="form-container" style="max-width: 600px;">
+                    <h3>Información de la Cuenta</h3>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="perfil-nombre" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="perfil-email" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol:</label>
+                        <input type="text" id="perfil-rol" disabled>
+                    </div>
+
+                    <h3>Cambiar Contraseña</h3>
+                    <form id="formCambiarPassword">
+                        <div class="form-group">
+                            <label for="password-actual">Contraseña actual:</label>
+                            <input type="password" id="password-actual" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password-nueva">Nueva contraseña:</label>
+                            <input type="password" id="password-nueva" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="password-confirmacion">Confirmar nueva contraseña:</label>
+                            <input type="password" id="password-confirmacion" required minlength="6">
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 BITURUGUAY - Sistema de Gestión de Rutas</p>
+        </div>
+    </footer>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>

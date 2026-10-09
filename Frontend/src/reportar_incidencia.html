@@ -19,20 +19,24 @@
       <img src="img/logo.jpg" alt="SiGeRU">
       <span>SiGeRU</span>
     </a>
-    <a class="nav-item" href="landing.html">Volver al inicio</a>
+    <div class="selector-idioma">
+      <button type="button" class="btn-idioma" data-idioma="es">ES</button>
+      <button type="button" class="btn-idioma" data-idioma="en">EN</button>
+    </div>
+    <a class="nav-item" href="landing.html" data-i18n="nav_volver">Volver al inicio</a>
   </header>
 
   <div class="dashboard-con-header">
     <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
       <div class="form-container" style="max-width:520px;">
-        <h1 class="brand-title">Reportar una incidencia</h1>
-        <p class="form-subtitle">No hace falta tener cuenta. Te avisamos las novedades a tu email.</p>
+        <h1 class="brand-title" data-i18n="titulo">Reportar una incidencia</h1>
+        <p class="form-subtitle" data-i18n="subtitulo">No hace falta tener cuenta. Te avisamos las novedades a tu email.</p>
 
         <form id="formIncidencia" class="form-vecino" novalidate>
           <div>
-            <label for="direccionContenedor">Dirección del contenedor</label>
+            <label for="direccionContenedor" data-i18n="label_direccion">Dirección del contenedor</label>
             <input type="text" id="direccionContenedor" list="listaDirecciones" autocomplete="off"
-                   placeholder="Empezá a escribir la dirección...">
+                   placeholder="Empezá a escribir la dirección..." data-i18n-placeholder="placeholder_direccion">
             <datalist id="listaDirecciones"></datalist>
             <input type="hidden" id="contenedor">
             <p id="avisoContenedor" class="aviso-mapa" hidden></p>
@@ -40,32 +44,67 @@
           </div>
 
           <div>
-            <label for="tipo">Tipo de incidencia</label>
+            <label for="tipo" data-i18n="label_tipo">Tipo de incidencia</label>
             <select id="tipo" required>
-              <option value="Desborde">Contenedor desbordado</option>
-              <option value="Dañado">Contenedor dañado</option>
-              <option value="Fuera de lugar">Contenedor fuera de lugar</option>
-              <option value="Otro">Otro</option>
+              <option value="Desborde" data-i18n="opcion_desborde">Contenedor desbordado</option>
+              <option value="Dañado" data-i18n="opcion_danado">Contenedor dañado</option>
+              <option value="Fuera de lugar" data-i18n="opcion_fuera_lugar">Contenedor fuera de lugar</option>
+              <option value="Otro" data-i18n="opcion_otro">Otro</option>
             </select>
           </div>
 
           <div>
-            <label for="descripcion">Descripción</label>
+            <label for="descripcion" data-i18n="label_descripcion">Descripción</label>
             <textarea id="descripcion" rows="4" required></textarea>
           </div>
 
           <div>
-            <label for="email">Tu email</label>
+            <label for="email" data-i18n="label_email">Tu email</label>
             <input type="email" id="email" required>
           </div>
 
-          <button type="submit" class="btn-enviar-reporte">Reportar incidencia</button>
+          <button type="submit" class="btn-enviar-reporte" data-i18n="boton_enviar">Reportar incidencia</button>
           <div id="mensaje" class="mensaje"></div>
         </form>
       </div>
     </main>
   </div>
 
+  <script src="js/idioma.js"></script>
+  <script>
+    inicializarIdioma({
+      es: {
+        nav_volver: 'Volver al inicio',
+        titulo: 'Reportar una incidencia',
+        subtitulo: 'No hace falta tener cuenta. Te avisamos las novedades a tu email.',
+        label_direccion: 'Dirección del contenedor',
+        placeholder_direccion: 'Empezá a escribir la dirección...',
+        label_tipo: 'Tipo de incidencia',
+        opcion_desborde: 'Contenedor desbordado',
+        opcion_danado: 'Contenedor dañado',
+        opcion_fuera_lugar: 'Contenedor fuera de lugar',
+        opcion_otro: 'Otro',
+        label_descripcion: 'Descripción',
+        label_email: 'Tu email',
+        boton_enviar: 'Reportar incidencia',
+      },
+      en: {
+        nav_volver: 'Back to home',
+        titulo: 'Report an issue',
+        subtitulo: 'No account needed. We will notify you of updates by email.',
+        label_direccion: 'Container address',
+        placeholder_direccion: 'Start typing the address...',
+        label_tipo: 'Issue type',
+        opcion_desborde: 'Overflowing container',
+        opcion_danado: 'Damaged container',
+        opcion_fuera_lugar: 'Container out of place',
+        opcion_otro: 'Other',
+        label_descripcion: 'Description',
+        label_email: 'Your email',
+        boton_enviar: 'Report issue',
+      },
+    });
+  </script>
   <script src="js/reportar_incidencia.js"></script>
 </body>
 </html>

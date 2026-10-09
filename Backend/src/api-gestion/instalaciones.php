@@ -63,15 +63,19 @@ if ($metodo === 'POST') {
         'INSERT INTO INSTALACION (nombre, coordenadas, capacidad_maxima, residuos_aceptados, tipo_instalacion)
          VALUES (:nombre, :coordenadas, :capacidad, :residuos, :tipo)'
     );
-    $insertar->execute([
+        $insertar->execute([
         'nombre'      => $nombre,
         'coordenadas' => $coordenadas,
         'capacidad'   => $capacidadMaxima,
         'residuos'    => $residuosAceptados,
         'tipo'        => $tipoInstalacion,
     ]);
+    $idCentro = (int) $pdo->lastInsertId();
 
-    responderJson(['exito' => true, 'mensaje' => 'Instalación registrada.', 'id_centro' => (int) $pdo->lastInsertId()], 201);
+    registrarAuditoria($pdo, "Registró la instalación #{$idCentro} ({$nombre}).");
+
+    responderJson(['exito' => true, 'mensaje' => 'Instalación registrada.', 'id_centro' => $idCentro], 201);
+
 }
 
 if ($metodo === 'PUT') {
@@ -104,10 +108,13 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => 'No hay campos para actualizar.'], 400);
     }
 
-    $sql = 'UPDATE INSTALACION SET ' . implode(', ', $campos) . ' WHERE id_centro = :id';
+        $sql = 'UPDATE INSTALACION SET ' . implode(', ', $campos) . ' WHERE id_centro = :id';
     $pdo->prepare($sql)->execute($valores);
 
+    registrarAuditoria($pdo, "Modificó la instalación #{$idCentro}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Instalación actualizada.']);
+
 }
 
 if ($metodo === 'DELETE') {
@@ -132,6 +139,8 @@ if ($metodo === 'DELETE') {
     if ($eliminar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Instalación no encontrada.'], 404);
     }
+
+    registrarAuditoria($pdo, "Eliminó la instalación #{$idCentro}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Instalación eliminada.']);
 }

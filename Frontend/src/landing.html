@@ -12,15 +12,19 @@
 <body class="landing-body">
   <nav class="navbar">
     <div class="nav-links">
-      <a class="nav-item" href="login.html">Iniciar sesión</a>
+      <div class="selector-idioma">
+        <button type="button" class="btn-idioma" data-idioma="es">ES</button>
+        <button type="button" class="btn-idioma" data-idioma="en">EN</button>
+      </div>
+      <a class="nav-item" href="login.html" data-i18n="nav_login">Iniciar sesión</a>
     </div>
   </nav>
 
   <div class="hero-container">
     <div class="col-left">
       <h1 class="main-title">SiGeRU </h1>
-      <h2 class="subtitle">Sistema de Gestión de Residuos Urbanos</h2>
-      <p class="subtitle"> La ciudad mas limpia la cuidamos entre todos! </p>
+      <h2 class="subtitle" data-i18n="hero_subtitulo">Sistema de Gestión de Residuos Urbanos</h2>
+      <p class="subtitle" data-i18n="hero_eslogan"> La ciudad mas limpia la cuidamos entre todos! </p>
 
     </div>
     <div class="col-right">
@@ -30,24 +34,161 @@
     </div>
   </div>
 
-  <div class="modulos-info">
-    <a class="card-info" href="reportar_incidencia.html">      
-      <h3>Reportar una incidencia</h3>
-      <p>Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.</p>
+    <div class="modulos-info">
+    <a class="card-info" href="reportar_incidencia.html">
+      <h3 data-i18n="card1_titulo">Reportar una incidencia</h3>
+      <p data-i18n="card1_desc">Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.</p>
     </a>
-    
     <a class="card-info" href="solicitar_retiro.html">
-      <h3>Solicitar retiro de residuos especiales</h3>
-      <p>Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor.</p>
+      <h3 data-i18n="card2_titulo">Solicitar retiro de residuos especiales</h3>
+      <p data-i18n="card2_desc">Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor común.</p>
     </a>
     <a class="card-info" href="consulta.html">
-      <h3>Realizar una consulta</h3>
-      <p>¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.</p>
+      <h3 data-i18n="card3_titulo">Realizar una consulta</h3>
+      <p data-i18n="card3_desc">¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.</p>
     </a>
   </div>
 
-  <footer class="footer">
+  <section class="faq-section">
+    <h2 class="faq-titulo" data-i18n="faq_titulo">Preguntas frecuentes</h2>
+    <div class="faq-caja">
+      <select id="faq_pregunta" class="faq-select">
+        <option value="">Elegí una pregunta...</option>
+      </select>
+    </div>
+    <div id="faq_respuesta" class="faq-caja faq-respuesta" hidden>
+      <p id="faq_respuesta_texto"></p>
+    </div>
+  </section>
+
+  <footer class="footer" data-i18n="footer_texto">
     SiGeRU Sistema de Gestión de Residuos Urbanos
   </footer>
+
+  <script src="js/idioma.js"></script>
+  <script>
+    const TRADUCCIONES = {
+      es: {
+        nav_login: 'Iniciar sesión',
+        hero_subtitulo: 'Sistema de Gestión de Residuos Urbanos',
+        hero_eslogan: '¡La ciudad más limpia la cuidamos entre todos!',
+        card1_titulo: 'Reportar una incidencia',
+        card1_desc: 'Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.',
+        card2_titulo: 'Solicitar retiro de residuos especiales',
+        card2_desc: 'Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor común.',
+        card3_titulo: 'Realizar una consulta',
+        card3_desc: '¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.',
+        faq_titulo: 'Preguntas frecuentes',
+        faq_placeholder: 'Elegí una pregunta...',
+        footer_texto: 'SiGeRU Sistema de Gestión de Residuos Urbanos',
+      },
+      en: {
+        nav_login: 'Log in',
+        hero_subtitulo: 'Urban Waste Management System',
+        hero_eslogan: 'The cleanest city is one we take care of together!',
+        card1_titulo: 'Report an issue',
+        card1_desc: 'Overflowing, damaged, or out-of-service container. No need to register.',
+        card2_titulo: 'Request special waste pickup',
+        card2_desc: 'Pruning waste, electronics, rubble, furniture, and other items that do not go in the regular container.',
+        card3_titulo: 'Send an inquiry',
+        card3_desc: 'Have a question or comment for the municipality? Write to us, no account needed.',
+        faq_titulo: 'Frequently asked questions',
+        faq_placeholder: 'Choose a question...',
+        footer_texto: 'SiGeRU Urban Waste Management System',
+      },
+    };
+
+    const PREGUNTAS_FRECUENTES = [
+      {
+        es: {
+          pregunta: '¿Qué es SiGeRU?',
+          respuesta: 'SiGeRU es el sistema de gestión de residuos urbanos de BitUruguay. Permite reportar incidencias con contenedores, solicitar el retiro de residuos especiales y hacer consultas al municipio, además de coordinar internamente las rutas y cuadrillas de recolección.',
+        },
+        en: {
+          pregunta: 'What is SiGeRU?',
+          respuesta: 'SiGeRU is BitUruguay\'s urban waste management system. It lets you report issues with containers, request special waste pickup, and send inquiries to the municipality, while also coordinating collection routes and crews internally.',
+        },
+      },
+      {
+        es: {
+          pregunta: '¿Necesito crear una cuenta para usar estos servicios?',
+          respuesta: 'No. Reportar una incidencia, solicitar un retiro especial o hacer una consulta son trámites públicos: no hace falta registrarte ni iniciar sesión.',
+        },
+        en: {
+          pregunta: 'Do I need to create an account to use these services?',
+          respuesta: 'No. Reporting an issue, requesting a special pickup, or sending an inquiry are all public services: no registration or login required.',
+        },
+      },
+      {
+        es: {
+          pregunta: '¿Qué puedo reportar como incidencia?',
+          respuesta: 'Un contenedor desbordado, dañado o fuera de servicio. Lo hacés desde la opción "Reportar una incidencia" en esta misma página.',
+        },
+        en: {
+          pregunta: 'What can I report as an issue?',
+          respuesta: 'An overflowing, damaged, or out-of-service container. You can do this from the "Report an issue" option on this same page.',
+        },
+      },
+      {
+        es: {
+          pregunta: '¿Qué residuos puedo pedir que retiren de forma especial?',
+          respuesta: 'Residuos que no entran en el contenedor común, como poda, residuos electrónicos, escombros o muebles. Usá la opción "Solicitar retiro de residuos especiales".',
+        },
+        en: {
+          pregunta: 'What kind of waste can I request a special pickup for?',
+          respuesta: 'Waste that does not fit in the regular container, such as pruning waste, electronics, rubble, or furniture. Use the "Request special waste pickup" option.',
+        },
+      },
+      {
+        es: {
+          pregunta: '¿Cómo hago una consulta o reclamo al municipio?',
+          respuesta: 'Desde "Realizar una consulta" podés escribirnos indicando tu nombre, email y mensaje, sin necesidad de tener cuenta.',
+        },
+        en: {
+          pregunta: 'How do I send an inquiry or complaint to the municipality?',
+          respuesta: 'From "Send an inquiry" you can write to us with your name, email, and message, with no account needed.',
+        },
+      },
+      {
+        es: {
+          pregunta: '¿Cómo me entero si ya resolvieron mi reporte o consulta?',
+          respuesta: 'Te respondemos por correo electrónico, a la dirección que indicaste al hacer el reporte, la solicitud o la consulta.',
+        },
+        en: {
+          pregunta: 'How will I know if my report or inquiry has been resolved?',
+          respuesta: 'We reply by email, to the address you provided when submitting the report, request, or inquiry.',
+        },
+      },
+    ];
+
+    const selectFaq = document.getElementById('faq_pregunta');
+    const divRespuesta = document.getElementById('faq_respuesta');
+    const textoRespuesta = document.getElementById('faq_respuesta_texto');
+
+    let idiomaActual = localStorage.getItem('sigeru_idioma') || 'es';
+
+    function poblarFaq(idioma) {
+      selectFaq.innerHTML = '';
+      selectFaq.appendChild(new Option(TRADUCCIONES[idioma].faq_placeholder, ''));
+      PREGUNTAS_FRECUENTES.forEach((item, indice) => {
+        selectFaq.appendChild(new Option(item[idioma].pregunta, String(indice)));
+      });
+      divRespuesta.hidden = true;
+    }
+
+    selectFaq.addEventListener('change', () => {
+      if (selectFaq.value === '') {
+        divRespuesta.hidden = true;
+        return;
+      }
+      textoRespuesta.textContent = PREGUNTAS_FRECUENTES[selectFaq.value][idiomaActual].respuesta;
+      divRespuesta.hidden = false;
+    });
+
+    inicializarIdioma(TRADUCCIONES, (idioma) => {
+      idiomaActual = idioma;
+      poblarFaq(idioma);
+    });
+  </script>
 </body>
 </html>

@@ -28,7 +28,7 @@ require_once __DIR__ . '/../Comun/funciones.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responderJson(['exito' => false, 'mensaje' => 'Método no permitido.'], 405);
 }
-
+requerirRolAdministrador();
 $entrada = obtenerJsonEntrada();
 
 $ci               = limpiarTexto($entrada['ci'] ?? '');
@@ -144,5 +144,7 @@ try {
     $pdo->rollBack();
     responderJson(['exito' => false, 'mensaje' => 'No se pudo completar el registro: ' . $e->getMessage()], 500);
 }
+
+registrarAuditoria($pdo, "Creó el usuario {$nombreCompleto} (CI {$ci}, {$tipoUsuario})");
 
 responderJson(['exito' => true, 'mensaje' => 'Usuario registrado correctamente.'], 201);

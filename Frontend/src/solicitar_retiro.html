@@ -15,55 +15,104 @@
       <img src="img/logo.jpg" alt="SiGeRU">
       <span>SiGeRU</span>
     </a>
-    <a class="nav-item" href="landing.html">Volver al inicio</a>
+    <div class="selector-idioma">
+      <button type="button" class="btn-idioma" data-idioma="es">ES</button>
+      <button type="button" class="btn-idioma" data-idioma="en">EN</button>
+    </div>
+    <a class="nav-item" href="landing.html" data-i18n="nav_volver">Volver al inicio</a>
   </header>
 
   <div class="dashboard-con-header">
     <main class="contenedor-retiro">
       <div class="form-container">
-        <h1 class="brand-title">Solicitar retiro de residuos especiales</h1>
-        <p class="form-subtitle">Poda, residuos eléctricos, escombros, muebles y otros residuos que no van al contenedor común. No hace falta tener cuenta: coordinamos el retiro por email.</p>
+        <h1 class="brand-title" data-i18n="titulo">Solicitar retiro de residuos especiales</h1>
+        <p class="form-subtitle" data-i18n="subtitulo">Poda, residuos eléctricos, escombros, muebles y otros residuos que no van al contenedor común. No hace falta tener cuenta: coordinamos el retiro por email.</p>
 
         <form id="formRetiro" class="form-vecino" novalidate>
           <div>
-            <label for="tipoResiduo">Tipo de residuo</label>
+            <label for="tipoResiduo" data-i18n="label_tipo">Tipo de residuo</label>
             <select id="tipoResiduo" required>
-              <option value="" disabled selected>Elegí una opción</option>
-              <option value="Poda">Poda / restos de jardín</option>
-              <option value="Residuos electrónicos">Residuos electrónicos</option>
-              <option value="Escombros">Escombros</option>
-              <option value="Muebles">Muebles</option>
-              <option value="Otro">Otro</option>
+              <option value="" disabled selected data-i18n="opcion_elegir">Elegí una opción</option>
+              <option value="Poda" data-i18n="opcion_poda">Poda / restos de jardín</option>
+              <option value="Residuos electrónicos" data-i18n="opcion_electronicos">Residuos electrónicos</option>
+              <option value="Escombros" data-i18n="opcion_escombros">Escombros</option>
+              <option value="Muebles" data-i18n="opcion_muebles">Muebles</option>
+              <option value="Otro" data-i18n="opcion_otro">Otro</option>
             </select>
           </div>
 
           <div>
-            <label for="direccion">Dirección de retiro</label>
-            <input type="text" id="direccion" required placeholder="Calle y número">
+            <label for="direccion" data-i18n="label_direccion">Dirección de retiro</label>
+            <input type="text" id="direccion" required placeholder="Calle y número" data-i18n-placeholder="placeholder_direccion">
           </div>
 
           <div>
-            <label for="descripcion">Descripción </label>
-            <textarea id="descripcion" rows="4" placeholder="Cantidad aproximada, detalles que ayuden a coordinar el retiro..."></textarea>
+            <label for="descripcion" data-i18n="label_descripcion">Descripción </label>
+            <textarea id="descripcion" rows="4" placeholder="Cantidad aproximada, detalles que ayuden a coordinar el retiro..." data-i18n-placeholder="placeholder_descripcion"></textarea>
           </div>
 
           <div>
-            <label for="email">Tu email</label>
+            <label for="email" data-i18n="label_email">Tu email</label>
             <input type="email" id="email" required>
           </div>
 
-          <button type="submit" class="btn-enviar-reporte">Enviar solicitud</button>
+          <button type="submit" class="btn-enviar-reporte" data-i18n="boton_enviar">Enviar solicitud</button>
           <div id="mensaje" class="mensaje"></div>
         </form>
       </div>
 
       <div class="imagen-zonas-wrapper">
-        <img src="img/mapa-zonas.png" alt="Mapa de zonas de recolección de BitUruguay">
-        <p>Coordinamos el día y horario del retiro por email una vez que recibimos tu solicitud.</p>
+        <img src="img/mapa-zonas.png" alt="Mapa de zonas de recolección de BitUruguay" data-i18n-alt="alt_mapa">
+        <p data-i18n="texto_coordinacion">Coordinamos el día y horario del retiro por email una vez que recibimos tu solicitud.</p>
       </div>
     </main>
   </div>
 
+  <script src="js/idioma.js"></script>
+  <script>
+    inicializarIdioma({
+      es: {
+        nav_volver: 'Volver al inicio',
+        titulo: 'Solicitar retiro de residuos especiales',
+        subtitulo: 'Poda, residuos eléctricos, escombros, muebles y otros residuos que no van al contenedor común. No hace falta tener cuenta: coordinamos el retiro por email.',
+        label_tipo: 'Tipo de residuo',
+        opcion_elegir: 'Elegí una opción',
+        opcion_poda: 'Poda / restos de jardín',
+        opcion_electronicos: 'Residuos electrónicos',
+        opcion_escombros: 'Escombros',
+        opcion_muebles: 'Muebles',
+        opcion_otro: 'Otro',
+        label_direccion: 'Dirección de retiro',
+        placeholder_direccion: 'Calle y número',
+        label_descripcion: 'Descripción',
+        placeholder_descripcion: 'Cantidad aproximada, detalles que ayuden a coordinar el retiro...',
+        label_email: 'Tu email',
+        boton_enviar: 'Enviar solicitud',
+        alt_mapa: 'Mapa de zonas de recolección de BitUruguay',
+        texto_coordinacion: 'Coordinamos el día y horario del retiro por email una vez que recibimos tu solicitud.',
+      },
+      en: {
+        nav_volver: 'Back to home',
+        titulo: 'Request special waste pickup',
+        subtitulo: 'Pruning waste, electronics, rubble, furniture, and other items that do not go in the regular container. No account needed: we coordinate the pickup by email.',
+        label_tipo: 'Waste type',
+        opcion_elegir: 'Choose an option',
+        opcion_poda: 'Pruning / yard waste',
+        opcion_electronicos: 'Electronic waste',
+        opcion_escombros: 'Rubble',
+        opcion_muebles: 'Furniture',
+        opcion_otro: 'Other',
+        label_direccion: 'Pickup address',
+        placeholder_direccion: 'Street and number',
+        label_descripcion: 'Description',
+        placeholder_descripcion: 'Approximate amount, details that help coordinate the pickup...',
+        label_email: 'Your email',
+        boton_enviar: 'Send request',
+        alt_mapa: 'BitUruguay collection zones map',
+        texto_coordinacion: 'We coordinate the pickup day and time by email once we receive your request.',
+      },
+    });
+  </script>
   <script src="js/solicitar_retiro.js"></script>
 </body>
 </html>

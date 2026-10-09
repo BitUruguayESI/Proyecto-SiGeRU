@@ -34,6 +34,7 @@
       <button data-seccion="consultas">Consultas públicas</button>
       <button data-seccion="reciclaje">Reciclaje</button>
       <button data-seccion="predicciones">Predicciones</button>
+      <button data-seccion="auditoria">Auditoría</button>
     </nav>
 
     <!-- ===================== USUARIOS ===================== -->
@@ -99,10 +100,36 @@
       <div id="mapaContenedores" class="mapa-contenedores"></div>
       <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
 
+           <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:10px;">
+        <div style="flex:1; min-width:200px;">
+          <label>Buscar</label><br>
+          <input type="text" id="cont_buscar" placeholder="Buscar por dirección..." style="width:100%; padding:6px;">
+        </div>
+        <div>
+          <label>Zona</label><br>
+          <select id="cont_filtro_zona" style="padding:6px;"><option value="">Todas las zonas</option></select>
+        </div>
+        <div>
+          <label>Estado</label><br>
+          <select id="cont_filtro_estado" style="padding:6px;">
+            <option value="">Todos los estados</option>
+            <option value="OPERATIVO">Operativo</option>
+            <option value="DESBORDADO">Desbordado</option>
+            <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+          </select>
+        </div>
+      </div>
+
       <table class="tabla-datos">
         <thead><tr><th>ID</th><th>Dirección</th><th>Estado</th><th>Nivel (%)</th><th>Ruta</th><th>Tipos de residuo</th><th>Acciones</th></tr></thead>
         <tbody id="tablaContenedores"></tbody>
       </table>
+
+      <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:10px;">
+        <button type="button" class="secundario chico" id="cont_pagina_anterior">« Anterior</button>
+        <span id="cont_pagina_info"></span>
+        <button type="button" class="secundario chico" id="cont_pagina_siguiente">Siguiente »</button>
+      </div>
       <div class="formulario-alta">
         <h3 id="cont_titulo_form">Registrar contenedor</h3>
         <form id="formContenedor">
@@ -122,7 +149,28 @@
     </section>
 
     <!-- ===================== RUTAS ===================== -->
-    <section id="seccion-rutas" class="seccion-panel">
+  <section id="seccion-rutas" class="seccion-panel">
+  <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:10px;">
+    <div style="flex:1; min-width:200px;">
+      <label>Buscar</label><br>
+      <input type="text" id="ruta_buscar" placeholder="Buscar por zona o frecuencia..." style="width:100%; padding:6px;">
+    </div>
+    <div>
+      <label>Zona</label><br>
+      <select id="ruta_filtro_zona" style="padding:6px;"><option value="">Todas las zonas</option></select>
+    </div>
+  </div>
+
+  <table class="tabla-datos">
+    <thead><tr><th>ID</th><th>Zona</th><th>Frecuencia</th><th>Acciones</th></tr></thead>
+    <tbody id="tablaRutas"></tbody>
+  </table>
+
+  <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:10px;">
+    <button type="button" class="secundario chico" id="ruta_pagina_anterior">« Anterior</button>
+    <span id="ruta_pagina_info"></span>
+    <button type="button" class="secundario chico" id="ruta_pagina_siguiente">Siguiente »</button>
+  </div>
       <table class="tabla-datos">
         <thead><tr><th>ID</th><th>Zona</th><th>Frecuencia</th><th>Acciones</th></tr></thead>
         <tbody id="tablaRutas"></tbody>
@@ -142,7 +190,27 @@
     </section>
 
     <!-- ===================== CUADRILLAS ===================== -->
-    <section id="seccion-cuadrillas" class="seccion-panel">
+  <section id="seccion-cuadrillas" class="seccion-panel">
+  <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+    La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
+    el Chofer y los Recolectores en su panel "Mi día".
+  </p>
+
+  <div style="margin-bottom:10px;">
+    <label>Buscar</label><br>
+    <input type="text" id="cuad_buscar" placeholder="Buscar por nombre, camión, chofer, recolector o ruta..." style="width:100%; max-width:400px; padding:6px;">
+  </div>
+
+  <table class="tabla-datos">
+    <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
+    <tbody id="tablaCuadrillas"></tbody>
+  </table>
+
+  <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:10px;">
+    <button type="button" class="secundario chico" id="cuad_pagina_anterior">« Anterior</button>
+    <span id="cuad_pagina_info"></span>
+    <button type="button" class="secundario chico" id="cuad_pagina_siguiente">Siguiente »</button>
+  </div>
       <p style="color:#a0aec0; font-size:13px; margin-top:0;">
         La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
         el Chofer y los Recolectores en su panel "Mi día".
@@ -175,6 +243,33 @@
 
     <!-- ===================== CAMIONES ===================== -->
     <section id="seccion-camiones" class="seccion-panel">
+  <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:10px;">
+    <div style="flex:1; min-width:200px;">
+      <label>Buscar</label><br>
+      <input type="text" id="cam_buscar" placeholder="Buscar por matrícula, marca o modelo..." style="width:100%; padding:6px;">
+    </div>
+    <div>
+      <label>Estado</label><br>
+      <select id="cam_filtro_estado" style="padding:6px;">
+        <option value="">Todos los estados</option>
+        <option value="DISPONIBLE">Disponible</option>
+        <option value="EN_RUTA">En ruta</option>
+        <option value="EN_MANTENIMIENTO">En mantenimiento</option>
+        <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="tabla-datos">
+    <thead><tr><th>ID</th><th>Matrícula</th><th>Marca/Modelo</th><th>Capacidad</th><th>Estado</th><th>Km</th><th>Acciones</th></tr></thead>
+    <tbody id="tablaCamiones"></tbody>
+  </table>
+
+  <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:10px;">
+    <button type="button" class="secundario chico" id="cam_pagina_anterior">« Anterior</button>
+    <span id="cam_pagina_info"></span>
+    <button type="button" class="secundario chico" id="cam_pagina_siguiente">Siguiente »</button>
+  </div>
       <table class="tabla-datos">
         <thead><tr><th>ID</th><th>Matrícula</th><th>Marca/Modelo</th><th>Capacidad</th><th>Estado</th><th>Km</th><th>Acciones</th></tr></thead>
         <tbody id="tablaCamiones"></tbody>
@@ -449,6 +544,31 @@
         <tbody id="tablaPrediccionesZonas"></tbody>
       </table>
     </section>
+          <h3>Generación de residuos por zona (últimos 30 días)</h3>
+      <table class="tabla-datos">
+        <thead><tr><th>Zona / ruta</th><th>Promedio diario (kg)</th><th>Proyección próx. 30 días (kg)</th></tr></thead>
+        <tbody id="tablaPrediccionesZonas"></tbody>
+      </table>
+    </section>
+
+    <!-- ===================== AUDITORÍA (RF14) ===================== -->
+    <section id="seccion-auditoria" class="seccion-panel">
+      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
+        Historial de acciones críticas (alta, baja o modificación de usuarios,
+        contenedores e instalaciones) registradas automáticamente por el sistema.
+      </p>
+      <div class="fila-doble" style="margin-bottom:12px;">
+        <div><label>Desde</label><input type="date" id="aud_desde"></div>
+        <div><label>Hasta</label><input type="date" id="aud_hasta"></div>
+      </div>
+      <button type="button" class="secundario chico" id="aud_filtrar">Filtrar</button>
+      <button type="button" class="secundario chico" id="aud_limpiar">Limpiar filtro</button>
+      <table class="tabla-datos">
+        <thead><tr><th>Fecha y hora</th><th>Acción</th><th>Administrador</th></tr></thead>
+        <tbody id="tablaAuditoria"></tbody>
+      </table>
+    </section>
+  </main>
   </main>
 
   <script src="js/sesion.js"></script>

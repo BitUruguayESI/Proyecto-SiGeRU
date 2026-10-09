@@ -1,45 +1,72 @@
-const PAGINA_XAMPP = "http://localhost/Proyecto-SiGeRU/frontend/registro.html";
+// ===== REGISTRO.JS - Lógica de Registro =====
 
-// Impide ejecutar la app desde file:// o Live Server, donde PHP no puede atender la API.
-if (window.location.origin !== "http://localhost" ||
-    !window.location.pathname.toLowerCase().endsWith("/proyecto-sigeru/frontend/registro.html")) {
-    window.location.replace(PAGINA_XAMPP);
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const registroForm = document.getElementById('registroForm');
+    
+    if (registroForm) {
+        registroForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-// Ruta relativa: funciona cuando el proyecto se abre desde Apache/XAMPP.
-const API_USUARIOS = "../backend/api-usuarios/index.php";
+            // Obtener datos del formulario
+            const formData = new FormData(registroForm);
+            const nombre = formData.get('nombre');
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const passwordConfirm = formData.get('password-confirm');
+            const empresa = formData.get('empresa');
+            const telefono = formData.get('telefono');
 
-document.getElementById("formRegistro").addEventListener("submit", async function (event) {
-    event.preventDefault();
+            // Validaciones
+            if (!nombre || !email || !password || !passwordConfirm) {
+                alert('Por favor completa todos los campos obligatorios.');
+                return;
+            }
 
-    const datos = {
-        nombre: document.getElementById("nombre").value,
-        usuario: document.getElementById("CI").value,
-        password: document.getElementById("password").value,
-        rol: "Vecino" // <-- Añade esta línea fija
-        //rol: document.getElementById("rol").value// <--viene directo del formulariio en registro.html
-    };
+            if (password !== passwordConfirm) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
 
-    try {
-        const respuesta = await fetch(`${API_USUARIOS}?accion=registrar`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos)
+            if (password.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+
+            // Datos del usuario
+            const datosUsuario = {
+                nombre: nombre,
+                email: email,
+                password: password,
+                empresa: empresa,
+                telefono: telefono,
+                fechaRegistro: new Date().toISOString()
+            };
+
+            try {
+                // Llamar a la API de registro
+                const response = await fetch('../../backend/api/usuarios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accion: 'registrar',
+                        datos: datosUsuario
+                    })
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.exito) {
+                    alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('Error en el registro: ' + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con la API. Verifica que Apache y MySQL estén iniciados en XAMPP.');
+            }
         });
-
-        if (!respuesta.ok) {
-            throw new Error(`La API respondió HTTP ${respuesta.status}`);
-        }
-
-        const data = await respuesta.json();
-        alert(data.mensaje);
-
-        if (data.exito) {
-            window.location.href = "login.html";
-        }
-
-    } catch (error) {
-        alert("No se pudo registrar. Abrí la aplicación desde XAMPP: " + PAGINA_XAMPP);
-        console.error(error);
     }
 });

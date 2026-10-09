@@ -233,6 +233,8 @@ if ($metodo === 'POST') {
         responderJson(['exito' => false, 'mensaje' => $e->getMessage()], 409);
     }
 
+    registrarAuditoria($pdo, "Registró la cuadrilla #{$idCuadrilla} ({$nombre}).");
+
     responderJson(['exito' => true, 'mensaje' => 'Cuadrilla registrada.', 'id_cuadrilla' => $idCuadrilla], 201);
 }
 
@@ -295,6 +297,8 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => $e->getMessage()], 409);
     }
 
+    registrarAuditoria($pdo, "Modificó la cuadrilla #{$idCuadrilla}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Cuadrilla actualizada.']);
 }
 
@@ -320,6 +324,8 @@ if ($metodo === 'DELETE') {
     if ($eliminar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Cuadrilla no encontrada.'], 404);
     }
+
+    registrarAuditoria($pdo, "Eliminó la cuadrilla #{$idCuadrilla}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Cuadrilla eliminada.']);
 }

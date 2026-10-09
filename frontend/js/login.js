@@ -1,55 +1,50 @@
-const PAGINA_XAMPP = "http://localhost/Proyecto-SiGeRU/frontend/login.html";
+// ===== LOGIN.JS - Lógica de Login =====
 
-// Impide ejecutar la app desde file:// o Live Server, donde PHP no puede atender la API.
-if (window.location.origin !== "http://localhost" ||
-    !window.location.pathname.toLowerCase().endsWith("/proyecto-sigeru/frontend/login.html")) {
-    window.location.replace(PAGINA_XAMPP);
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-// Ruta relativa: funciona cuando el proyecto se abre desde Apache/XAMPP.
-const API_USUARIOS = "../backend/api-usuarios/index.php";
-
-document.getElementById("formLogin").addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    // Capturamos la C.I. y la contraseña del formulario HTML
-    const usuario = document.getElementById("CI").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        const respuesta = await fetch(`${API_USUARIOS}?accion=login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ usuario, password }) // Enviamos la C.I. mapeada como 'usuario'
-        });
-
-        if (!respuesta.ok) {
-            throw new Error(`La API respondió HTTP ${respuesta.status}`);
-        }
-
-        const data = await respuesta.json();
-
-        if (data.exito) {
-            // Guardamos los datos del usuario activo en el navegador
-            sessionStorage.setItem("usuarioActivo", JSON.stringify(data.usuario));
-            
-            // Redirección inteligente según el rol del usuario
-            if (data.usuario.rol === "Administrador") {
-                window.location.href = "dashboard.html"; // Panel global de control
-            } else if (data.usuario.rol === "Vecino") {
-                window.location.href = "panel-vecino.html"; // Panel de reportes para el ciudadano
-            } else {
-                // Por si en el futuro agregas los roles 'Cuadrilla' o 'Operario'
-                window.location.href = "dashboard.html";
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                alert('Por favor completa todos los campos.');
+                return;
             }
-        } else {
-            // Si las credenciales son incorrectas, muestra el mensaje del backend
-            alert(data.mensaje);
-        }
 
-    } catch (error) {
-        alert("No se pudo iniciar sesión. Abrí la aplicación desde XAMPP: " + PAGINA_XAMPP);
-        console.error(error);
+            try {
+                // Llamar a la API de login
+                const response = await fetch('../../backend/api/usuarios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accion: 'login',
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.exito) {
+                    const usuario = resultado.datos;
+
+                    // Guardar sesión
+                    sessionStorage.setItem('usuario', JSON.stringify(usuario));
+
+                    alert('¡Bienvenido ' + usuario.nombre + '!');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('Error en el login: ' + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con la API. Verifica que Apache y MySQL estén iniciados en XAMPP.');
+            }
+        });
     }
 });

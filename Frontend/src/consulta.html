@@ -15,38 +15,65 @@
       <img src="img/logo.jpg" alt="SiGeRU">
       <span>SiGeRU</span>
     </a>
-    <a class="nav-item" href="landing.html">Volver al inicio</a>
+    <div class="selector-idioma">
+      <button type="button" class="btn-idioma" data-idioma="es">ES</button>
+      <button type="button" class="btn-idioma" data-idioma="en">EN</button>
+    </div>
+    <a class="nav-item" href="landing.html" data-i18n="nav_volver">Volver al inicio</a>
   </header>
 
   <div class="dashboard-con-header">
     <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
       <div class="form-container">
-        <h1 class="brand-title">Realizar una consulta</h1>
-        <p class="form-subtitle">No hace falta tener cuenta. Te respondemos por email.</p>
+        <h1 class="brand-title" data-i18n="titulo">Realizar una consulta</h1>
+        <p class="form-subtitle" data-i18n="subtitulo">No hace falta tener cuenta. Te respondemos por email.</p>
 
         <form id="formConsulta" class="form-vecino" novalidate>
           <div>
-            <label for="nombre">Nombre</label>
+            <label for="nombre" data-i18n="label_nombre">Nombre</label>
             <input type="text" id="nombre" name="nombre" required>
           </div>
 
           <div>
-            <label for="email">Email</label>
+            <label for="email" data-i18n="label_email">Email</label>
             <input type="email" id="email" name="email" required>
           </div>
 
           <div>
-            <label for="mensaje">Mensaje</label>
+            <label for="mensaje" data-i18n="label_mensaje">Mensaje</label>
             <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
           </div>
 
-          <button type="submit" class="btn-enviar-reporte">Enviar consulta</button>
+          <button type="submit" class="btn-enviar-reporte" data-i18n="boton_enviar">Enviar consulta</button>
           <div id="mensajeEstado" class="mensaje"></div>
         </form>
       </div>
     </main>
   </div>
 
+  <script src="js/idioma.js"></script>
+  <script>
+    inicializarIdioma({
+      es: {
+        nav_volver: 'Volver al inicio',
+        titulo: 'Realizar una consulta',
+        subtitulo: 'No hace falta tener cuenta. Te respondemos por email.',
+        label_nombre: 'Nombre',
+        label_email: 'Email',
+        label_mensaje: 'Mensaje',
+        boton_enviar: 'Enviar consulta',
+      },
+      en: {
+        nav_volver: 'Back to home',
+        titulo: 'Send an inquiry',
+        subtitulo: 'No account needed. We will reply by email.',
+        label_nombre: 'Name',
+        label_email: 'Email',
+        label_mensaje: 'Message',
+        boton_enviar: 'Send inquiry',
+      },
+    });
+  </script>
   <script src="js/consulta.js"></script>
 </body>
 </html>

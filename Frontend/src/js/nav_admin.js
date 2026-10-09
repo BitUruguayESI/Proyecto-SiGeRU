@@ -153,7 +153,7 @@ function iniciarCampanaNotificaciones(nav) {
     { pagina: 'gestion', href: 'panel_gestion.html', texto: 'Gestión de recursos' },
     { pagina: 'incidencias', href: 'panel_incidencias.html', texto: 'Incidencias' },
     { pagina: 'recoleccion', href: 'panel_recoleccion.html', texto: 'Recolección' },
-    { pagina: 'asignacion-diaria', href: 'panel_recoleccion.html#asignaciones', texto: 'Asignación diaria' },
+   
   ];
   const enlacesRecolector = [
     { pagina: 'mi-dia', href: 'mi_dia.html', texto: 'Mi día' },
