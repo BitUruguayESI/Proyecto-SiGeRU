@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiGeRU — Recuperar contraseña</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="centered-body">
+  <div class="form-container">
+    <h1 class="brand-title">SiGeRU</h1>
+    <p class="form-subtitle">Recuperar contraseña</p>
+    <p style="font-size:13px; color:#a0aec0; margin-bottom:16px;">
+      Ingresá el email con el que te registraste. Si está asociado a una cuenta, te vamos a enviar un link para elegir una contraseña nueva (válido por 5 minutos).
+    </p>
+
+    <form id="formRecuperar" novalidate>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Enviar instrucciones</button>
+      <div id="mensaje" class="mensaje"></div>
+      <div class="form-footer">
+        <a href="login.html">Volver a iniciar sesión</a>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/recuperar_contrasena.js"></script>
+</body>
+</html>

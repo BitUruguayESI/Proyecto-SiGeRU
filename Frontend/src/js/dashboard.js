@@ -88,6 +88,17 @@ function formatearFecha(fechaTexto) {
   return `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
 }
 
+const ICONO_BOTE_BASURA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+// Severidad visual derivada del tipo de incidencia (mismo criterio que el
+// auto-marcado de contenedor DESBORDADO en api-incidencias/registrar.php).
+function severidadIncidencia(tipoIncidencia) {
+  const texto = (tipoIncidencia || '').toLowerCase();
+  if (texto.includes('desbord')) return { etiqueta: 'Alta', color: 'rojo' };
+  if (texto.includes('dañ') || texto.includes('dan')) return { etiqueta: 'Media', color: 'ambar' };
+  return { etiqueta: 'Baja', color: 'verde' };
+}
+
 function renderIncidenciasRecientes(incidencias) {
   const lista = document.getElementById('listaIncidenciasRecientes');
   lista.innerHTML = '';
@@ -99,19 +110,17 @@ function renderIncidenciasRecientes(incidencias) {
 
   // La API ya devuelve las incidencias ordenadas por fecha_registro DESC.
   incidencias.slice(0, 5).forEach(inc => {
-    const color = COLOR_ESTADO_INC[inc.estado] || 'azul';
-    const etiqueta = ETIQUETAS_ESTADO_INC[inc.estado] || inc.estado;
-    const icono = ICONOS_ESTADO_INC[inc.estado] || '';
+    const severidad = severidadIncidencia(inc.tipo_incidencia);
     const fila = document.createElement('li');
     fila.className = 'fila-incidencia-reciente';
     fila.innerHTML = `
-      <span class="punto-estado ${color}"></span>
+      <span class="icono-incidencia-reciente ${severidad.color}">${ICONO_BOTE_BASURA}</span>
       <div class="info-incidencia-reciente">
         <div class="titulo-incidencia-reciente">${inc.tipo_incidencia}</div>
         <div class="direccion-incidencia-reciente">${inc.contenedor_direccion || `Contenedor #${inc.id_contenedor}`}</div>
       </div>
       <div class="columna-estado-fecha">
-        <span class="chip-estado-incidencia ${color}">${icono} ${etiqueta}</span>
+        <span class="chip-severidad-incidencia ${severidad.color}">${severidad.etiqueta}</span>
         <span class="fecha-incidencia-reciente">${formatearFecha(inc.fecha_registro)}</span>
       </div>
     `;

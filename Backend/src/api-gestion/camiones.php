@@ -77,8 +77,11 @@ if ($metodo === 'POST') {
         'estado'      => $estado,
         'kilometraje' => $kilometraje,
     ]);
+    $idCamion = (int) $pdo->lastInsertId();
 
-    responderJson(['exito' => true, 'mensaje' => 'Camión registrado.', 'id_camion' => (int) $pdo->lastInsertId()], 201);
+    registrarAuditoria($pdo, "Registró el camión #{$idCamion} ({$matricula}).");
+
+    responderJson(['exito' => true, 'mensaje' => 'Camión registrado.', 'id_camion' => $idCamion], 201);
 }
 
 if ($metodo === 'PUT') {
@@ -114,6 +117,8 @@ if ($metodo === 'PUT') {
     $sql = 'UPDATE CAMION SET ' . implode(', ', $campos) . ' WHERE id_camion = :id';
     $pdo->prepare($sql)->execute($valores);
 
+    registrarAuditoria($pdo, "Modificó el camión #{$idCamion}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Camión actualizado.']);
 }
 
@@ -133,6 +138,8 @@ if ($metodo === 'DELETE') {
     if ($actualizar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Camión no encontrado.'], 404);
     }
+
+    registrarAuditoria($pdo, "Dio de baja al camión #{$idCamion}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Camión dado de baja.']);
 }

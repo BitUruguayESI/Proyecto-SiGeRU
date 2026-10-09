@@ -1098,15 +1098,15 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    color: #ffffff;
+    color: #fdfcfc;
     margin-bottom: 6px;
 }
 .barra-etiqueta-oscura .valor, .barra-valor { font-weight: 700; }
-.barra-etiqueta-oscura .valor.ambar { color: #f6ad55; }
+.barra-etiqueta-oscura .valor.amarillo { color: #d80d0d; }
 .barra-etiqueta-oscura .valor.azul { color: #4facfe; }
 .barra-etiqueta-oscura .valor.verde { color: #68d391; }
 .barra-pista-oscura, .barra-pista {
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(7, 3, 3, 0.07);
     border-radius: 999px;
     height: 8px;
     overflow: hidden;
@@ -1117,28 +1117,128 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     min-width: 3px;
     transition: width 0.3s ease;
 }
-.barra-relleno-oscura.ambar, .barra-relleno.rojo { background: #f6ad55; }
+.barra-relleno-oscura.ambar, .barra-relleno.rojo { background: #ef0808; }
 .barra-relleno-oscura.azul, .barra-relleno.azul { background: #4facfe; }
 .barra-relleno-oscura.verde, .barra-relleno.verde { background: #68d391; }
 
-/* Incidencias recientes (lista con punto de estado + chip) */
-.encabezado-bloque-oscuro { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.encabezado-bloque-oscuro h3 { margin: 0; }
-.enlace-ver-todas { color: #68d391; font-size: 12px; font-weight: 700; text-decoration: none; }
-.enlace-ver-todas:hover { text-decoration: underline; }
-
-.lista-incidencias-recientes { list-style: none; margin: 14px 0 0; padding: 0; }
+.lista-incidencias-recientes { list-style: none; margin: 10px 0 0; padding: 0; }
 .fila-incidencia-reciente {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     padding: 12px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 .fila-incidencia-reciente:first-child { border-top: none; padding-top: 4px; }
 
+.icono-incidencia-reciente {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+.icono-incidencia-reciente svg { width: 18px; height: 18px; }
+.icono-incidencia-reciente.rojo  {  color: #f70707; }
+.icono-incidencia-reciente.ambar {  color: #fcd40f; }
+.icono-incidencia-reciente.verde {  color: #29f978; }
+
+.info-incidencia-reciente { flex: 1; min-width: 0; }
+.titulo-incidencia-reciente { color: #110c0c; font-size: 13px; font-weight: 700; }
+.direccion-incidencia-reciente {
+    color: #a0aec0;
+    font-size: 12px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.columna-estado-fecha { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.chip-severidad-incidencia {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.chip-severidad-incidencia.rojo  { color: #df1414; }
+.chip-severidad-incidencia.amarillo { color: #ebf627; }
+.chip-severidad-incidencia.verde { color: #68d391; }
+.fecha-incidencia-reciente { color: #a0aec0; font-size: 11px; }
+
+.boton-registrar-incidencia {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    background: #2f855a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+}
+.boton-registrar-incidencia:hover { background: #276749; }
+.fila-incidencia-reciente:first-child { border-top: none; padding-top: 4px; }
+
+.icono-incidencia-reciente {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.info-incidencia-reciente { flex: 1; min-width: 0; }
+.titulo-incidencia-reciente { color: #1a202c; font-size: 13px; font-weight: 700; }
+.direccion-incidencia-reciente {
+    color: #718096;
+    font-size: 12px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.columna-estado-fecha { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: none; }
+.chip-severidad-incidencia {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.chip-severidad-incidencia.rojo  { color: #c0392b; }
+.chip-severidad-incidencia.amarillo { color: #c5f004; }
+.chip-severidad-incidencia.verde { color: #2f855a; }
+.fecha-incidencia-reciente { color: #a0aec0; font-size: 11px; }
+
+.boton-registrar-incidencia {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    background: #2f855a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+}
+.boton-registrar-incidencia:hover { background: #276749; }
+.fila-incidencia-reciente:first-child { border-top: none; padding-top: 4px; }
+
 .punto-estado { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex: none; }
-.punto-estado.ambar { background: #f6ad55; }
+.punto-estado.amarillo { background: #f6ad55; }
 .punto-estado.azul { background: #4facfe; }
 .punto-estado.verde { background: #68d391; }
 
@@ -1553,3 +1653,82 @@ body[data-pagina="registro"] main {
 .item-notificacion.urgente .item-notificacion-tipo { color: #fc8181; }
 .item-notificacion.no-leida { background: rgba(92, 97, 242, 0.08); border-radius: 8px; }
 .item-notificacion-vacio { color: #a0aec0; font-size: 13px; padding: 10px 8px; }
+
+/* ==========================================================================
+   FAQ (RF40) — PÁGINA PRINCIPAL
+   ========================================================================== */
+.faq-section {
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto 60px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.faq-titulo {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+.faq-caja {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    text-align: left;
+}
+
+.faq-select {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.faq-select:focus {
+    outline: none;
+    border-color: #63b3ed;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 10px rgba(99, 179, 237, 0.2);
+}
+
+.faq-respuesta {
+    margin-top: 20px;
+    border-color: rgba(92, 97, 242, 0.4);
+}
+
+.faq-respuesta p {
+    font-size: 14px;
+    color: #a0aec0;
+    line-height: 1.6;
+    margin: 0;
+}.selector-idioma { display: flex; gap: 6px; margin-right: 16px; }
+.btn-idioma {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #a0aec0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-idioma:hover { background: rgba(255,255,255,0.1); color: #ffffff; }
+.btn-idioma.activo {
+  background: #5c61f2;
+  border-color: #5c61f2;
+  color: #ffffff;
+}

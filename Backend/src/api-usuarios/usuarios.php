@@ -68,6 +68,7 @@ if ($metodo === 'GET') {
     if (isset($_GET['ci'])) {
         $usuario = usuarioConDetalle($pdo, limpiarTexto($_GET['ci']));
         if (!$usuario) {
+
             responderJson(['exito' => false, 'mensaje' => 'Usuario no encontrado.'], 404);
         }
         responderJson(['exito' => true, 'usuario' => $usuario]);
@@ -310,8 +311,11 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo actualizar el usuario: ' . $e->getMessage()], 500);
     }
 
+    registrarAuditoria($pdo, "Modificó el usuario con CI {$ci}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Usuario actualizado.']);
 }
+
 
 if ($metodo === 'DELETE') {
     $entrada = obtenerJsonEntrada();
@@ -335,7 +339,10 @@ if ($metodo === 'DELETE') {
         responderJson(['exito' => false, 'mensaje' => 'Usuario no encontrado.'], 404);
     }
 
+    registrarAuditoria($pdo, "Dio de baja al usuario con CI {$ci}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Usuario dado de baja.']);
 }
+
 
 responderJson(['exito' => false, 'mensaje' => 'Método no permitido.'], 405);

@@ -63,7 +63,7 @@ if ($metodo === 'GET') {
 }
 
 if ($metodo === 'POST') {
-    requerirRolAdministrador();
+    $sesion = requerirRolAdministrador();
     $entrada = obtenerJsonEntrada();
 
     $direccion     = limpiarTexto($entrada['direccion'] ?? '');
@@ -124,6 +124,8 @@ if ($metodo === 'POST') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo registrar el contenedor: ' . $e->getMessage()], 500);
     }
 
+    registrarAuditoria($pdo, "Registró el contenedor #{$idContenedor} ({$direccion}).");
+
     $mensaje = $coordenadas
         ? 'Contenedor registrado y ubicado en el mapa.'
         : 'Contenedor registrado, pero no se pudo ubicar la dirección en el mapa automáticamente (revisá que esté completa, o que haya conexión a internet). Podés reintentar editándolo.';
@@ -131,7 +133,7 @@ if ($metodo === 'POST') {
 }
 
 if ($metodo === 'PUT') {
-    requerirRolAdministrador();
+    $sesion = requerirRolAdministrador();
     $entrada = obtenerJsonEntrada();
     $idContenedor = (int) ($entrada['id_contenedor'] ?? 0);
 
@@ -214,11 +216,13 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo actualizar el contenedor: ' . $e->getMessage()], 500);
     }
 
+    registrarAuditoria($pdo, "Modificó el contenedor #{$idContenedor}.");
+
     responderJson(['exito' => true, 'mensaje' => $mensajeGeo ? "Contenedor actualizado. {$mensajeGeo}" : 'Contenedor actualizado.']);
 }
 
 if ($metodo === 'DELETE') {
-    requerirRolAdministrador();
+    $sesion = requerirRolAdministrador();
     $entrada = obtenerJsonEntrada();
     $idContenedor = (int) ($entrada['id_contenedor'] ?? 0);
 
@@ -234,6 +238,8 @@ if ($metodo === 'DELETE') {
     if ($actualizar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Contenedor no encontrado.'], 404);
     }
+
+    registrarAuditoria($pdo, "Dio de baja al contenedor #{$idContenedor}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Contenedor dado de baja.']);
 }

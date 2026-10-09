@@ -194,3 +194,40 @@ function geocodificarDireccion(string $direccion): ?array
         'lon' => (float) $resultados[0]['lon'],
     ];
 }
+
+/**
+ * Inserta un registro en AUDITORIA con la acción realizada y el
+ * Administrador responsable, resuelto a partir de la sesión activa
+ * (RF14 / RN18: auditoría de acciones administrativas).
+ *
+ * Se llama al final de una alta, edición o baja exitosa en cualquier
+ * endpoint gestionado por el Administrador. No lanza excepciones: si
+ * por algún motivo falla el registro de auditoría, no debe romper la
+ * acción principal que ya se realizó con éxito.
+ */
+function registrarAuditoria(PDO $pdo, string $accion): void
+{
+    try {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        $ciUsuario = $_SESSION['ci_usuario'] ?? null;
+        if (!$ciUsuario) {
+            return;
+        }
+
+        $consulta = $pdo->prepare('SELECT id_admin FROM ADMINISTRADOR WHERE ci_usuario = :ci');
+        $consulta->execute(['ci' => $ciUsuario]);
+        $idAdmin = $consulta->fetchColumn();
+
+        $pdo->prepare(
+            'INSERT INTO AUDITORIA (accion, id_administrador) VALUES (:accion, :id_admin)'
+        )->execute([
+            'accion'   => $accion,
+            'id_admin' => $idAdmin !== false ? (int) $idAdmin : null,
+        ]);
+    } catch (\Throwable $e) {
+        // Silencioso a propósito: un fallo al auditar no debe afectar
+        // la acción principal que el Administrador ya realizó.
+    }
+}

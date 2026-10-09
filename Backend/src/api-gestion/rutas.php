@@ -49,8 +49,11 @@ if ($metodo === 'POST') {
 
     $insertar = $pdo->prepare('INSERT INTO RUTA (nombre_zona, frecuencia) VALUES (:nombre_zona, :frecuencia)');
     $insertar->execute(['nombre_zona' => $nombreZona, 'frecuencia' => $frecuencia]);
+    $idRuta = (int) $pdo->lastInsertId();
 
-    responderJson(['exito' => true, 'mensaje' => 'Ruta registrada.', 'id_ruta' => (int) $pdo->lastInsertId()], 201);
+    registrarAuditoria($pdo, "Registró la ruta #{$idRuta} ({$nombreZona}).");
+
+    responderJson(['exito' => true, 'mensaje' => 'Ruta registrada.', 'id_ruta' => $idRuta], 201);
 }
 
 if ($metodo === 'PUT') {
@@ -79,6 +82,8 @@ if ($metodo === 'PUT') {
     $sql = 'UPDATE RUTA SET ' . implode(', ', $campos) . ' WHERE id_ruta = :id';
     $pdo->prepare($sql)->execute($valores);
 
+    registrarAuditoria($pdo, "Modificó la ruta #{$idRuta}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Ruta actualizada.']);
 }
 
@@ -106,6 +111,8 @@ if ($metodo === 'DELETE') {
     if ($eliminar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Ruta no encontrada.'], 404);
     }
+
+    registrarAuditoria($pdo, "Eliminó la ruta #{$idRuta}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Ruta eliminada.']);
 }

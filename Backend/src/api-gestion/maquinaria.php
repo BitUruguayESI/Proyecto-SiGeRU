@@ -112,6 +112,8 @@ if ($metodo === 'POST') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo registrar la máquina: ' . $e->getMessage()], 500);
     }
 
+    registrarAuditoria($pdo, "Registró la máquina #{$idMaquinaria} ({$nombre}).");
+
     responderJson(['exito' => true, 'mensaje' => 'Máquina registrada.', 'id_maquinaria' => $idMaquinaria], 201);
 }
 
@@ -152,6 +154,8 @@ if ($metodo === 'PUT') {
         responderJson(['exito' => false, 'mensaje' => 'No se pudo actualizar la máquina: ' . $e->getMessage()], 500);
     }
 
+    registrarAuditoria($pdo, "Modificó la máquina #{$idMaquinaria}.");
+
     responderJson(['exito' => true, 'mensaje' => 'Máquina actualizada.']);
 }
 
@@ -174,6 +178,8 @@ if ($metodo === 'DELETE') {
     if ($eliminar->rowCount() === 0) {
         responderJson(['exito' => false, 'mensaje' => 'Máquina no encontrada.'], 404);
     }
+
+    registrarAuditoria($pdo, "Eliminó la máquina #{$idMaquinaria}.");
 
     responderJson(['exito' => true, 'mensaje' => 'Máquina eliminada.']);
 }

@@ -312,15 +312,74 @@ function actualizarMapaContenedores(contenedores) {
   }
 }
 
+let contTodos = [];
+let contPorId = {};
+let contPaginaActual = 1;
+const CONT_POR_PAGINA = 5;
+
+document.getElementById('cont_buscar').addEventListener('input', () => {
+  contPaginaActual = 1;
+  renderizarTablaContenedores();
+});
+document.getElementById('cont_filtro_zona').addEventListener('change', () => {
+  contPaginaActual = 1;
+  renderizarTablaContenedores();
+});
+document.getElementById('cont_filtro_estado').addEventListener('change', () => {
+  contPaginaActual = 1;
+  renderizarTablaContenedores();
+});
+document.getElementById('cont_pagina_anterior').addEventListener('click', () => {
+  if (contPaginaActual > 1) { contPaginaActual--; renderizarTablaContenedores(); }
+});
+document.getElementById('cont_pagina_siguiente').addEventListener('click', () => {
+  contPaginaActual++;
+  renderizarTablaContenedores();
+});
+
 async function cargarContenedores() {
   const datos = await llamar(`${BASE}/contenedores.php`);
-  const cuerpo = document.getElementById('tablaContenedores');
-  cuerpo.innerHTML = '';
   if (!datos.exito) return;
 
-  const contenedoresPorId = {};
-  datos.contenedores.forEach(c => {
-    contenedoresPorId[c.id_contenedor] = c;
+  contTodos = datos.contenedores;
+  contPorId = {};
+  contTodos.forEach(c => { contPorId[c.id_contenedor] = c; });
+
+  const selectZona = document.getElementById('cont_filtro_zona');
+  const zonaSeleccionada = selectZona.value;
+  const tieneSinRuta = contTodos.some(c => !c.nombre_zona);
+  const zonas = [...new Set(contTodos.map(c => c.nombre_zona).filter(Boolean))].sort();
+  let opcionesZona = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+  if (tieneSinRuta) opcionesZona += '<option value="__SIN_RUTA__">(Sin ruta)</option>';
+  selectZona.innerHTML = opcionesZona;
+  selectZona.value = [...zonas, '__SIN_RUTA__'].includes(zonaSeleccionada) ? zonaSeleccionada : '';
+
+  actualizarMapaContenedores(contTodos);
+  renderizarTablaContenedores();
+}
+
+function renderizarTablaContenedores() {
+  const termino = document.getElementById('cont_buscar').value.trim().toLowerCase();
+  const zonaFiltro = document.getElementById('cont_filtro_zona').value;
+  const estadoFiltro = document.getElementById('cont_filtro_estado').value;
+
+  const filtrados = contTodos.filter(c => {
+    const texto = `${c.direccion || ''} ${c.estado} ${c.nombre_zona || ''} ${c.tipos_residuo.join(' ')}`.toLowerCase();
+    const pasaTexto = texto.includes(termino);
+    const pasaZona = !zonaFiltro || (zonaFiltro === '__SIN_RUTA__' ? !c.nombre_zona : c.nombre_zona === zonaFiltro);
+    const pasaEstado = !estadoFiltro || c.estado === estadoFiltro;
+    return pasaTexto && pasaZona && pasaEstado;
+  });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / CONT_POR_PAGINA));
+  if (contPaginaActual > totalPaginas) contPaginaActual = totalPaginas;
+  const inicio = (contPaginaActual - 1) * CONT_POR_PAGINA;
+  const pagina = filtrados.slice(inicio, inicio + CONT_POR_PAGINA);
+
+  const cuerpo = document.getElementById('tablaContenedores');
+  cuerpo.innerHTML = '';
+
+  pagina.forEach(c => {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${c.id_contenedor}</td>
@@ -343,9 +402,6 @@ async function cargarContenedores() {
     cuerpo.appendChild(fila);
   });
 
-  actualizarMapaContenedores(datos.contenedores);
-  cargarIncidenciasParaMapa(contenedoresPorId);
-
   cuerpo.querySelectorAll('.select-estado-contenedor').forEach(select => {
     select.addEventListener('change', async () => {
       const resultado = await llamar(`${BASE}/contenedores.php`, {
@@ -358,7 +414,7 @@ async function cargarContenedores() {
   });
   cuerpo.querySelectorAll('.btn-editar-contenedor').forEach(boton => {
     boton.addEventListener('click', () => {
-      const c = contenedoresPorId[boton.dataset.id];
+      const c = contPorId[boton.dataset.id];
       document.getElementById('cont_id').value = c.id_contenedor;
       document.getElementById('cont_direccion').value = c.direccion || '';
       document.getElementById('cont_id_ruta').value = c.id_ruta || '';
@@ -380,6 +436,10 @@ async function cargarContenedores() {
       cargarContenedores();
     });
   });
+
+  document.getElementById('cont_pagina_info').textContent = `Página ${contPaginaActual} de ${totalPaginas} (${filtrados.length} resultado${filtrados.length === 1 ? '' : 's'})`;
+  document.getElementById('cont_pagina_anterior').disabled = contPaginaActual <= 1;
+  document.getElementById('cont_pagina_siguiente').disabled = contPaginaActual >= totalPaginas;
 }
 
 function salirModoEdicionContenedor() {
@@ -412,17 +472,72 @@ document.getElementById('formContenedor').addEventListener('submit', async (even
 // ---------------------------------------------------------------
 // RUTAS
 // ---------------------------------------------------------------
+let rutTodos = [];
+let rutPaginaActual = 1;
+const RUT_POR_PAGINA = 5;
+
+document.getElementById('ruta_buscar').addEventListener('input', () => {
+  rutPaginaActual = 1;
+  renderizarTablaRutas();
+});
+document.getElementById('ruta_filtro_zona').addEventListener('change', () => {
+  rutPaginaActual = 1;
+  renderizarTablaRutas();
+});
+document.getElementById('ruta_pagina_anterior').addEventListener('click', () => {
+  if (rutPaginaActual > 1) { rutPaginaActual--; renderizarTablaRutas(); }
+});
+document.getElementById('ruta_pagina_siguiente').addEventListener('click', () => {
+  rutPaginaActual++;
+  renderizarTablaRutas();
+});
+
 async function cargarRutas() {
   const datos = await llamar(`${BASE}/rutas.php`);
-  const cuerpo = document.getElementById('tablaRutas');
-  cuerpo.innerHTML = '';
   const selectContenedor = document.getElementById('cont_id_ruta');
   const selectCuadrilla = document.getElementById('cuad_rutas');
   selectContenedor.innerHTML = '<option value="">Sin ruta</option>';
   selectCuadrilla.innerHTML = '';
   if (!datos.exito) return;
 
-  datos.rutas.forEach(r => {
+  rutTodos = datos.rutas;
+
+  rutTodos.forEach(r => {
+    const opcion1 = new Option(r.nombre_zona, r.id_ruta);
+    selectContenedor.appendChild(opcion1);
+    const opcion2 = new Option(r.nombre_zona, r.id_ruta);
+    selectCuadrilla.appendChild(opcion2);
+  });
+
+  const selectZona = document.getElementById('ruta_filtro_zona');
+  const zonaSeleccionada = selectZona.value;
+  const zonas = [...new Set(rutTodos.map(r => r.nombre_zona).filter(Boolean))].sort();
+  selectZona.innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+  selectZona.value = zonas.includes(zonaSeleccionada) ? zonaSeleccionada : '';
+
+  renderizarTablaRutas();
+}
+
+function renderizarTablaRutas() {
+  const termino = document.getElementById('ruta_buscar').value.trim().toLowerCase();
+  const zonaFiltro = document.getElementById('ruta_filtro_zona').value;
+
+  const filtrados = rutTodos.filter(r => {
+    const texto = `${r.nombre_zona} ${r.frecuencia}`.toLowerCase();
+    const pasaTexto = texto.includes(termino);
+    const pasaZona = !zonaFiltro || r.nombre_zona === zonaFiltro;
+    return pasaTexto && pasaZona;
+  });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / RUT_POR_PAGINA));
+  if (rutPaginaActual > totalPaginas) rutPaginaActual = totalPaginas;
+  const inicio = (rutPaginaActual - 1) * RUT_POR_PAGINA;
+  const pagina = filtrados.slice(inicio, inicio + RUT_POR_PAGINA);
+
+  const cuerpo = document.getElementById('tablaRutas');
+  cuerpo.innerHTML = '';
+
+  pagina.forEach(r => {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${r.id_ruta}</td><td>${r.nombre_zona}</td><td>${r.frecuencia}</td>
@@ -432,11 +547,6 @@ async function cargarRutas() {
       </td>
     `;
     cuerpo.appendChild(fila);
-
-    const opcion1 = new Option(r.nombre_zona, r.id_ruta);
-    selectContenedor.appendChild(opcion1);
-    const opcion2 = new Option(r.nombre_zona, r.id_ruta);
-    selectCuadrilla.appendChild(opcion2);
   });
 
   cuerpo.querySelectorAll('.btn-editar-ruta').forEach(boton => {
@@ -460,6 +570,10 @@ async function cargarRutas() {
       cargarRutas();
     });
   });
+
+  document.getElementById('ruta_pagina_info').textContent = `Página ${rutPaginaActual} de ${totalPaginas} (${filtrados.length} resultado${filtrados.length === 1 ? '' : 's'})`;
+  document.getElementById('ruta_pagina_anterior').disabled = rutPaginaActual <= 1;
+  document.getElementById('ruta_pagina_siguiente').disabled = rutPaginaActual >= totalPaginas;
 }
 
 function salirModoEdicionRuta() {
@@ -512,16 +626,54 @@ async function cargarReferenciasCuadrilla() {
   }
 }
 
+let cuadTodos = [];
+let cuadPorId = {};
+let cuadPaginaActual = 1;
+const CUAD_POR_PAGINA = 5;
+
+document.getElementById('cuad_buscar').addEventListener('input', () => {
+  cuadPaginaActual = 1;
+  renderizarTablaCuadrillas();
+});
+document.getElementById('cuad_pagina_anterior').addEventListener('click', () => {
+  if (cuadPaginaActual > 1) { cuadPaginaActual--; renderizarTablaCuadrillas(); }
+});
+document.getElementById('cuad_pagina_siguiente').addEventListener('click', () => {
+  cuadPaginaActual++;
+  renderizarTablaCuadrillas();
+});
+
 async function cargarCuadrillas() {
   const datos = await llamar(`${BASE}/cuadrillas.php`);
   cuadrillasDisponiblesRetiro = datos.exito ? datos.cuadrillas : []; // la usa la sección de Retiros especiales
-  const cuerpo = document.getElementById('tablaCuadrillas');
-  cuerpo.innerHTML = '';
   if (!datos.exito) return;
 
-  const cuadrillasPorId = {};
-  datos.cuadrillas.forEach(c => {
-    cuadrillasPorId[c.id_cuadrilla] = c;
+  cuadTodos = datos.cuadrillas;
+  cuadPorId = {};
+  cuadTodos.forEach(c => { cuadPorId[c.id_cuadrilla] = c; });
+
+  renderizarTablaCuadrillas();
+}
+
+function renderizarTablaCuadrillas() {
+  const termino = document.getElementById('cuad_buscar').value.trim().toLowerCase();
+
+  const filtrados = cuadTodos.filter(c => {
+    const rutas = c.rutas_habituales.map(r => r.nombre_zona).join(' ');
+    const recolectores = c.recolectores.map(r => r.nombre_completo).join(' ');
+    const texto = `${c.nombre_cuadrilla} ${c.camion_matricula || ''} ${c.chofer_nombre || ''} ${recolectores} ${rutas}`.toLowerCase();
+    return texto.includes(termino);
+  });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / CUAD_POR_PAGINA));
+  if (cuadPaginaActual > totalPaginas) cuadPaginaActual = totalPaginas;
+  const inicio = (cuadPaginaActual - 1) * CUAD_POR_PAGINA;
+  const pagina = filtrados.slice(inicio, inicio + CUAD_POR_PAGINA);
+
+  const cuerpo = document.getElementById('tablaCuadrillas');
+  cuerpo.innerHTML = '';
+
+  pagina.forEach(c => {
     const rutas = c.rutas_habituales.map(r => r.nombre_zona).join(', ') || '—';
     const recolectores = c.recolectores.map(r => r.nombre_completo).join(', ') || '—';
     const fila = document.createElement('tr');
@@ -538,7 +690,7 @@ async function cargarCuadrillas() {
 
   cuerpo.querySelectorAll('.btn-editar-cuadrilla').forEach(boton => {
     boton.addEventListener('click', () => {
-      const c = cuadrillasPorId[boton.dataset.id];
+      const c = cuadPorId[boton.dataset.id];
       document.getElementById('cuad_id').value = c.id_cuadrilla;
       document.getElementById('cuad_nombre').value = c.nombre_cuadrilla;
       document.getElementById('cuad_cantidad').value = c.cantidad_integrantes;
@@ -568,6 +720,10 @@ async function cargarCuadrillas() {
       cargarCuadrillas();
     });
   });
+
+  document.getElementById('cuad_pagina_info').textContent = `Página ${cuadPaginaActual} de ${totalPaginas} (${filtrados.length} resultado${filtrados.length === 1 ? '' : 's'})`;
+  document.getElementById('cuad_pagina_anterior').disabled = cuadPaginaActual <= 1;
+  document.getElementById('cuad_pagina_siguiente').disabled = cuadPaginaActual >= totalPaginas;
 }
 
 function salirModoEdicionCuadrilla() {
@@ -604,15 +760,59 @@ document.getElementById('formCuadrilla').addEventListener('submit', async (event
 // ---------------------------------------------------------------
 // CAMIONES
 // ---------------------------------------------------------------
+
+let camTodos = [];
+let camPorId = {};
+let camPaginaActual = 1;
+const CAM_POR_PAGINA = 5;
+
+document.getElementById('cam_buscar').addEventListener('input', () => {
+  camPaginaActual = 1;
+  renderizarTablaCamiones();
+});
+document.getElementById('cam_filtro_estado').addEventListener('change', () => {
+  camPaginaActual = 1;
+  renderizarTablaCamiones();
+});
+document.getElementById('cam_pagina_anterior').addEventListener('click', () => {
+  if (camPaginaActual > 1) { camPaginaActual--; renderizarTablaCamiones(); }
+});
+document.getElementById('cam_pagina_siguiente').addEventListener('click', () => {
+  camPaginaActual++;
+  renderizarTablaCamiones();
+});
+
 async function cargarCamiones() {
   const datos = await llamar(`${BASE}/camiones.php`);
-  const cuerpo = document.getElementById('tablaCamiones');
-  cuerpo.innerHTML = '';
   if (!datos.exito) return;
 
-  const camionesPorId = {};
-  datos.camiones.forEach(c => {
-    camionesPorId[c.id_camion] = c;
+  camTodos = datos.camiones;
+  camPorId = {};
+  camTodos.forEach(c => { camPorId[c.id_camion] = c; });
+
+  renderizarTablaCamiones();
+}
+
+function renderizarTablaCamiones() {
+  const termino = document.getElementById('cam_buscar').value.trim().toLowerCase();
+  const estadoFiltro = document.getElementById('cam_filtro_estado').value;
+
+  const filtrados = camTodos.filter(c => {
+    const texto = `${c.matricula} ${c.marca} ${c.modelo}`.toLowerCase();
+    const pasaTexto = texto.includes(termino);
+    const pasaEstado = !estadoFiltro || c.estado === estadoFiltro;
+    return pasaTexto && pasaEstado;
+  });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / CAM_POR_PAGINA));
+  if (camPaginaActual > totalPaginas) camPaginaActual = totalPaginas;
+  const inicio = (camPaginaActual - 1) * CAM_POR_PAGINA;
+  const pagina = filtrados.slice(inicio, inicio + CAM_POR_PAGINA);
+
+  const cuerpo = document.getElementById('tablaCamiones');
+  cuerpo.innerHTML = '';
+
+  pagina.forEach(c => {
     const fila = document.createElement('tr');
     fila.innerHTML = `
       <td>${c.id_camion}</td><td>${c.matricula}</td><td>${c.marca} ${c.modelo}</td><td>${c.capacidad_carga}</td>
@@ -645,7 +845,7 @@ async function cargarCamiones() {
   });
   cuerpo.querySelectorAll('.btn-editar-camion').forEach(boton => {
     boton.addEventListener('click', () => {
-      const c = camionesPorId[boton.dataset.id];
+      const c = camPorId[boton.dataset.id];
       document.getElementById('cam_id').value = c.id_camion;
       document.getElementById('cam_matricula').value = c.matricula;
       document.getElementById('cam_marca').value = c.marca;
@@ -668,8 +868,11 @@ async function cargarCamiones() {
       cargarCamiones();
     });
   });
-}
 
+  document.getElementById('cam_pagina_info').textContent = `Página ${camPaginaActual} de ${totalPaginas} (${filtrados.length} resultado${filtrados.length === 1 ? '' : 's'})`;
+  document.getElementById('cam_pagina_anterior').disabled = camPaginaActual <= 1;
+  document.getElementById('cam_pagina_siguiente').disabled = camPaginaActual >= totalPaginas;
+}
 function salirModoEdicionCamion() {
   document.getElementById('formCamion').reset();
   document.getElementById('cam_id').value = '';
@@ -1422,6 +1625,44 @@ async function cargarPredicciones() {
 // crearCampanaNotificaciones()/cargarNotificacionesNav() ahí.
 
 // ---------------------------------------------------------------
+// AUDITORÍA (RF14, solo lectura)
+// ---------------------------------------------------------------
+async function cargarAuditoria() {
+  const desde = document.getElementById('aud_desde').value;
+  const hasta = document.getElementById('aud_hasta').value;
+  const params = new URLSearchParams();
+  if (desde) params.set('desde', desde);
+  if (hasta) params.set('hasta', hasta);
+  const query = params.toString();
+  const url = query ? `${BASE}/auditoria.php?${query}` : `${BASE}/auditoria.php`;
+  const datos = await llamar(url);
+  const cuerpo = document.getElementById('tablaAuditoria');
+  cuerpo.innerHTML = '';
+  if (!datos.exito) return;
+
+  if (!datos.auditoria.length) {
+    cuerpo.innerHTML = '<tr><td colspan="3">Sin registros de auditoría.</td></tr>';
+    return;
+  }
+
+  datos.auditoria.forEach(a => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${a.fecha_hora}</td><td>${a.accion}</td><td>${a.administrador || '—'}</td>
+    `;
+    cuerpo.appendChild(fila);
+  });
+}
+
+document.getElementById('aud_filtrar').addEventListener('click', cargarAuditoria);
+document.getElementById('aud_limpiar').addEventListener('click', () => {
+  document.getElementById('aud_desde').value = '';
+  document.getElementById('aud_hasta').value = '';
+  cargarAuditoria();
+});
+
+
+// ---------------------------------------------------------------
 // Carga inicial
 // ---------------------------------------------------------------
 (async function iniciar() {
@@ -1446,4 +1687,5 @@ async function cargarPredicciones() {
   await cargarTiposResiduo();
   await cargarReporteReciclaje();
   await cargarPredicciones();
+  await cargarAuditoria();
 })();
