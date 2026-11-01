@@ -2,9 +2,11 @@
 /**
  * api-usuarios/solicitar_recuperacion.php
  * RF04 - Paso 1: el usuario pide recuperar su contraseña indicando su
- * email. Si existe un USUARIO con ese email, se genera un token al azar
- * de un solo uso (válido 5 minutos) y se le manda por email un link para
- * completar el restablecimiento en restablecer_contrasena.html.
+ * email. Si existe un USUARIO con ese email, se genera un código
+ * numérico de 6 dígitos de un solo uso (válido 5 minutos) y se le manda
+ * por email. El usuario lo ingresa junto con su email en
+ * restablecer_contrasena.html para completar el restablecimiento (ver
+ * ese archivo para el paso 2).
  *
  * Por seguridad, la respuesta es la misma exista o no ese email
  * registrado (si no, cualquiera podría usar este formulario para
@@ -35,7 +37,7 @@ $mensajeGenerico = 'Si ese email está registrado, te enviamos un correo con ins
 
 $pdo = obtenerConexion();
 
-$consulta = $pdo->prepare('SELECT ci, nombre_completo FROM USUARIO WHERE email = :email AND estado = \'ACTIVO\'');
+$consulta = $pdo->prepare('SELECT ci, nombre_completo, email FROM USUARIO WHERE email = :email AND estado = \'ACTIVO\'');
 $consulta->execute(['email' => $email]);
 $usuario = $consulta->fetch();
 
@@ -45,20 +47,38 @@ if (!$usuario) {
     responderJson(['exito' => true, 'mensaje' => $mensajeGenerico]);
 }
 
-$token = bin2hex(random_bytes(32));
-
-$pdo->prepare(
-    'INSERT INTO RECUPERACION_CONTRASENA (ci_usuario, token, fecha_expiracion)
-     VALUES (:ci, :token, DATE_ADD(NOW(), INTERVAL 5 MINUTE))'
-)->execute(['ci' => $usuario['ci'], 'token' => $token]);
+// Código numérico de 6 dígitos (no un link): más fácil de tipear a
+// mano, y evita depender de que el cliente de email no "pre-visite" el
+// link solo (algunos antivirus/escáneres de email lo hacen, lo que
+// invalidaría un token de un solo uso antes de que el usuario llegue a
+// usarlo). Reintenta si por azar ya existe ese mismo código sin usar
+// (poco probable con 900.000 combinaciones, pero el token es UNIQUE).
+$intentos = 0;
+do {
+    $codigo = (string) random_int(100000, 999999);
+    $intentos++;
+    try {
+        $pdo->prepare(
+            'INSERT INTO RECUPERACION_CONTRASENA (ci_usuario, token, fecha_expiracion)
+             VALUES (:ci, :token, DATE_ADD(NOW(), INTERVAL 5 MINUTE))'
+        )->execute(['ci' => $usuario['ci'], 'token' => $codigo]);
+        break;
+    } catch (PDOException $e) {
+        if ($intentos >= 5) {
+            responderJson(['exito' => false, 'mensaje' => 'No se pudo generar el código. Probá de nuevo.'], 500);
+        }
+        // Duplicado por la UNIQUE KEY del token: se reintenta con otro código.
+    }
+} while (true);
 
 $urlFrontend = getenv('SIGERU_FRONTEND_URL') ?: 'http://localhost:8080';
-$link = "{$urlFrontend}/restablecer_contrasena.html?token={$token}";
+$link = "{$urlFrontend}/restablecer_contrasena.html?email=" . urlencode($usuario['email']);
 
-$asunto = 'Restablecer tu contraseña en SiGeRU';
+$asunto = 'Tu código para restablecer la contraseña en SiGeRU';
 $cuerpo = "Hola {$usuario['nombre_completo']},\n\n"
-    . "Pediste restablecer tu contraseña en SiGeRU. Entrá a este link dentro de los próximos 5 minutos para elegir una contraseña nueva:\n\n"
-    . "{$link}\n\n"
+    . "Pediste restablecer tu contraseña en SiGeRU. Tu código es:\n\n"
+    . "{$codigo}\n\n"
+    . "Entrá a {$link} dentro de los próximos 5 minutos e ingresá ese código junto con tu contraseña nueva.\n\n"
     . "Si no fuiste vos, podés ignorar este correo: tu contraseña actual sigue siendo válida.\n\n"
     . "Saludos,\nSiGeRU";
 

@@ -26,7 +26,7 @@ if ($metodo === 'GET') {
 
     generarNotificacionesPendientes($pdo);
 
-    $sql = 'SELECT id_notificacion, mensaje, fecha_hora, tipo, leida FROM NOTIFICACION WHERE ci_usuario = :ci';
+    $sql = 'SELECT id_notificacion, mensaje, fecha_hora, tipo, referencia, leida FROM NOTIFICACION WHERE ci_usuario = :ci';
     $valores = ['ci' => $sesion['ci_usuario']];
     if (!empty($_GET['solo_no_leidas'])) {
         $sql .= ' AND leida = FALSE';

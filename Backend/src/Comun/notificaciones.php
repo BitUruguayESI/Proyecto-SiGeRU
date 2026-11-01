@@ -35,7 +35,7 @@ const SIGERU_TIPOS_NOTIFICACION_URGENTES = [
  * configurado o falla el envío, no corta la generación (la notificación
  * en el panel ya quedó creada igual).
  */
-function crearNotificacionSiNoExiste(PDO $pdo, string $ciUsuario, string $tipo, string $mensaje, ?string $emailDestino = null): void
+function crearNotificacionSiNoExiste(PDO $pdo, string $ciUsuario, string $tipo, string $mensaje, ?string $emailDestino = null, ?string $referencia = null): void
 {
     $existe = $pdo->prepare(
         'SELECT id_notificacion FROM NOTIFICACION
@@ -47,8 +47,8 @@ function crearNotificacionSiNoExiste(PDO $pdo, string $ciUsuario, string $tipo, 
     }
 
     $pdo->prepare(
-        'INSERT INTO NOTIFICACION (mensaje, tipo, ci_usuario) VALUES (:mensaje, :tipo, :ci)'
-    )->execute(['mensaje' => $mensaje, 'tipo' => $tipo, 'ci' => $ciUsuario]);
+        'INSERT INTO NOTIFICACION (mensaje, tipo, ci_usuario, referencia) VALUES (:mensaje, :tipo, :ci, :referencia)'
+    )->execute(['mensaje' => $mensaje, 'tipo' => $tipo, 'ci' => $ciUsuario, 'referencia' => $referencia]);
 
     if ($emailDestino && in_array($tipo, SIGERU_TIPOS_NOTIFICACION_URGENTES, true)) {
         try {
@@ -81,7 +81,7 @@ function generarNotificacionesPendientes(PDO $pdo): void
         $direccion = $c['direccion'] ?: "contenedor #{$c['id_contenedor']}";
         $mensaje = "El contenedor #{$c['id_contenedor']} ({$direccion}) está desbordado.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CONTENEDOR_DESBORDADO', $mensaje, $admin['email']);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CONTENEDOR_DESBORDADO', $mensaje, $admin['email'], (string) $c['id_contenedor']);
         }
     }
 
@@ -92,7 +92,7 @@ function generarNotificacionesPendientes(PDO $pdo): void
     foreach ($incidencias as $i) {
         $mensaje = "La incidencia #{$i['id_incidencia']} ({$i['tipo_incidencia']}) está pendiente de asignar.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'INCIDENCIA_PENDIENTE', $mensaje);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'INCIDENCIA_PENDIENTE', $mensaje, null, (string) $i['id_incidencia']);
         }
     }
 
@@ -103,7 +103,7 @@ function generarNotificacionesPendientes(PDO $pdo): void
     foreach ($retiros as $r) {
         $mensaje = "La solicitud de retiro #{$r['id_solicitud']} ({$r['tipo_residuo']}) todavía no tiene respuesta para el vecino.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'RETIRO_SIN_RESPONDER', $mensaje);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'RETIRO_SIN_RESPONDER', $mensaje, null, (string) $r['id_solicitud']);
         }
     }
 
@@ -114,7 +114,7 @@ function generarNotificacionesPendientes(PDO $pdo): void
     foreach ($consultas as $c) {
         $mensaje = "La consulta #{$c['id_consulta']} de {$c['nombre']} todavía no tiene respuesta.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CONSULTA_SIN_RESPONDER', $mensaje);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CONSULTA_SIN_RESPONDER', $mensaje, null, (string) $c['id_consulta']);
         }
     }
 
@@ -132,12 +132,12 @@ function generarNotificacionesPendientes(PDO $pdo): void
     foreach ($carnets->fetchAll() as $u) {
         $mensaje = "El carnet de salud de {$u['nombre_completo']} vence el {$u['carnet_salud_vencimiento']}.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CARNET_POR_VENCER', $mensaje, $admin['email']);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'CARNET_POR_VENCER', $mensaje, $admin['email'], $u['ci']);
         }
     }
 
     $licencias = $pdo->prepare(
-        "SELECT u.nombre_completo, o.licencia_vencimiento FROM OPERARIO o
+        "SELECT u.ci, u.nombre_completo, o.licencia_vencimiento FROM OPERARIO o
          JOIN USUARIO u ON u.ci = o.ci_usuario
          WHERE u.estado = 'ACTIVO' AND o.cargo = 'CHOFER' AND o.licencia_vencimiento IS NOT NULL
            AND o.licencia_vencimiento <= :limite"
@@ -146,7 +146,7 @@ function generarNotificacionesPendientes(PDO $pdo): void
     foreach ($licencias->fetchAll() as $o) {
         $mensaje = "La licencia de conducir de {$o['nombre_completo']} vence el {$o['licencia_vencimiento']}.";
         foreach ($administradores as $admin) {
-            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'LICENCIA_POR_VENCER', $mensaje, $admin['email']);
+            crearNotificacionSiNoExiste($pdo, $admin['ci'], 'LICENCIA_POR_VENCER', $mensaje, $admin['email'], $o['ci']);
         }
     }
 }
