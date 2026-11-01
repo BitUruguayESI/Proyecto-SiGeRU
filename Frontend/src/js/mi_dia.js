@@ -18,6 +18,7 @@ function mostrarMensajeGlobal(texto, tipo) {
   divMensajeGlobal.textContent = texto;
   divMensajeGlobal.className = 'mensaje ' + tipo;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  mostrarToast(texto, tipo);
 }
 
 async function llamar(url, opciones = {}) {

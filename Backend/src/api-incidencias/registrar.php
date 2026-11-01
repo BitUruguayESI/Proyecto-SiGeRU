@@ -1,13 +1,13 @@
 <?php
 /**
  * api-incidencias/registrar.php
- * RF18 — Registrar incidencia. Público (no requiere cuenta): el
- * visitante se identifica solo con su email, igual que RN21 hace con
- * CONSULTA_PUBLICA. Si el email ya existe como VECINO, se reutiliza esa
- * fila; si no, se crea.
+ * RF18 — Registrar incidencia. Público (no requiere cuenta) y anónimo:
+ * no se pide ni se guarda ningún dato de contacto del vecino
+ * (id_vecino queda NULL). Como no hay email, el sistema ya no puede
+ * detectar si el mismo vecino ya había reportado el mismo problema.
  *
  * Espera POST JSON:
- * { "id_contenedor": 1, "tipo_incidencia": "Desborde", "descripcion": "...", "email_vecino": "..." }
+ * { "id_contenedor": 1, "tipo_incidencia": "Desborde", "descripcion": "..." }
  *
  * Si tipo_incidencia sugiere desborde, el contenedor pasa a estado
  * DESBORDADO automáticamente (simplificación: alcanza con la palabra
@@ -31,13 +31,11 @@ $entrada = obtenerJsonEntrada();
 $idContenedor    = (int) ($entrada['id_contenedor'] ?? 0);
 $tipoIncidencia  = limpiarTexto($entrada['tipo_incidencia'] ?? '');
 $descripcion     = limpiarTexto($entrada['descripcion'] ?? '');
-$emailVecino     = limpiarTexto($entrada['email_vecino'] ?? '');
 
 $errores = [];
 if ($idContenedor <= 0) $errores[] = 'Tenés que seleccionar un contenedor.';
 if ($tipoIncidencia === '') $errores[] = 'El tipo de incidencia es obligatorio.';
 if ($descripcion === '') $errores[] = 'La descripción es obligatoria.';
-if (!esEmailValido($emailVecino)) $errores[] = 'El email no es válido.';
 if ($errores) {
     responderJson(['exito' => false, 'mensaje' => implode(' ', $errores)], 400);
 }
@@ -53,27 +51,15 @@ if (!$contenedor->fetch()) {
 try {
     $pdo->beginTransaction();
 
-    // Reutilizar VECINO por email, o crearlo.
-    $buscarVecino = $pdo->prepare('SELECT id_vecino FROM VECINO WHERE email = :email');
-    $buscarVecino->execute(['email' => $emailVecino]);
-    $vecino = $buscarVecino->fetch();
-    if ($vecino) {
-        $idVecino = (int) $vecino['id_vecino'];
-    } else {
-        $crearVecino = $pdo->prepare('INSERT INTO VECINO (email) VALUES (:email)');
-        $crearVecino->execute(['email' => $emailVecino]);
-        $idVecino = (int) $pdo->lastInsertId();
-    }
-
+    // Denuncia anónima: no se identifica al vecino, id_vecino queda NULL.
     $insertarIncidencia = $pdo->prepare(
         'INSERT INTO INCIDENCIA (descripcion, tipo_incidencia, estado, id_contenedor, id_vecino)
-         VALUES (:descripcion, :tipo, \'PENDIENTE\', :id_contenedor, :id_vecino)'
+         VALUES (:descripcion, :tipo, \'PENDIENTE\', :id_contenedor, NULL)'
     );
     $insertarIncidencia->execute([
         'descripcion'   => $descripcion,
         'tipo'          => $tipoIncidencia,
         'id_contenedor' => $idContenedor,
-        'id_vecino'     => $idVecino,
     ]);
     $idIncidencia = (int) $pdo->lastInsertId();
 
@@ -92,6 +78,6 @@ try {
 
 responderJson([
     'exito' => true,
-    'mensaje' => 'Incidencia registrada. Vas a recibir novedades a tu email.',
+    'mensaje' => 'Incidencia registrada de forma anónima.',
     'id_incidencia' => $idIncidencia,
 ], 201);

@@ -30,7 +30,8 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 function contenedorConTipos(PDO $pdo, int $idContenedor): ?array
 {
     $consulta = $pdo->prepare(
-        'SELECT c.id_contenedor, c.direccion, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta, r.nombre_zona
+        'SELECT c.id_contenedor, c.direccion, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta,
+                r.nombre_zona, r.municipio
          FROM CONTENEDOR c
          LEFT JOIN RUTA r ON r.id_ruta = c.id_ruta
          WHERE c.id_contenedor = :id'
@@ -57,8 +58,30 @@ if ($metodo === 'GET') {
         responderJson(['exito' => true, 'contenedor' => $contenedor]);
     }
 
-    $ids = $pdo->query('SELECT id_contenedor FROM CONTENEDOR ORDER BY id_contenedor')->fetchAll();
-    $lista = array_map(fn($fila) => contenedorConTipos($pdo, (int) $fila['id_contenedor']), $ids);
+    // Antes esto hacia 2 consultas POR contenedor (una por tipos_residuo),
+    // lo que con los ~11.000 contenedores reales cargados del CSV
+    // municipal eran mas de 20.000 consultas seguidas: tardaba tanto que
+    // a veces el servidor cortaba la respuesta a la mitad (PHP devolvia
+    // un error de "tiempo maximo excedido" pegado al JSON, y el frontend
+    // fallaba al parsearlo). Ahora son solo 2 consultas en total.
+    $filas = $pdo->query(
+        'SELECT c.id_contenedor, c.direccion, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta,
+                r.nombre_zona, r.municipio
+         FROM CONTENEDOR c
+         LEFT JOIN RUTA r ON r.id_ruta = c.id_ruta
+         ORDER BY c.id_contenedor'
+    )->fetchAll();
+
+    $tiposPorContenedor = [];
+    foreach ($pdo->query('SELECT id_contenedor, tipo_residuo FROM CONTENEDOR_TIPO_RESIDUO') as $fila) {
+        $tiposPorContenedor[$fila['id_contenedor']][] = $fila['tipo_residuo'];
+    }
+
+    $lista = array_map(function ($c) use ($tiposPorContenedor) {
+        $c['tipos_residuo'] = $tiposPorContenedor[$c['id_contenedor']] ?? [];
+        return $c;
+    }, $filas);
+
     responderJson(['exito' => true, 'contenedores' => $lista]);
 }
 

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function mostrarMensaje(texto, tipo) {
     divMensaje.textContent = texto;
     divMensaje.className = 'mensaje ' + tipo;
+    mostrarToast(texto, tipo);
   }
 
   const parametros = new URLSearchParams(window.location.search);

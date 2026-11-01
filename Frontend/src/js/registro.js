@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function mostrarMensaje(texto, tipo) {
     divMensaje.textContent = texto;
     divMensaje.className = 'mensaje ' + tipo;
+    mostrarToast(texto, tipo);
   }
 
   form.addEventListener('submit', async (evento) => {

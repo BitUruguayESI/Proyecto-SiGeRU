@@ -98,9 +98,18 @@ function enviarCorreo(string $destinatario, string $asunto, string $cuerpo): arr
         // fin del mensaje si no se escapa (protocolo SMTP, RFC 5321).
         $cuerpoEscapado = str_replace("\n.", "\n..", $cuerpo);
         $asuntoCodificado = '=?UTF-8?B?' . base64_encode($asunto) . '?=';
+        // Date y Message-ID son obligatorios por RFC 5322. Sin ellos Gmail
+        // (y la mayoría de los filtros antispam) tratan el mensaje como
+        // sospechoso: el servidor SMTP igual lo acepta (por eso acá
+        // "parecía" enviado bien), pero después lo manda a spam o lo
+        // descarta en silencio antes de que llegue a la bandeja de entrada.
+        $fecha = date('r');
+        $messageId = '<' . bin2hex(random_bytes(16)) . '@sigeru.local>';
         $mensaje = "From: SiGeRU <{$remitente}>\r\n"
             . "To: <{$destinatario}>\r\n"
             . "Subject: {$asuntoCodificado}\r\n"
+            . "Date: {$fecha}\r\n"
+            . "Message-ID: {$messageId}\r\n"
             . "MIME-Version: 1.0\r\n"
             . "Content-Type: text/plain; charset=UTF-8\r\n"
             . "\r\n"

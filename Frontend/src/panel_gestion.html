@@ -12,9 +12,22 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Agrupa en "clusters" los miles de contenedores reales cargados (CSV
+     municipal) para que el mapa siga siendo usable con tantos puntos. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+      integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+      integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="">
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+        integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
 </head>
 <body data-pagina="gestion">
-  <header class="banner"><h1>SiGeRU </h1></header>
+  <header class="banner">
+    <div class="logo-banner">
+      <img src="img/logo.jpg" alt="SiGeRU">
+      <h1>SiGeRU</h1>
+    </div>
+  </header>
   <h2 class="titulo-pagina">Sistema de Gestión de Residuos Urbanos</h2>
   <div id="navAdmin"></div>
 
@@ -92,13 +105,19 @@
     <section id="seccion-contenedores" class="seccion-panel activa">
       <h3 style="margin-top:0;">Mapa de contenedores e incidencias</h3>
       <p class="leyenda-mapa">
-        <span><span class="punto-leyenda" style="background:#2E7D32;"></span> Operativo</span>
-        <span><span class="punto-leyenda" style="background:#C0392B;"></span> Desbordado</span>
-        <span><span class="punto-leyenda" style="background:#888888;"></span> Fuera de servicio</span>
+        <span>Borde del punto = estado:</span>
+        <span><span class="punto-leyenda" style="background:#fff; border:2px solid #2E7D32;"></span> Operativo</span>
+        <span><span class="punto-leyenda" style="background:#fff; border:2px solid #C0392B;"></span> Desbordado</span>
+        <span><span class="punto-leyenda" style="background:#fff; border:2px solid #888888;"></span> Fuera de servicio</span>
         <span>⚠️ Incidencia pendiente o en proceso</span>
       </p>
+      <p class="leyenda-mapa" id="leyendaMunicipios"><span>Color del punto = municipio:</span></p>
       <div id="mapaContenedores" class="mapa-contenedores"></div>
       <p id="mapaContenedoresAviso" class="aviso-mapa" hidden></p>
+      <details style="margin:6px 0 10px;">
+        <summary style="cursor:pointer;">Ver mapa de referencia de los municipios de Montevideo</summary>
+        <img src="img/mapa-zonas.png" alt="Mapa de municipios de Montevideo" style="max-width:100%; margin-top:8px; border:1px solid #ddd; border-radius:6px;">
+      </details>
 
            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:10px;">
         <div style="flex:1; min-width:200px;">
@@ -106,7 +125,11 @@
           <input type="text" id="cont_buscar" placeholder="Buscar por dirección..." style="width:100%; padding:6px;">
         </div>
         <div>
-          <label>Zona</label><br>
+          <label>Municipio</label><br>
+          <select id="cont_filtro_municipio" style="padding:6px;"><option value="">Todos los municipios</option></select>
+        </div>
+        <div>
+          <label>Zona / circuito</label><br>
           <select id="cont_filtro_zona" style="padding:6px;"><option value="">Todas las zonas</option></select>
         </div>
         <div>
@@ -573,6 +596,7 @@
 
   <script src="js/sesion.js"></script>
   <script src="js/nav_admin.js"></script>
+  <script src="js/toast.js"></script>
   <script src="js/panel_gestion.js"></script>
 </body>
 </html>

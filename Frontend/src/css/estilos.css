@@ -47,11 +47,29 @@ body.landing-body {
     width: 100%;
     padding: 25px 60px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     position: absolute;
     top: 0;
     left: 0;
     z-index: 10;
+}
+
+.logo-navbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.logo-navbar img {
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+.logo-navbar span {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
 }
 
 .nav-links {
@@ -191,6 +209,16 @@ body.landing-body {
     width: 100%;
     max-width: 450px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.login-logo-top {
+    display: block;
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .brand-title {
@@ -954,6 +982,43 @@ a.boton-enlace:hover { background: #4a4fd9; }
 .mensaje.exito { background: rgba(72, 187, 120, 0.15); color: #68d391; display: block; }
 .mensaje.error { background: rgba(245, 101, 101, 0.15); color: #fc8181; display: block; }
 
+/* Ventanas flotantes de confirmacion/aviso (toast.js) */
+.contenedor-toasts {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 360px;
+}
+.toast {
+    background: rgba(26, 26, 46, 0.97);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 4px solid #5c61f2;
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast-visible { opacity: 1; transform: translateX(0); }
+.toast-exito { border-left-color: #48bb78; }
+.toast-error { border-left-color: #f56565; }
+.toast-info { border-left-color: #5c61f2; }
+@media (max-width: 480px) {
+    .contenedor-toasts { top: 12px; right: 12px; left: 12px; max-width: none; }
+}
+
 /* Pestañas internas (Gestión de recursos, Recolección) */
 .pestanias {
     display: flex;
@@ -1344,6 +1409,24 @@ table.tabla-datos select { padding: 6px; font-size: 12px; }
     background: rgba(255, 255, 255, 0.03);
 }
 .aviso-mapa { font-size: 13px; color: #a0aec0; margin: 0 0 18px; }
+.mapa-contenedores.mapa-grande { height: 420px; }
+
+.selector-modo-ubicacion { display: flex; gap: 8px; margin: 0 0 18px; }
+.modo-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #a0aec0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.modo-btn:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+.modo-btn.activo { background: #5c61f2; border-color: #5c61f2; color: #ffffff; }
 
 .leyenda-mapa {
     display: flex;
@@ -1522,6 +1605,17 @@ body[data-pagina="registro"] main {
     text-decoration: none;
 }
 .enlace-secundario:hover { text-decoration: underline; color: #00f2fe; }
+
+header.banner .logo-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+header.banner .logo-banner img {
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+}
 
 /* ==========================================================================
    15. SOLICITAR RETIRO DE RESIDUOS ESPECIALES

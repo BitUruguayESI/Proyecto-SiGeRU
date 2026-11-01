@@ -47,7 +47,6 @@ final class IncidenciasApiTest extends TestCase
             'descripcion' => 'Incidencia de prueba automatizada.',
             'tipo_incidencia' => $tipo,
             'id_contenedor' => $this->idContenedor,
-            'email_vecino' => 'vecino-test@correo.com',
         ]);
         self::assertSame(201, $reporte['codigo'], 'El reporte público debería aceptarse sin sesión.');
         return $reporte['cuerpo']['id_incidencia'];

@@ -67,17 +67,22 @@ $contenedores = $pdo->query(
      ORDER BY c.id_contenedor'
 )->fetchAll();
 
-$lecturasStmt = $pdo->prepare(
-    'SELECT nivel_llenado, fecha_hora FROM LECTURA_NIVEL_CONTENEDOR
-     WHERE id_contenedor = :id ORDER BY fecha_hora ASC'
-);
+// Antes se hacia una consulta POR contenedor acá adentro del foreach
+// (con los ~11.000 contenedores reales del CSV municipal, eso son
+// ~11.000 consultas seguidas solo para esto). Ahora se traen todas las
+// lecturas de una sola vez y se agrupan en PHP por id_contenedor.
+$lecturasPorContenedor = [];
+foreach ($pdo->query(
+    'SELECT id_contenedor, nivel_llenado, fecha_hora FROM LECTURA_NIVEL_CONTENEDOR ORDER BY id_contenedor, fecha_hora ASC'
+) as $fila) {
+    $lecturasPorContenedor[$fila['id_contenedor']][] = $fila;
+}
 
 $resultadoContenedores = [];
 $diasPorZona = [];
 
 foreach ($contenedores as $c) {
-    $lecturasStmt->execute(['id' => $c['id_contenedor']]);
-    $lecturas = $lecturasStmt->fetchAll();
+    $lecturas = $lecturasPorContenedor[$c['id_contenedor']] ?? [];
 
     $tasa = calcularTasaDiaria($lecturas);
     $diasEstimados = $tasa !== null ? max(0, (int) ceil((100 - (int) $c['nivel_llenado']) / $tasa)) : null;

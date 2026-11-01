@@ -5,6 +5,7 @@ function mostrarMensajeGlobal(texto, tipo) {
   divMensajeGlobal.textContent = texto;
   divMensajeGlobal.className = 'mensaje ' + tipo;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  mostrarToast(texto, tipo);
 }
 
 async function llamar(url, opciones = {}) {
@@ -202,7 +203,14 @@ function iniciarMapaContenedores() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(mapaContenedores);
-  capaMarcadoresContenedores = L.layerGroup().addTo(mapaContenedores);
+  // Son miles de contenedores reales (circuitos de recoleccion cargados
+  // desde el CSV municipal), asi que se agrupan en clusters en vez de
+  // pintar un circleMarker suelto por cada uno (RF13 + separacion por
+  // municipio): sin esto el mapa queda inusable con tantos puntos.
+  capaMarcadoresContenedores = (typeof L.markerClusterGroup === 'function')
+    ? L.markerClusterGroup({ spiderfyOnMaxZoom: true, showCoverageOnHover: false, maxClusterRadius: 50 })
+    : L.layerGroup();
+  capaMarcadoresContenedores.addTo(mapaContenedores);
   capaMarcadoresIncidencias = L.layerGroup().addTo(mapaContenedores);
 }
 
@@ -269,6 +277,7 @@ function actualizarMapaContenedores(contenedores) {
 
   capaMarcadoresContenedores.clearLayers();
   const puntos = [];
+  const marcadores = [];
 
   contenedores.forEach(c => {
     if (!c.coordenadas) return;
@@ -280,17 +289,31 @@ function actualizarMapaContenedores(contenedores) {
     // si se marcó desbordado a mano sin actualizar el nivel).
     const nivelMostrado = c.estado === 'DESBORDADO' ? 100 : c.nivel_llenado;
 
-    L.circleMarker([lat, lon], {
+    // Relleno = municipio (para poder "separar" el mapa a simple vista),
+    // borde = estado (para no perder esa información, que antes era el
+    // color principal).
+    const colorMunicipio = COLOR_MUNICIPIO[c.municipio] || COLOR_SIN_MUNICIPIO;
+    const colorEstado = COLOR_ESTADO_CONTENEDOR[c.estado] || '#888';
+
+    const marcador = L.circleMarker([lat, lon], {
       radius: 8,
-      color: '#fff',
-      weight: 2,
-      fillColor: COLOR_ESTADO_CONTENEDOR[c.estado] || '#888',
+      color: colorEstado,
+      weight: c.estado === 'OPERATIVO' ? 1.5 : 3,
+      fillColor: colorMunicipio,
       fillOpacity: 0.9,
-    })
-      .bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Estado: ${c.estado}<br>Nivel de llenado: ${nivelMostrado}%`)
-      .addTo(capaMarcadoresContenedores);
+    }).bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Municipio: ${NOMBRES_MUNICIPIO[c.municipio] || 'sin municipio'}<br>Estado: ${c.estado}<br>Nivel de llenado: ${nivelMostrado}%`);
+    marcadores.push(marcador);
     puntos.push([lat, lon]);
   });
+
+  // addLayers() en bloque (en vez de un addTo() por marcador) es mucho
+  // más rápido con miles de contenedores — es el método que expone
+  // Leaflet.markercluster para carga masiva.
+  if (typeof capaMarcadoresContenedores.addLayers === 'function') {
+    capaMarcadoresContenedores.addLayers(marcadores);
+  } else {
+    marcadores.forEach(m => m.addTo(capaMarcadoresContenedores));
+  }
 
   const sinUbicar = contenedores.length - puntos.length;
   if (puntos.length) {
@@ -317,7 +340,43 @@ let contPorId = {};
 let contPaginaActual = 1;
 const CONT_POR_PAGINA = 5;
 
+// Los 8 municipios de Montevideo (letra -> nombre para mostrar). El mapa
+// interactivo y la tabla de contenedores se pueden separar/filtrar por
+// municipio, ademas de por zona/circuito y por estado (ver RF13 y el
+// mapa de referencia en img/mapa-zonas.png).
+const NOMBRES_MUNICIPIO = {
+  A: 'Municipio A', B: 'Municipio B', C: 'Municipio C', CH: 'Municipio CH',
+  D: 'Municipio D', E: 'Municipio E', F: 'Municipio F', G: 'Municipio G',
+};
+// Colores por municipio para el relleno de los puntos del mapa (evitan
+// rojo/verde/gris, que ya se usan para el ESTADO en el borde del punto).
+const COLOR_MUNICIPIO = {
+  A: '#2E86DE', B: '#8E44AD', C: '#17A2B8', CH: '#E67E22',
+  D: '#D4AC0D', E: '#E84393', F: '#6C5CE7', G: '#795548',
+};
+const COLOR_SIN_MUNICIPIO = '#607D8B';
+
+function pintarLeyendaMunicipios() {
+  const contenedor = document.getElementById('leyendaMunicipios');
+  if (!contenedor) return;
+  const items = Object.keys(COLOR_MUNICIPIO).map(m =>
+    `<span><span class="punto-leyenda" style="background:${COLOR_MUNICIPIO[m]};"></span> ${NOMBRES_MUNICIPIO[m] || m}</span>`
+  ).join('');
+  contenedor.innerHTML = '<span>Color del punto = municipio:</span>' + items;
+}
+pintarLeyendaMunicipios();
+
+// Con miles de contenedores reales cargados, re-renderizar el mapa en
+// cada tecla sería pesado: se espera una pausa corta de tipeo.
+let contBuscarDebounce = null;
 document.getElementById('cont_buscar').addEventListener('input', () => {
+  clearTimeout(contBuscarDebounce);
+  contBuscarDebounce = setTimeout(() => {
+    contPaginaActual = 1;
+    renderizarTablaContenedores();
+  }, 300);
+});
+document.getElementById('cont_filtro_municipio').addEventListener('change', () => {
   contPaginaActual = 1;
   renderizarTablaContenedores();
 });
@@ -345,6 +404,16 @@ async function cargarContenedores() {
   contPorId = {};
   contTodos.forEach(c => { contPorId[c.id_contenedor] = c; });
 
+  const selectMunicipio = document.getElementById('cont_filtro_municipio');
+  const municipioSeleccionado = selectMunicipio.value;
+  const tieneSinMunicipio = contTodos.some(c => !c.municipio);
+  const municipios = [...new Set(contTodos.map(c => c.municipio).filter(Boolean))].sort();
+  let opcionesMunicipio = '<option value="">Todos los municipios</option>'
+    + municipios.map(m => `<option value="${m}">${NOMBRES_MUNICIPIO[m] || m}</option>`).join('');
+  if (tieneSinMunicipio) opcionesMunicipio += '<option value="__SIN_MUNICIPIO__">(Sin municipio)</option>';
+  selectMunicipio.innerHTML = opcionesMunicipio;
+  selectMunicipio.value = [...municipios, '__SIN_MUNICIPIO__'].includes(municipioSeleccionado) ? municipioSeleccionado : '';
+
   const selectZona = document.getElementById('cont_filtro_zona');
   const zonaSeleccionada = selectZona.value;
   const tieneSinRuta = contTodos.some(c => !c.nombre_zona);
@@ -354,22 +423,31 @@ async function cargarContenedores() {
   selectZona.innerHTML = opcionesZona;
   selectZona.value = [...zonas, '__SIN_RUTA__'].includes(zonaSeleccionada) ? zonaSeleccionada : '';
 
-  actualizarMapaContenedores(contTodos);
   renderizarTablaContenedores();
 }
 
-function renderizarTablaContenedores() {
+// Aplica los 4 filtros (texto, municipio, zona/circuito y estado) sobre
+// contTodos. La usan tanto la tabla como el mapa, para que al elegir un
+// municipio el mapa quede "separado" mostrando solo esos contenedores.
+function contenedoresFiltrados() {
   const termino = document.getElementById('cont_buscar').value.trim().toLowerCase();
+  const municipioFiltro = document.getElementById('cont_filtro_municipio').value;
   const zonaFiltro = document.getElementById('cont_filtro_zona').value;
   const estadoFiltro = document.getElementById('cont_filtro_estado').value;
 
-  const filtrados = contTodos.filter(c => {
+  return contTodos.filter(c => {
     const texto = `${c.direccion || ''} ${c.estado} ${c.nombre_zona || ''} ${c.tipos_residuo.join(' ')}`.toLowerCase();
     const pasaTexto = texto.includes(termino);
+    const pasaMunicipio = !municipioFiltro || (municipioFiltro === '__SIN_MUNICIPIO__' ? !c.municipio : c.municipio === municipioFiltro);
     const pasaZona = !zonaFiltro || (zonaFiltro === '__SIN_RUTA__' ? !c.nombre_zona : c.nombre_zona === zonaFiltro);
     const pasaEstado = !estadoFiltro || c.estado === estadoFiltro;
-    return pasaTexto && pasaZona && pasaEstado;
+    return pasaTexto && pasaMunicipio && pasaZona && pasaEstado;
   });
+}
+
+function renderizarTablaContenedores() {
+  const filtrados = contenedoresFiltrados();
+  actualizarMapaContenedores(filtrados);
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / CONT_POR_PAGINA));
   if (contPaginaActual > totalPaginas) contPaginaActual = totalPaginas;

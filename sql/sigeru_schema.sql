@@ -99,6 +99,22 @@ CREATE TABLE SESION (
         REFERENCES USUARIO(ci) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- RF04 - Recuperación de contraseña por email: token de un solo uso,
+-- válido 5 minutos (ver api-usuarios/solicitar_recuperacion.php y
+-- restablecer_contrasena.php).
+CREATE TABLE RECUPERACION_CONTRASENA (
+    id_recuperacion   INT AUTO_INCREMENT,
+    ci_usuario        VARCHAR(15) NOT NULL,
+    token             VARCHAR(64) NOT NULL,
+    fecha_creacion    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_expiracion  DATETIME NOT NULL,
+    usado             TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (id_recuperacion),
+    UNIQUE KEY uq_recuperacion_token (token),
+    CONSTRAINT fk_recuperacion_usuario FOREIGN KEY (ci_usuario)
+        REFERENCES USUARIO(ci) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 -- =====================================================================
 -- 2) Cuadrillas, rutas y contenedores
 -- =====================================================================
@@ -127,7 +143,13 @@ CREATE TABLE CUADRILLA (
 CREATE TABLE RUTA (
     id_ruta       INT AUTO_INCREMENT,
     nombre_zona   VARCHAR(100) NOT NULL,
-    frecuencia    VARCHAR(50)  NOT NULL,   -- ej: "diaria", "lunes y jueves"
+    frecuencia    VARCHAR(100) NOT NULL,   -- ej: "diaria", "lunes y jueves", o un
+                                            -- horario real largo (ver circuitos
+                                            -- de recoleccion importados del CSV
+                                            -- municipal)
+    municipio     ENUM('A','B','C','CH','D','E','F','G') NULL,  -- municipio de
+                                            -- Montevideo al que pertenece la ruta
+                                            -- (RF17/RF22 + mapa interactivo RF13)
     PRIMARY KEY (id_ruta)
 ) ENGINE=InnoDB;
 
@@ -179,6 +201,19 @@ CREATE TABLE CONTENEDOR_TIPO_RESIDUO (
     tipo_residuo    VARCHAR(40) NOT NULL,   -- ej: "organico", "plastico", "vidrio"
     PRIMARY KEY (id_contenedor, tipo_residuo),
     CONSTRAINT fk_ctr_contenedor FOREIGN KEY (id_contenedor)
+        REFERENCES CONTENEDOR(id_contenedor) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- Historial de lecturas de nivel de llenado de cada contenedor (nivel
+-- avanzado 3.4: predicciones, ver api-gestion/predicciones.php). Se
+-- agrega una lectura cada vez que CONTENEDOR.nivel_llenado cambia.
+CREATE TABLE LECTURA_NIVEL_CONTENEDOR (
+    id_lectura     INT AUTO_INCREMENT,
+    id_contenedor  INT NOT NULL,
+    nivel_llenado  TINYINT UNSIGNED NOT NULL,
+    fecha_hora     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_lectura),
+    CONSTRAINT fk_lectura_contenedor FOREIGN KEY (id_contenedor)
         REFERENCES CONTENEDOR(id_contenedor) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
@@ -270,6 +305,18 @@ CREATE TABLE ASIGNACION_OPERARIO (
 
 -- Registro individual de descarga (RN16): un camión puede descargar
 -- más de una vez, en instalaciones distintas.
+-- Catálogo de tipos de residuo con su clasificación reciclable/no
+-- reciclable (nivel avanzado 3.3, ver api-gestion/tipos_residuo.php y
+-- reporte_reciclaje.php). No reemplaza a CONTENEDOR_TIPO_RESIDUO ni a
+-- SOLICITUD_RETIRO.tipo_residuo, que siguen siendo texto libre.
+CREATE TABLE TIPO_RESIDUO (
+    id_tipo_residuo INT AUTO_INCREMENT,
+    nombre          VARCHAR(60) NOT NULL,
+    reciclable      TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (id_tipo_residuo),
+    UNIQUE KEY uq_tipo_residuo_nombre (nombre)
+) ENGINE=InnoDB;
+
 CREATE TABLE DESCARGA (
     id_descarga     INT AUTO_INCREMENT,
     fecha_descarga  DATE NOT NULL,
@@ -277,11 +324,14 @@ CREATE TABLE DESCARGA (
     peso            DECIMAL(10,2) NOT NULL,  -- kg
     id_camion       INT NOT NULL,
     id_centro       INT NOT NULL,
+    id_tipo_residuo INT NULL,                -- opcional, clasificación (nivel avanzado 3.3)
     PRIMARY KEY (id_descarga),
     CONSTRAINT fk_descarga_camion FOREIGN KEY (id_camion)
         REFERENCES CAMION(id_camion) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_descarga_instalacion FOREIGN KEY (id_centro)
-        REFERENCES INSTALACION(id_centro) ON DELETE RESTRICT ON UPDATE CASCADE
+        REFERENCES INSTALACION(id_centro) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_descarga_tipo_residuo FOREIGN KEY (id_tipo_residuo)
+        REFERENCES TIPO_RESIDUO(id_tipo_residuo) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -350,6 +400,9 @@ CREATE TABLE NOTIFICACION (
     mensaje           VARCHAR(300) NOT NULL,
     fecha_hora        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     tipo              VARCHAR(60) NOT NULL,
+    referencia        VARCHAR(30) NULL,  -- id (o cedula, para carnet/licencia) de
+                                          -- la fila a la que apunta, para que la
+                                          -- campana pueda llevar directo a ella
     leida             BOOLEAN NOT NULL DEFAULT FALSE,
     ci_usuario        VARCHAR(15) NOT NULL,
     PRIMARY KEY (id_notificacion),
@@ -369,13 +422,47 @@ CREATE TABLE MANTENIMIENTO_CAMION (
         REFERENCES CAMION(id_camion) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- Historial de mantenimiento de MAQUINARIA (análogo a MANTENIMIENTO_CAMION).
+-- A diferencia de los camiones no tiene kilometraje, y sí un costo opcional.
+CREATE TABLE MANTENIMIENTO_MAQUINARIA (
+    id_mantenimiento   INT AUTO_INCREMENT,
+    fecha              DATE NOT NULL,
+    tipo_mantenimiento VARCHAR(60) NOT NULL,
+    descripcion        TEXT NULL,
+    costo              DECIMAL(10,2) NULL,
+    id_maquinaria      INT NOT NULL,
+    PRIMARY KEY (id_mantenimiento),
+    CONSTRAINT fk_mantmaq_maquinaria FOREIGN KEY (id_maquinaria)
+        REFERENCES MAQUINARIA(id_maquinaria) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- Historial de traslados de MAQUINARIA entre instalaciones. Al registrar
+-- un traslado también se actualiza MAQUINARIA.id_centro (lo hace el PHP).
+CREATE TABLE TRASLADO_MAQUINARIA (
+    id_traslado        INT AUTO_INCREMENT,
+    fecha              DATE NOT NULL,
+    id_maquinaria      INT NOT NULL,
+    id_centro_origen   INT NOT NULL,
+    id_centro_destino  INT NOT NULL,
+    observaciones      TEXT NULL,
+    PRIMARY KEY (id_traslado),
+    CONSTRAINT fk_traslado_maquinaria FOREIGN KEY (id_maquinaria)
+        REFERENCES MAQUINARIA(id_maquinaria) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_traslado_origen FOREIGN KEY (id_centro_origen)
+        REFERENCES INSTALACION(id_centro) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_traslado_destino FOREIGN KEY (id_centro_destino)
+        REFERENCES INSTALACION(id_centro) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE CONSULTA_PUBLICA (
-    id_consulta   INT AUTO_INCREMENT,
-    nombre        VARCHAR(150) NOT NULL,
-    email         VARCHAR(150) NOT NULL,
-    mensaje       TEXT NOT NULL,
-    fecha         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    estado        ENUM('PENDIENTE','RESPONDIDA') NOT NULL DEFAULT 'PENDIENTE',
+    id_consulta       INT AUTO_INCREMENT,
+    nombre            VARCHAR(150) NOT NULL,
+    email             VARCHAR(150) NOT NULL,
+    mensaje           TEXT NOT NULL,
+    fecha             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado            ENUM('PENDIENTE','RESPONDIDA') NOT NULL DEFAULT 'PENDIENTE',
+    respuesta_admin   TEXT NULL,
+    fecha_respuesta   DATETIME NULL,
     PRIMARY KEY (id_consulta)
 ) ENGINE=InnoDB;
 
@@ -394,6 +481,8 @@ CREATE TABLE SOLICITUD_RETIRO (
     estado          ENUM('PENDIENTE','RETIRADO') NOT NULL DEFAULT 'PENDIENTE',
     id_vecino       INT NULL,
     id_cuadrilla    INT NULL,
+    respuesta_admin TEXT NULL,
+    fecha_respuesta DATETIME NULL,
     PRIMARY KEY (id_solicitud),
     CONSTRAINT fk_retiro_vecino FOREIGN KEY (id_vecino)
         REFERENCES VECINO(id_vecino) ON DELETE SET NULL ON UPDATE CASCADE,

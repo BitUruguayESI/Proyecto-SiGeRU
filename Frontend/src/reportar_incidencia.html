@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SiGeRU Reportar incidencia</title>
+<title>SiGeRU — Reportar incidencia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,6 +12,12 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+      integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+      integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="">
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+        integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
 </head>
 <body>
   <header class="header-vecino">
@@ -30,18 +36,33 @@
     <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
       <div class="form-container" style="max-width:520px;">
         <h1 class="brand-title" data-i18n="titulo">Reportar una incidencia</h1>
-        <p class="form-subtitle" data-i18n="subtitulo">No hace falta tener cuenta. Te avisamos las novedades a tu email.</p>
+        <p class="form-subtitle" data-i18n="subtitulo">No hace falta tener cuenta. La denuncia es anónima.</p>
 
         <form id="formIncidencia" class="form-vecino" novalidate>
           <div>
+            <label data-i18n="label_modo">¿Cómo querés identificar el contenedor?</label>
+            <div class="selector-modo-ubicacion">
+              <button type="button" class="modo-btn activo" data-modo="direccion" data-i18n="modo_direccion">Por dirección</button>
+              <button type="button" class="modo-btn" data-modo="mapa" data-i18n="modo_mapa">Elegir en el mapa</button>
+            </div>
+          </div>
+
+          <div id="bloqueDireccion">
             <label for="direccionContenedor" data-i18n="label_direccion">Dirección del contenedor</label>
             <input type="text" id="direccionContenedor" list="listaDirecciones" autocomplete="off"
                    placeholder="Empezá a escribir la dirección..." data-i18n-placeholder="placeholder_direccion">
             <datalist id="listaDirecciones"></datalist>
-            <input type="hidden" id="contenedor">
             <p id="avisoContenedor" class="aviso-mapa" hidden></p>
             <div id="mapaReporte" class="mapa-contenedores" hidden></div>
           </div>
+
+          <div id="bloqueMapa" hidden>
+            <p class="aviso-mapa" data-i18n="ayuda_mapa">Hacé clic en el contenedor correspondiente en el mapa.</p>
+            <div id="mapaSeleccion" class="mapa-contenedores mapa-grande"></div>
+            <p id="seleccionMapaInfo" class="aviso-mapa" hidden></p>
+          </div>
+
+          <input type="hidden" id="contenedor">
 
           <div>
             <label for="tipo" data-i18n="label_tipo">Tipo de incidencia</label>
@@ -58,11 +79,6 @@
             <textarea id="descripcion" rows="4" required></textarea>
           </div>
 
-          <div>
-            <label for="email" data-i18n="label_email">Tu email</label>
-            <input type="email" id="email" required>
-          </div>
-
           <button type="submit" class="btn-enviar-reporte" data-i18n="boton_enviar">Reportar incidencia</button>
           <div id="mensaje" class="mensaje"></div>
         </form>
@@ -76,7 +92,11 @@
       es: {
         nav_volver: 'Volver al inicio',
         titulo: 'Reportar una incidencia',
-        subtitulo: 'No hace falta tener cuenta. Te avisamos las novedades a tu email.',
+        subtitulo: 'No hace falta tener cuenta. La denuncia es anónima.',
+        label_modo: '¿Cómo querés identificar el contenedor?',
+        modo_direccion: 'Por dirección',
+        modo_mapa: 'Elegir en el mapa',
+        ayuda_mapa: 'Hacé clic en el contenedor correspondiente en el mapa.',
         label_direccion: 'Dirección del contenedor',
         placeholder_direccion: 'Empezá a escribir la dirección...',
         label_tipo: 'Tipo de incidencia',
@@ -85,13 +105,16 @@
         opcion_fuera_lugar: 'Contenedor fuera de lugar',
         opcion_otro: 'Otro',
         label_descripcion: 'Descripción',
-        label_email: 'Tu email',
         boton_enviar: 'Reportar incidencia',
       },
       en: {
         nav_volver: 'Back to home',
         titulo: 'Report an issue',
-        subtitulo: 'No account needed. We will notify you of updates by email.',
+        subtitulo: 'No account needed. The report is anonymous.',
+        label_modo: 'How do you want to identify the container?',
+        modo_direccion: 'By address',
+        modo_mapa: 'Pick it on the map',
+        ayuda_mapa: 'Click the matching container on the map.',
         label_direccion: 'Container address',
         placeholder_direccion: 'Start typing the address...',
         label_tipo: 'Issue type',
@@ -100,11 +123,11 @@
         opcion_fuera_lugar: 'Container out of place',
         opcion_otro: 'Other',
         label_descripcion: 'Description',
-        label_email: 'Your email',
         boton_enviar: 'Report issue',
       },
     });
   </script>
+  <script src="js/toast.js"></script>
   <script src="js/reportar_incidencia.js"></script>
 </body>
 </html>

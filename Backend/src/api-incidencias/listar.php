@@ -46,11 +46,9 @@ if (!empty($_GET['id_cuadrilla'])) {
 $sql = 'SELECT i.id_incidencia, i.descripcion, i.tipo_incidencia, i.estado,
                i.fecha_registro, i.fecha_resolucion,
                i.id_contenedor, c.direccion AS contenedor_direccion,
-               i.id_vecino, v.email AS vecino_email,
                i.id_cuadrilla, cu.nombre_cuadrilla
         FROM INCIDENCIA i
         LEFT JOIN CONTENEDOR c ON c.id_contenedor = i.id_contenedor
-        LEFT JOIN VECINO v ON v.id_vecino = i.id_vecino
         LEFT JOIN CUADRILLA cu ON cu.id_cuadrilla = i.id_cuadrilla';
 
 if ($condiciones) {
