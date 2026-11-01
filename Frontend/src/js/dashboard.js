@@ -29,7 +29,33 @@ async function pedir(url) {
     window.location.href = 'login.html';
     throw new Error('Sin sesión');
   }
-  return respuesta.json();
+  // Se lee como texto primero: si el backend por algún motivo devuelve
+  // algo que no es JSON (un warning/error de PHP pegado a la respuesta,
+  // un timeout, etc.), evitamos que JSON.parse tire un SyntaxError crudo
+  // y en cambio avisamos con claridad cuál endpoint fue y por qué.
+  const texto = await respuesta.text();
+  try {
+    return JSON.parse(texto);
+  } catch (error) {
+    console.error(`Respuesta no válida (no es JSON) desde ${url}:`, texto.slice(0, 300));
+    throw new Error(`El servidor no devolvió una respuesta válida (${url}).`);
+  }
+}
+
+// Pide un endpoint y, si falla, avisa con un toast y deja ese bloque del
+// Dashboard vacío en vez de romper los demás: antes, si UNO solo de los
+// 7 pedidos de abajo fallaba, el Promise.all cortaba todo y el Dashboard
+// quedaba completamente en blanco (sin tarjetas, sin gráfico, sin nada),
+// sin ninguna pista de cuál había sido el problema.
+async function pedirConAviso(url, etiqueta) {
+  try {
+    return await pedir(url);
+  } catch (error) {
+    if (error.message === 'Sin sesión') throw error; // ya redirige a login.html
+    console.error(`No se pudieron cargar los datos de "${etiqueta}":`, error);
+    mostrarToast(`No se pudieron cargar los datos de "${etiqueta}". Mirá la consola (F12) para más detalle.`, 'error');
+    return { exito: false };
+  }
 }
 
 function tarjeta(icono, etiqueta, numero, alerta = false) {
@@ -203,13 +229,13 @@ function actualizarHoraInfo() {
   const contenedorTarjetas = document.getElementById('tarjetasEstadisticas');
 
   const [usuarios, contenedores, camiones, cuadrillas, rutas, instalaciones, incidencias] = await Promise.all([
-    pedir(`${BASE_USUARIOS}/usuarios.php`),
-    pedir(`${BASE_GESTION}/contenedores.php`),
-    pedir(`${BASE_GESTION}/camiones.php`),
-    pedir(`${BASE_GESTION}/cuadrillas.php`),
-    pedir(`${BASE_GESTION}/rutas.php`),
-    pedir(`${BASE_GESTION}/instalaciones.php`),
-    pedir(`${BASE_INCIDENCIAS}/listar.php`),
+    pedirConAviso(`${BASE_USUARIOS}/usuarios.php`, 'Usuarios'),
+    pedirConAviso(`${BASE_GESTION}/contenedores.php`, 'Contenedores'),
+    pedirConAviso(`${BASE_GESTION}/camiones.php`, 'Camiones'),
+    pedirConAviso(`${BASE_GESTION}/cuadrillas.php`, 'Cuadrillas'),
+    pedirConAviso(`${BASE_GESTION}/rutas.php`, 'Rutas'),
+    pedirConAviso(`${BASE_GESTION}/instalaciones.php`, 'Instalaciones'),
+    pedirConAviso(`${BASE_INCIDENCIAS}/listar.php`, 'Incidencias'),
   ]);
 
   const listaUsuarios = usuarios.exito ? usuarios.usuarios : [];

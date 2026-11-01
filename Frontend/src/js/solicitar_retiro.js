@@ -3,8 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const divMensaje = document.getElementById('mensaje');
 
   function mostrarMensaje(texto, tipo) {
-    divMensaje.textContent = texto;
-    divMensaje.className = 'mensaje ' + tipo;
     mostrarToast(texto, tipo);
   }
 

@@ -3,9 +3,6 @@ const BASE_GES = '../api-gestion';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 
 function mostrarMensajeGlobal(texto, tipo) {
-  divMensajeGlobal.textContent = texto;
-  divMensajeGlobal.className = 'mensaje ' + tipo;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   mostrarToast(texto, tipo);
 }
 

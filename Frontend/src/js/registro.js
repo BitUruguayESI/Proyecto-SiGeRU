@@ -48,8 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   agregarFilaTelefono(); // arrancar con un campo de teléfono visible
 
   function mostrarMensaje(texto, tipo) {
-    divMensaje.textContent = texto;
-    divMensaje.className = 'mensaje ' + tipo;
     mostrarToast(texto, tipo);
   }
 

@@ -3,8 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const divMensaje = document.getElementById('mensaje');
 
   function mostrarMensaje(texto, tipo) {
-    divMensaje.textContent = texto;
-    divMensaje.className = 'mensaje ' + tipo;
     mostrarToast(texto, tipo);
   }
 
@@ -27,6 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
       mostrarMensaje(resultado.mensaje || 'Ocurrió un error.', resultado.exito ? 'exito' : 'error');
       if (resultado.exito) {
         form.reset();
+        // Lleva directo a la pantalla donde se ingresa el código de 6
+        // dígitos (con el email ya precargado), para no hacer buscar el
+        // link del email y volver a tipear el email a mano.
+        setTimeout(() => {
+          window.location.href = 'restablecer_contrasena.html?email=' + encodeURIComponent(datos.email);
+        }, 1500);
       }
     } catch (error) {
       mostrarMensaje('Error de conexión con el servidor.', 'error');

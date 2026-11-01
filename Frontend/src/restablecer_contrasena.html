@@ -15,7 +15,21 @@
     <h1 class="brand-title">SiGeRU</h1>
     <p class="form-subtitle">Elegir contraseña nueva</p>
 
+    <p style="font-size:13px; color:#a0aec0; margin-bottom:16px;">
+      Ingresá el código de 6 dígitos que te mandamos por email junto con tu contraseña nueva.
+    </p>
+
     <form id="formRestablecer" novalidate>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div class="input-group">
+        <label for="codigo">Código</label>
+        <input type="text" id="codigo" name="codigo" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+      </div>
+
       <div class="input-group">
         <label for="contrasena">Contraseña nueva</label>
         <input type="password" id="contrasena" name="contrasena" minlength="8" required>

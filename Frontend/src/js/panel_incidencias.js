@@ -5,9 +5,6 @@ let cuadrillasDisponibles = [];
 let puedeResolverIncidencias = false; // Administrador o Chofer (ver Comun/funciones.php::requerirPuedeResolverIncidencia)
 
 function mostrarMensajeGlobal(texto, tipo) {
-  divMensajeGlobal.textContent = texto;
-  divMensajeGlobal.className = 'mensaje ' + tipo;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   mostrarToast(texto, tipo);
 }
 
@@ -67,6 +64,7 @@ async function cargarIncidencias() {
 
   datos.incidencias.forEach(inc => {
     const fila = document.createElement('tr');
+    fila.dataset.id = inc.id_incidencia;
     fila.innerHTML = `
       <td>${inc.id_incidencia}</td>
       <td>${inc.contenedor_direccion || `Contenedor #${inc.id_contenedor} (sin dirección cargada)`}</td>
@@ -176,4 +174,18 @@ async function cargarInformeIncidencias() {
   const datosCuadrillas = await llamar(`${BASE_GES}/cuadrillas.php`);
   cuadrillasDisponibles = datosCuadrillas.exito ? datosCuadrillas.cuadrillas : [];
   await cargarIncidencias();
+
+  // Llegar directo desde la campana de notificaciones
+  // (panel_incidencias.html?resaltar=7): resalta la fila de esa
+  // incidencia, si sigue en la lista con el filtro actual.
+  const resaltar = new URLSearchParams(location.search).get('resaltar');
+  if (resaltar) {
+    const filaBuscada = Array.from(document.querySelectorAll('#tablaIncidencias tr'))
+      .find(fila => fila.dataset.id === resaltar);
+    if (filaBuscada) {
+      filaBuscada.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      filaBuscada.classList.add('fila-resaltada');
+      setTimeout(() => filaBuscada.classList.remove('fila-resaltada'), 3000);
+    }
+  }
 })();

@@ -10,7 +10,9 @@
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body class="landing-body">
-  <nav class="navbar">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <nav class="navbar" id="navbarPrincipal">
     <a class="logo-navbar" href="landing.html">
       <img src="img/logo.jpg" alt="SiGeRU">
       <span>SiGeRU</span>
@@ -24,81 +26,211 @@
     </div>
   </nav>
 
-  <div class="hero-container">
-    <div class="col-left">
-      <h1 class="main-title">SiGeRU </h1>
-      <h2 class="subtitle" data-i18n="hero_subtitulo">Sistema de Gestión de Residuos Urbanos</h2>
-      <p class="subtitle" data-i18n="hero_eslogan"> La ciudad mas limpia la cuidamos entre todos! </p>
-
-    </div>
-    <div class="col-right">
-      <div class="logo-wrapper">
-        <img class="svg-logo" src="img/logo.jpg" alt="SiGeRU">
+  <div class="hero-container" id="contenido">
+    <div class="hero-fila">
+      <div class="col-left">
+        <h1 class="main-title hero-anim hero-anim-1">
+          <img src="img/logo_sinfondo.png" alt="SiGeRU" class="hero-logo">
+        </h1>
+        <h2 class="subtitle hero-anim hero-anim-2" data-i18n="hero_subtitulo">Sistema de Gestión de Residuos Urbanos</h2>
+      </div>
+      <div class="col-right hero-anim hero-anim-2">
+        <div class="hero-imagen">
+          <img src="img/camion_hero.webp" alt="Camión recolector de residuos de SiGeRU" class="hero-foto" width="1100" height="734">
+        </div>
       </div>
     </div>
+
+    <p class="subtitle hero-eslogan-full hero-anim hero-anim-3" data-i18n="hero_eslogan">Reportá incidencias, solicitá un retiro especial o hacé una consulta, todo sin necesidad de crear una cuenta.</p>
+
+    <button type="button" class="scroll-cue" id="scrollCue">
+      <span data-i18n="scroll_cue_texto">Descubrí más</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </button>
   </div>
 
-    <div class="modulos-info">
-    <a class="card-info" href="reportar_incidencia.html">
+  <div class="modulos-info" id="servicios">
+    <a class="card-info reveal" href="reportar_incidencia.html">
+      <div class="card-foto">
+        <img src="img/card_incidencia.avif" alt="" loading="lazy" width="720" height="479">
+      </div>
       <h3 data-i18n="card1_titulo">Reportar una incidencia</h3>
       <p data-i18n="card1_desc">Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.</p>
+      <span class="card-accion"><span data-i18n="card1_accion">Reportar ahora</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
-    <a class="card-info" href="solicitar_retiro.html">
+    <a class="card-info reveal" href="solicitar_retiro.html">
+      <div class="card-foto">
+        <img src="img/card_retiro.webp" alt="" loading="lazy" width="720" height="405">
+      </div>
       <h3 data-i18n="card2_titulo">Solicitar retiro de residuos especiales</h3>
       <p data-i18n="card2_desc">Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor común.</p>
+      <span class="card-accion"><span data-i18n="card2_accion">Solicitar retiro</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
-    <a class="card-info" href="consulta.html">
+    <a class="card-info reveal" href="consulta.html">
+      <div class="card-foto">
+        <img src="img/card_consulta.webp" alt="" loading="lazy" width="720" height="479">
+      </div>
       <h3 data-i18n="card3_titulo">Realizar una consulta</h3>
       <p data-i18n="card3_desc">¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.</p>
+      <span class="card-accion"><span data-i18n="card3_accion">Enviar consulta</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
   </div>
 
-  <section class="faq-section">
-    <h2 class="faq-titulo" data-i18n="faq_titulo">Preguntas frecuentes</h2>
-    <div class="faq-caja">
-      <select id="faq_pregunta" class="faq-select">
-        <option value="">Elegí una pregunta...</option>
-      </select>
-    </div>
-    <div id="faq_respuesta" class="faq-caja faq-respuesta" hidden>
-      <p id="faq_respuesta_texto"></p>
+  <section class="como-funciona" id="como-funciona">
+    <div class="cf-grid">
+      <div class="cf-texto">
+        <h2 class="seccion-titulo reveal" data-i18n="cf_titulo">Tres pasos, sin necesidad de cuenta</h2>
+        <div class="cf-paso reveal">
+          <h3 data-i18n="cf_paso1_titulo">Elegí qué necesitás</h3>
+          <p data-i18n="cf_paso1_desc">Reportar una incidencia, solicitar un retiro especial o hacer una consulta. Directo desde esta página, sin cuenta ni contraseña.</p>
+        </div>
+        <div class="cf-paso reveal">
+          <h3 data-i18n="cf_paso2_titulo">El municipio lo recibe</h3>
+          <p data-i18n="cf_paso2_desc">El Administrador lo revisa y asigna una cuadrilla disponible según la zona y el tipo de solicitud.</p>
+        </div>
+        <div class="cf-paso reveal">
+          <h3 data-i18n="cf_paso3_titulo">Seguimiento por correo</h3>
+          <p data-i18n="cf_paso3_desc">Te avisamos por email cuando la cuadrilla pasa o tu reporte queda resuelto.</p>
+        </div>
+      </div>
+      <div class="cf-mapa reveal">
+        <img src="img/mapa-zonas.png" alt="Mapa de zonas de recolección de SiGeRU" class="cf-mapa-img" loading="lazy" width="554" height="444">
+        <p class="cf-mapa-nota" data-i18n="cf_mapa_nota">Montevideo está dividida en zonas de recolección (A a CH). Cada solicitud se asigna según la zona donde ocurre.</p>
+      </div>
     </div>
   </section>
 
-  <footer class="footer" data-i18n="footer_texto">
-    SiGeRU Sistema de Gestión de Residuos Urbanos
+  <section class="faq-section reveal">
+    <h2 class="faq-titulo" data-i18n="faq_titulo">Preguntas frecuentes</h2>
+    <ul class="faq-acordeon" id="faq_lista"></ul>
+  </section>
+
+  <section class="empresa" id="empresa">
+    <div class="empresa-contenido">
+      <div class="empresa-texto reveal">
+        <h2 class="seccion-titulo" data-i18n="emp_titulo">BitUruguay</h2>
+        <p class="empresa-parrafo" data-i18n="emp_parrafo">BitUruguay es la empresa uruguaya de desarrollo de software que creó SiGeRU, formada por estudiantes de la Escuela Superior de Informática (DGETP/UTU). Diseñamos software a medida para organismos públicos y empresas, priorizando la calidad técnica, la transparencia y el impacto social de cada proyecto.</p>
+        <p class="empresa-valores" data-i18n="emp_valores_texto">Compromiso social · Transparencia · Calidad técnica · Código abierto</p>
+        <p class="empresa-ubicacion" data-i18n="emp_ubicacion">Oficina en Ciudad Vieja, Montevideo</p>
+      </div>
+      <div class="empresa-logo-wrapper reveal">
+        <img src="img/logo_bituruguay.png" alt="BitUruguay" class="empresa-logo" loading="lazy" width="977" height="375">
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer-nuevo">
+    <div class="footer-columnas">
+      <div class="footer-col footer-marca">
+        <div class="footer-logo">
+          <img src="img/logo.jpg" alt="SiGeRU" loading="lazy">
+          <span>SiGeRU</span>
+        </div>
+        <p data-i18n="footer_tagline">Sistema de Gestión de Residuos Urbanos. La ciudad más limpia la cuidamos entre todos.</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_enlaces_titulo">Enlaces</h4>
+        <a href="landing.html" data-i18n="footer_enlace_inicio">Inicio</a>
+        <a href="reportar_incidencia.html" data-i18n="card1_titulo">Reportar una incidencia</a>
+        <a href="solicitar_retiro.html" data-i18n="card2_titulo">Solicitar retiro de residuos especiales</a>
+        <a href="consulta.html" data-i18n="card3_titulo">Realizar una consulta</a>
+        <a href="login.html" data-i18n="nav_login">Iniciar sesión</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_contacto_titulo">Contacto</h4>
+        <span data-i18n="footer_contacto_nota">BitUruguay, empresa de desarrollo de software. Oficina en Ciudad Vieja, Montevideo.</span>
+        <a href="#empresa" data-i18n="footer_contacto_link">Conocé más sobre la empresa</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer_academico_titulo">Proyecto académico</h4>
+        <p data-i18n="footer_academico_texto">ESI / DGETP-UTU — Pasaje de Grado, edición 2026.</p>
+      </div>
+    </div>
+    <div class="footer-legal" data-i18n="footer_texto">
+      SiGeRU — un desarrollo de BitUruguay
+    </div>
   </footer>
 
   <script src="js/idioma.js"></script>
   <script>
+    document.documentElement.classList.add('js-ready');
+
     const TRADUCCIONES = {
       es: {
         nav_login: 'Iniciar sesión',
         hero_subtitulo: 'Sistema de Gestión de Residuos Urbanos',
-        hero_eslogan: '¡La ciudad más limpia la cuidamos entre todos!',
+        hero_eslogan: 'Reportá incidencias, solicitá un retiro especial o hacé una consulta, todo sin necesidad de crear una cuenta.',
+        scroll_cue_texto: 'Descubrí más',
         card1_titulo: 'Reportar una incidencia',
         card1_desc: 'Contenedor desbordado, dañado o fuera de servicio. No necesitás registrarte.',
         card2_titulo: 'Solicitar retiro de residuos especiales',
         card2_desc: 'Poda, residuos electrónicos, escombros, muebles y otros residuos que no van al contenedor común.',
         card3_titulo: 'Realizar una consulta',
         card3_desc: '¿Tenés una duda o un comentario para el municipio? Escribinos, no hace falta tener cuenta.',
+        card1_accion: 'Reportar ahora',
+        card2_accion: 'Solicitar retiro',
+        card3_accion: 'Enviar consulta',
+        cf_titulo: 'Tres pasos, sin necesidad de cuenta',
+        cf_paso1_titulo: 'Elegí qué necesitás',
+        cf_paso1_desc: 'Reportar una incidencia, solicitar un retiro especial o hacer una consulta. Directo desde esta página, sin cuenta ni contraseña.',
+        cf_paso2_titulo: 'El municipio lo recibe',
+        cf_paso2_desc: 'El Administrador lo revisa y asigna una cuadrilla disponible según la zona y el tipo de solicitud.',
+        cf_paso3_titulo: 'Seguimiento por correo',
+        cf_paso3_desc: 'Te avisamos por email cuando la cuadrilla pasa o tu reporte queda resuelto.',
+        cf_mapa_nota: 'Montevideo está dividida en zonas de recolección (A a CH). Cada solicitud se asigna según la zona donde ocurre.',
+        emp_titulo: 'BitUruguay',
+        emp_parrafo: 'BitUruguay es la empresa uruguaya de desarrollo de software que creó SiGeRU, formada por estudiantes de la Escuela Superior de Informática (DGETP/UTU). Diseñamos software a medida para organismos públicos y empresas, priorizando la calidad técnica, la transparencia y el impacto social de cada proyecto.',
+        emp_valores_texto: 'Compromiso social · Transparencia · Calidad técnica · Código abierto',
+        emp_ubicacion: 'Oficina en Ciudad Vieja, Montevideo',
         faq_titulo: 'Preguntas frecuentes',
         faq_placeholder: 'Elegí una pregunta...',
-        footer_texto: 'SiGeRU Sistema de Gestión de Residuos Urbanos',
+        footer_tagline: 'Sistema de Gestión de Residuos Urbanos. La ciudad más limpia la cuidamos entre todos.',
+        footer_enlaces_titulo: 'Enlaces',
+        footer_enlace_inicio: 'Inicio',
+        footer_contacto_titulo: 'Contacto',
+        footer_contacto_nota: 'BitUruguay, empresa de desarrollo de software. Oficina en Ciudad Vieja, Montevideo.',
+        footer_contacto_link: 'Conocé más sobre la empresa',
+        footer_academico_titulo: 'Proyecto académico',
+        footer_academico_texto: 'ESI / DGETP-UTU — Pasaje de Grado, edición 2026.',
+        footer_texto: 'SiGeRU — un desarrollo de BitUruguay',
       },
       en: {
         nav_login: 'Log in',
         hero_subtitulo: 'Urban Waste Management System',
-        hero_eslogan: 'The cleanest city is one we take care of together!',
+        hero_eslogan: 'Report an issue, request a special pickup, or send an inquiry — all without creating an account.',
+        scroll_cue_texto: 'Discover more',
         card1_titulo: 'Report an issue',
         card1_desc: 'Overflowing, damaged, or out-of-service container. No need to register.',
         card2_titulo: 'Request special waste pickup',
         card2_desc: 'Pruning waste, electronics, rubble, furniture, and other items that do not go in the regular container.',
         card3_titulo: 'Send an inquiry',
         card3_desc: 'Have a question or comment for the municipality? Write to us, no account needed.',
+        card1_accion: 'Report now',
+        card2_accion: 'Request pickup',
+        card3_accion: 'Send inquiry',
+        cf_titulo: 'Three steps, no account needed',
+        cf_paso1_titulo: 'Pick what you need',
+        cf_paso1_desc: 'Report an issue, request a special pickup, or send an inquiry. Right from this page, no account or password.',
+        cf_paso2_titulo: 'The municipality receives it',
+        cf_paso2_desc: 'The Administrator reviews it and assigns an available crew based on the area and request type.',
+        cf_paso3_titulo: 'Follow-up by email',
+        cf_paso3_desc: 'We let you know by email when the crew stops by or your report is resolved.',
+        cf_mapa_nota: 'Montevideo is divided into collection zones (A to CH). Each request is assigned based on the zone where it happens.',
+        emp_titulo: 'BitUruguay',
+        emp_parrafo: 'BitUruguay is the Uruguayan software development company behind SiGeRU, formed by students from the Escuela Superior de Informática (DGETP/UTU). We build custom software for public agencies and businesses, focused on technical quality, transparency, and social impact.',
+        emp_valores_texto: 'Social commitment · Transparency · Technical quality · Open source',
+        emp_ubicacion: 'Office in Ciudad Vieja, Montevideo',
         faq_titulo: 'Frequently asked questions',
         faq_placeholder: 'Choose a question...',
-        footer_texto: 'SiGeRU Urban Waste Management System',
+        footer_tagline: 'Urban Waste Management System. The cleanest city is one we take care of together.',
+        footer_enlaces_titulo: 'Links',
+        footer_enlace_inicio: 'Home',
+        footer_contacto_titulo: 'Contact',
+        footer_contacto_nota: 'BitUruguay, a software development company. Office in Ciudad Vieja, Montevideo.',
+        footer_contacto_link: 'Learn more about the company',
+        footer_academico_titulo: 'Academic project',
+        footer_academico_texto: 'ESI / DGETP-UTU — Capstone Project, 2026 edition.',
+        footer_texto: 'SiGeRU — built by BitUruguay',
       },
     };
 
@@ -165,34 +297,102 @@
       },
     ];
 
-    const selectFaq = document.getElementById('faq_pregunta');
-    const divRespuesta = document.getElementById('faq_respuesta');
-    const textoRespuesta = document.getElementById('faq_respuesta_texto');
+    const listaFaq = document.getElementById('faq_lista');
+    let indiceAbierto = -1;
 
-    let idiomaActual = localStorage.getItem('sigeru_idioma') || 'es';
-
-    function poblarFaq(idioma) {
-      selectFaq.innerHTML = '';
-      selectFaq.appendChild(new Option(TRADUCCIONES[idioma].faq_placeholder, ''));
-      PREGUNTAS_FRECUENTES.forEach((item, indice) => {
-        selectFaq.appendChild(new Option(item[idioma].pregunta, String(indice)));
+    function alternarPregunta(indice) {
+      indiceAbierto = indiceAbierto === indice ? -1 : indice;
+      listaFaq.querySelectorAll('.faq-item').forEach((li, i) => {
+        const boton = li.querySelector('.faq-pregunta');
+        const panel = li.querySelector('.faq-panel');
+        const abierta = i === indiceAbierto;
+        boton.setAttribute('aria-expanded', String(abierta));
+        panel.classList.toggle('abierto', abierta);
       });
-      divRespuesta.hidden = true;
     }
 
-    selectFaq.addEventListener('change', () => {
-      if (selectFaq.value === '') {
-        divRespuesta.hidden = true;
-        return;
-      }
-      textoRespuesta.textContent = PREGUNTAS_FRECUENTES[selectFaq.value][idiomaActual].respuesta;
-      divRespuesta.hidden = false;
-    });
+    function poblarFaq(idioma) {
+      listaFaq.innerHTML = '';
+      indiceAbierto = -1;
+      PREGUNTAS_FRECUENTES.forEach((item, indice) => {
+        const li = document.createElement('li');
+        li.className = 'faq-item';
+
+        const h3 = document.createElement('h3');
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'faq-pregunta';
+        boton.setAttribute('aria-expanded', 'false');
+        boton.setAttribute('aria-controls', 'faq-panel-' + indice);
+        boton.id = 'faq-trigger-' + indice;
+
+        const textoPregunta = document.createElement('span');
+        textoPregunta.textContent = item[idioma].pregunta;
+
+        const toggle = document.createElement('span');
+        toggle.className = 'faq-toggle';
+        toggle.setAttribute('aria-hidden', 'true');
+
+        boton.appendChild(textoPregunta);
+        boton.appendChild(toggle);
+        boton.addEventListener('click', () => alternarPregunta(indice));
+        h3.appendChild(boton);
+
+        const panel = document.createElement('div');
+        panel.className = 'faq-panel';
+        panel.id = 'faq-panel-' + indice;
+        panel.setAttribute('role', 'region');
+        panel.setAttribute('aria-labelledby', 'faq-trigger-' + indice);
+
+        const panelInner = document.createElement('div');
+        panelInner.className = 'faq-panel-inner';
+        const parrafo = document.createElement('p');
+        parrafo.textContent = item[idioma].respuesta;
+        panelInner.appendChild(parrafo);
+        panel.appendChild(panelInner);
+
+        li.appendChild(h3);
+        li.appendChild(panel);
+        listaFaq.appendChild(li);
+      });
+    }
 
     inicializarIdioma(TRADUCCIONES, (idioma) => {
-      idiomaActual = idioma;
       poblarFaq(idioma);
     });
+
+    // --- Header fijo: toma fondo sólido al bajar ---
+    const navbarPrincipal = document.getElementById('navbarPrincipal');
+    function actualizarNavbar() {
+      navbarPrincipal.classList.toggle('navbar-scrolled', window.scrollY > 80);
+    }
+    window.addEventListener('scroll', actualizarNavbar, { passive: true });
+    actualizarNavbar();
+
+    // --- Botón "Descubrí más" del hero ---
+    const botonScrollCue = document.getElementById('scrollCue');
+    if (botonScrollCue) {
+      botonScrollCue.addEventListener('click', () => {
+        const destino = document.getElementById('servicios');
+        if (destino) destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    // --- Animación de aparición al hacer scroll ---
+    const elementosReveal = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && elementosReveal.length) {
+      const observador = new IntersectionObserver((entradas) => {
+        entradas.forEach((entrada) => {
+          if (entrada.isIntersecting) {
+            entrada.target.classList.add('visible');
+            observador.unobserve(entrada.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      elementosReveal.forEach((elemento) => observador.observe(elemento));
+    } else {
+      elementosReveal.forEach((elemento) => elemento.classList.add('visible'));
+    }
   </script>
 </body>
 </html>

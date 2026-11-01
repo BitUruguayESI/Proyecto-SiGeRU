@@ -2,9 +2,6 @@ const BASE = '../api-gestion';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 
 function mostrarMensajeGlobal(texto, tipo) {
-  divMensajeGlobal.textContent = texto;
-  divMensajeGlobal.className = 'mensaje ' + tipo;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   mostrarToast(texto, tipo);
 }
 
@@ -65,6 +62,7 @@ async function cargarUsuarios() {
 
   datos.usuarios.forEach(u => {
     const fila = document.createElement('tr');
+    fila.dataset.ci = u.ci;
     fila.innerHTML = `
       <td>${u.ci}</td><td>${u.nombre_completo}</td><td>${u.email}</td>
       <td>${ETIQUETAS_ROL[u.rol] || u.rol}</td>
@@ -208,10 +206,32 @@ function iniciarMapaContenedores() {
   // pintar un circleMarker suelto por cada uno (RF13 + separacion por
   // municipio): sin esto el mapa queda inusable con tantos puntos.
   capaMarcadoresContenedores = (typeof L.markerClusterGroup === 'function')
-    ? L.markerClusterGroup({ spiderfyOnMaxZoom: true, showCoverageOnHover: false, maxClusterRadius: 50 })
+    ? L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        maxClusterRadius: 50,
+        iconCreateFunction: crearIconoCluster,
+      })
     : L.layerGroup();
   capaMarcadoresContenedores.addTo(mapaContenedores);
   capaMarcadoresIncidencias = L.layerGroup().addTo(mapaContenedores);
+}
+
+// Mismo criterio de tamaño que el ícono de cluster por defecto de
+// Leaflet.markercluster (ver marker-cluster-small/medium/large en
+// MarkerCluster.Default.css), pero sumándole marker-cluster-alerta
+// cuando dentro del cluster hay al menos un contenedor que necesita
+// atención — así el parpadeo de alerta se ve incluso agrupado, sin
+// tener que hacer zoom hasta separar los puntos uno por uno.
+function crearIconoCluster(cluster) {
+  const cantidad = cluster.getChildCount();
+  const tamano = cantidad < 10 ? 'small' : cantidad < 100 ? 'medium' : 'large';
+  const tieneAlerta = cluster.getAllChildMarkers().some(m => m.options.necesitaAlerta);
+  return L.divIcon({
+    html: `<div><span>${cantidad}</span></div>`,
+    className: `marker-cluster marker-cluster-${tamano}${tieneAlerta ? ' marker-cluster-alerta' : ''}`,
+    iconSize: L.point(40, 40),
+  });
 }
 
 // Incidencias sobre el mismo mapa (RF13 + registro/seguimiento de
@@ -226,13 +246,19 @@ function iniciarMapaContenedores() {
 // cargarContenedores() para la tabla y para pintar los contenedores.
 const ETIQUETAS_ESTADO_INCIDENCIA_MAPA = { PENDIENTE: 'Pendiente', EN_PROCESO: 'En proceso' };
 
+// IDs de contenedor con una incidencia PENDIENTE/EN_PROCESO asociada (lo
+// llena actualizarMapaIncidencias): lo consulta actualizarMapaContenedores
+// para decidir qué puntos parpadean, además de DESBORDADO/FUERA_DE_SERVICIO.
+let idsConIncidenciaPendiente = new Set();
+
 function actualizarMapaIncidencias(incidencias, contenedoresPorId) {
   if (!mapaContenedores || !capaMarcadoresIncidencias) return;
   capaMarcadoresIncidencias.clearLayers();
 
-  incidencias
-    .filter(i => i.estado !== 'RESUELTA')
-    .forEach(i => {
+  const pendientes = incidencias.filter(i => i.estado !== 'RESUELTA');
+  idsConIncidenciaPendiente = new Set(pendientes.map(i => i.id_contenedor));
+
+  pendientes.forEach(i => {
       const contenedor = contenedoresPorId[i.id_contenedor];
       if (!contenedor || !contenedor.coordenadas) return;
       const [lat, lon] = contenedor.coordenadas.split(',').map(Number);
@@ -255,6 +281,11 @@ function actualizarMapaIncidencias(incidencias, contenedoresPorId) {
         `)
         .addTo(capaMarcadoresIncidencias);
     });
+
+  // Los contenedores ya se habían pintado sin saber todavía cuáles tenían
+  // incidencia pendiente (ese dato llega en un pedido aparte, después) —
+  // se vuelven a pintar para que el parpadeo de alerta quede al día.
+  actualizarMapaContenedores(contenedoresFiltrados());
 }
 
 async function cargarIncidenciasParaMapa(contenedoresPorId) {
@@ -276,6 +307,7 @@ function actualizarMapaContenedores(contenedores) {
   }
 
   capaMarcadoresContenedores.clearLayers();
+  marcadoresPorId = {};
   const puntos = [];
   const marcadores = [];
 
@@ -295,13 +327,23 @@ function actualizarMapaContenedores(contenedores) {
     const colorMunicipio = COLOR_MUNICIPIO[c.municipio] || COLOR_SIN_MUNICIPIO;
     const colorEstado = COLOR_ESTADO_CONTENEDOR[c.estado] || '#888';
 
+    // Parpadea (sin tocar el relleno por municipio ni el borde por
+    // estado) cuando necesita atención: desbordado, fuera de servicio, o
+    // con una incidencia pendiente/en proceso asociada.
+    const necesitaAlerta = c.estado === 'DESBORDADO'
+      || c.estado === 'FUERA_DE_SERVICIO'
+      || idsConIncidenciaPendiente.has(c.id_contenedor);
+
     const marcador = L.circleMarker([lat, lon], {
       radius: 8,
       color: colorEstado,
       weight: c.estado === 'OPERATIVO' ? 1.5 : 3,
       fillColor: colorMunicipio,
       fillOpacity: 0.9,
-    }).bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Municipio: ${NOMBRES_MUNICIPIO[c.municipio] || 'sin municipio'}<br>Estado: ${c.estado}<br>Nivel de llenado: ${nivelMostrado}%`);
+      className: necesitaAlerta ? 'marcador-alerta' : '',
+      necesitaAlerta,
+    }).bindPopup(`<strong>${c.direccion || 'Contenedor #' + c.id_contenedor}</strong><br>Municipio: ${NOMBRES_MUNICIPIO[c.municipio] || 'sin municipio'}<br>Estado: ${c.estado}<br>Nivel de llenado: ${nivelMostrado}%${necesitaAlerta ? '<br><strong style="color:#C0392B;">⚠ Necesita atención</strong>' : ''}`);
+    marcadoresPorId[c.id_contenedor] = marcador;
     marcadores.push(marcador);
     puntos.push([lat, lon]);
   });
@@ -337,6 +379,7 @@ function actualizarMapaContenedores(contenedores) {
 
 let contTodos = [];
 let contPorId = {};
+let marcadoresPorId = {};
 let contPaginaActual = 1;
 const CONT_POR_PAGINA = 5;
 
@@ -424,6 +467,11 @@ async function cargarContenedores() {
   selectZona.value = [...zonas, '__SIN_RUTA__'].includes(zonaSeleccionada) ? zonaSeleccionada : '';
 
   renderizarTablaContenedores();
+
+  // No se espera (los contenedores ya se pintaron arriba): cuando llegue,
+  // actualiza qué puntos tienen incidencia pendiente y los vuelve a
+  // pintar con el parpadeo de alerta al día (ver actualizarMapaIncidencias).
+  cargarIncidenciasParaMapa(contPorId);
 }
 
 // Aplica los 4 filtros (texto, municipio, zona/circuito y estado) sobre
@@ -1406,6 +1454,7 @@ async function cargarRetiros() {
 
   datos.solicitudes.forEach(s => {
     const fila = document.createElement('tr');
+    fila.dataset.id = s.id_solicitud;
     fila.innerHTML = `
       <td>${s.id_solicitud}</td>
       <td>${s.tipo_residuo}</td>
@@ -1530,6 +1579,7 @@ async function cargarConsultas() {
 
   datos.consultas.forEach(c => {
     const fila = document.createElement('tr');
+    fila.dataset.id = c.id_consulta;
     fila.innerHTML = `
       <td>${c.id_consulta}</td>
       <td>${c.nombre}</td>
@@ -1766,4 +1816,50 @@ document.getElementById('aud_limpiar').addEventListener('click', () => {
   await cargarReporteReciclaje();
   await cargarPredicciones();
   await cargarAuditoria();
+
+  aplicarResaltarDesdeUrl();
 })();
+
+// ---------------------------------------------------------------
+// Llegar directo a un elemento desde la campana de notificaciones
+// (ej. panel_gestion.html?resaltar=12#contenedores): resalta la fila o
+// el contenedor en el mapa, y si corresponde abre directo el formulario
+// de respuesta/edición correspondiente.
+// ---------------------------------------------------------------
+function aplicarResaltarDesdeUrl() {
+  const resaltar = new URLSearchParams(location.search).get('resaltar');
+  if (!resaltar) return;
+
+  const seccion = location.hash.slice(1);
+
+  if (seccion === 'contenedores') {
+    const marcador = marcadoresPorId[resaltar];
+    if (marcador && mapaContenedores) {
+      mapaContenedores.setView(marcador.getLatLng(), 17);
+      marcador.openPopup();
+    }
+    return;
+  }
+
+  const idTablaPorSeccion = { retiros: 'tablaRetiros', consultas: 'tablaConsultas', usuarios: 'tablaUsuarios' };
+  const idTabla = idTablaPorSeccion[seccion];
+  if (!idTabla) return;
+
+  const filaBuscada = Array.from(document.querySelectorAll(`#${idTabla} tr`))
+    .find(fila => fila.dataset.id === resaltar || fila.dataset.ci === resaltar);
+  if (!filaBuscada) return;
+
+  filaBuscada.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  filaBuscada.classList.add('fila-resaltada');
+  setTimeout(() => filaBuscada.classList.remove('fila-resaltada'), 3000);
+
+  if (seccion === 'usuarios') {
+    abrirEdicionUsuario(resaltar);
+    return;
+  }
+
+  // Retiros/consultas: si todavía no tiene respuesta, abre directo el
+  // formulario de respuesta (así no hay que buscar el botón a mano).
+  const botonResponder = filaBuscada.querySelector('.btn-responder-retiro, .btn-responder-consulta');
+  if (botonResponder) botonResponder.click();
+}

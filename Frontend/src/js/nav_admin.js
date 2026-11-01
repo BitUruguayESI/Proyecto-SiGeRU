@@ -36,6 +36,32 @@ const ETIQUETAS_TIPO_NOTIFICACION = {
 };
 const TIPOS_URGENTES_NOTIFICACION = ['CONTENEDOR_DESBORDADO', 'CARNET_POR_VENCER', 'LICENCIA_POR_VENCER'];
 
+// A dónde navegar al hacer clic en una notificación: usa la
+// "referencia" que guardó Comun/notificaciones.php (el id de la fila
+// correspondiente, o la cédula para carnet/licencia) para llevar
+// directo a esa incidencia/consulta/retiro/usuario, en vez de solo
+// abrir la sección en general. Sin referencia (notificaciones viejas,
+// de antes de esta función) no hay a dónde llevar: el clic no navega.
+function destinoNotificacion(n) {
+  if (!n.referencia) return null;
+  const id = encodeURIComponent(n.referencia);
+  switch (n.tipo) {
+    case 'CONTENEDOR_DESBORDADO':
+      return `panel_gestion.html?resaltar=${id}#contenedores`;
+    case 'INCIDENCIA_PENDIENTE':
+      return `panel_incidencias.html?resaltar=${id}`;
+    case 'RETIRO_SIN_RESPONDER':
+      return `panel_gestion.html?resaltar=${id}#retiros`;
+    case 'CONSULTA_SIN_RESPONDER':
+      return `panel_gestion.html?resaltar=${id}#consultas`;
+    case 'CARNET_POR_VENCER':
+    case 'LICENCIA_POR_VENCER':
+      return `panel_gestion.html?resaltar=${id}#usuarios`;
+    default:
+      return null;
+  }
+}
+
 function crearCampanaNotificaciones() {
   const contenedor = document.createElement('div');
   contenedor.className = 'campana-notificaciones';
@@ -88,6 +114,31 @@ async function cargarNotificacionesNav(campana) {
         <div class="item-notificacion-fecha">${n.fecha_hora}</div>
         ${!n.leida ? `<button class="chico secundario btn-marcar-leida-notificacion" data-id="${n.id_notificacion}">Marcar como leída</button>` : ''}
       `;
+
+      // Clic en la notificación (fuera del botón "Marcar como leída"):
+      // lleva directo a responder la consulta, resolver la incidencia o
+      // coordinar el retiro/ver el contenedor/usuario correspondiente.
+      const destino = destinoNotificacion(n);
+      if (destino) {
+        item.classList.add('clicable');
+        item.title = 'Ir a la notificación';
+        item.addEventListener('click', async (evento) => {
+          if (evento.target.closest('.btn-marcar-leida-notificacion')) return;
+          if (!n.leida) {
+            try {
+              await fetch(`${BASE_NOTIFICACIONES}/notificaciones.php`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_notificacion: Number(n.id_notificacion) }),
+              });
+            } catch (error) {
+              // Best-effort: si falla, igual navegamos.
+            }
+          }
+          window.location.href = destino;
+        });
+      }
+
       lista.appendChild(item);
     });
 
