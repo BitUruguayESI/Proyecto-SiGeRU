@@ -20,6 +20,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    ports:
+      - "3306:3306"   # permite correr tests/run-tests.sh desde la PC
+                       # (fuera de Docker) contra esta base
 
   backend:
     build: ./Backend

@@ -8,6 +8,10 @@ FROM php:8.2-apache
 RUN docker-php-ext-install pdo pdo_mysql \
     && a2enmod rewrite
 
+# Evita que warnings/errores de PHP se impriman como HTML dentro de las
+# respuestas JSON de la API (ver errores-produccion.ini para el detalle).
+COPY errores-produccion.ini /usr/local/etc/php/conf.d/zz-errores-produccion.ini
+
 # El build context de este Dockerfile es la carpeta Backend/ (ver
 # docker-compose.yml: "build: ./Backend"), así que "src/" acá es
 # Backend/src/.

@@ -1,7 +1,7 @@
 <?php
 /**
  * api-incidencias/registrar.php
- * RF18 — Registrar incidencia. Público (no requiere cuenta) y anónimo:
+ * RF15 — Registrar incidencia. Público (no requiere cuenta) y anónimo:
  * no se pide ni se guarda ningún dato de contacto del vecino
  * (id_vecino queda NULL). Como no hay email, el sistema ya no puede
  * detectar si el mismo vecino ya había reportado el mismo problema.
