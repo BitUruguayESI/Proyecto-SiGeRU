@@ -2083,6 +2083,18 @@ header.banner .logo-banner img {
   display: block;
   transition: transform .4s ease;
 }
+.card-foto-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+.card-foto-icono svg {
+  width: 100%;
+  height: 100%;
+}
 .modulos-info .card-info:hover .card-foto img {
   transform: scale(1.04);
 }
@@ -2142,6 +2154,9 @@ header.banner .logo-banner img {
   font-size: 30px;
   font-weight: 800;
   margin: 0 0 40px;
+}
+.educacion-section .seccion-titulo {
+  text-align: center;
 }
 .cf-paso {
   margin-bottom: 28px;
@@ -2421,4 +2436,57 @@ a.logo-navbar:focus-visible {
   outline: 2px solid #4facfe;
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ===== Botones y texto grandes para uso en campo (Operario/Chofer) ===== */
+/* Pensado para pantallas de celular usadas al sol, con guantes o poca
+   visibilidad: botones mas grandes, mas separados y texto mas legible.
+   Solo afecta "Mi dia" y "Recoleccion" (pantallas de Recolector/Chofer). */
+body[data-pagina="mi-dia"] button.chico,
+body[data-pagina="mi-dia"] a.chico,
+body[data-pagina="recoleccion"] button.chico,
+body[data-pagina="recoleccion"] a.chico {
+  padding: 12px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  min-height: 44px;
+}
+
+body[data-pagina="mi-dia"] button.principal,
+body[data-pagina="mi-dia"] button.secundario,
+body[data-pagina="recoleccion"] button.principal,
+body[data-pagina="recoleccion"] button.secundario {
+  padding: 14px 22px;
+  font-size: 17px;
+  min-height: 48px;
+}
+
+body[data-pagina="mi-dia"] table.tabla-datos,
+body[data-pagina="recoleccion"] table.tabla-datos {
+  font-size: 15px;
+}
+
+body[data-pagina="mi-dia"] table.tabla-datos th,
+body[data-pagina="mi-dia"] table.tabla-datos td,
+body[data-pagina="recoleccion"] table.tabla-datos th,
+body[data-pagina="recoleccion"] table.tabla-datos td {
+  padding: 12px 10px;
+}
+
+body[data-pagina="mi-dia"] h2,
+body[data-pagina="mi-dia"] h3,
+body[data-pagina="recoleccion"] h2,
+body[data-pagina="recoleccion"] h3 {
+  font-size: 1.25em;
+}
+
+/* Boton "Deshacer asignacion" de incidencias: mismo tamaño que .chico,
+   pero con un tono distinto para no confundirlo con "Marcar resuelta". */
+button.btn-deshacer-asignacion {
+  background: transparent;
+  border: 1px solid #e53e3e;
+  color: #e53e3e;
+}
+button.btn-deshacer-asignacion:hover {
+  background: rgba(229, 62, 62, 0.12);
 }

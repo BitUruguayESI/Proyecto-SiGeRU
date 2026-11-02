@@ -3,6 +3,8 @@ const BASE_GES = '../api-gestion';
 const divMensajeGlobal = document.getElementById('mensajeGlobal');
 let cuadrillasDisponibles = [];
 let puedeResolverIncidencias = false; // Administrador o Chofer (ver Comun/funciones.php::requerirPuedeResolverIncidencia)
+const asignacionesRecientes = new Map(); // id_incidencia -> timestamp (ms) de cuando se asignó, para el botón "Deshacer"
+const VENTANA_DESHACER_MS = 3 * 60 * 1000; // 3 minutos
 
 function mostrarMensajeGlobal(texto, tipo) {
   mostrarToast(texto, tipo);
@@ -36,10 +38,16 @@ function accionesPorEstado(inc) {
     case 'PENDIENTE':
       return `${selectCuadrillas(inc.id_incidencia)}
               <button class="chico btn-asignar" data-id="${inc.id_incidencia}">Asignar (pasa a En proceso)</button>`;
-    case 'EN_PROCESO':
-      return puedeResolverIncidencias
+    case 'EN_PROCESO': {
+      const asignadaHace = asignacionesRecientes.get(inc.id_incidencia);
+      const puedeDeshacer = asignadaHace && (Date.now() - asignadaHace) < VENTANA_DESHACER_MS;
+      const botonDeshacer = puedeDeshacer
+        ? ` <button class="chico secundario btn-deshacer-asignacion" data-id="${inc.id_incidencia}">Deshacer asignación</button>`
+        : '';
+      return (puedeResolverIncidencias
         ? `<button class="chico btn-resolver" data-id="${inc.id_incidencia}">Marcar resuelta</button>`
-        : 'En proceso (la resuelve el Administrador o el Chofer)';
+        : 'En proceso (la resuelve el Administrador o el Chofer)') + botonDeshacer;
+    }
     case 'RESUELTA':
       return `Resuelta el ${inc.fecha_resolucion || '—'}`;
     default:
@@ -90,6 +98,9 @@ async function cargarIncidencias() {
         method: 'PUT',
         body: JSON.stringify({ id_incidencia: Number(boton.dataset.id), id_cuadrilla: Number(select.value) }),
       });
+      if (resultado.exito) {
+        asignacionesRecientes.set(Number(boton.dataset.id), Date.now());
+      }
       mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
       cargarIncidencias();
     });
@@ -108,6 +119,21 @@ async function cargarIncidencias() {
     });
   };
   conectarCambioEstado('.btn-resolver', 'RESUELTA');
+
+  cuerpo.querySelectorAll('.btn-deshacer-asignacion').forEach(boton => {
+    boton.addEventListener('click', async () => {
+      const id = Number(boton.dataset.id);
+      const resultado = await llamar(`${BASE_INC}/deshacer_asignacion.php`, {
+        method: 'PUT',
+        body: JSON.stringify({ id_incidencia: id }),
+      });
+      if (resultado.exito) {
+        asignacionesRecientes.delete(id);
+      }
+      mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
+      cargarIncidencias();
+    });
+  });
 }
 
 document.getElementById('filtroEstado').addEventListener('change', cargarIncidencias);

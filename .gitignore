@@ -143,3 +143,8 @@ package-lock.json
 # Contiene tu contraseña de aplicación de Gmail en texto plano — nunca
 # se sube al repositorio.
 /iniciar_servidor.bat
+# ===== HERRAMIENTAS Y SALIDAS DE TESTING (locales, no van al repo) =====
+composer.phar
+.phpunit.result.cache
+resultados_tests.txt
+resultados_tests_utf8.txt
