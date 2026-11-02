@@ -12,6 +12,16 @@
  * exit()/header() directamente — no hay forma de instanciarlos ni de
  * llamarlos como funciones aisladas. Es el enfoque estándar para
  * probar una API HTTP "mediante código".
+ *
+ * Autologueo para registro.php: desde que esa ruta exige sesión de
+ * Administrador (RN-22), si un test llama a registro.php con un
+ * cliente que todavía no inició sesión, este cliente se loguea
+ * primero, en silencio, con el Administrador "semilla" que crea
+ * bootstrap.php. Así ningún archivo de test necesita saber de la
+ * semilla ni loguearse a mano solo para poder registrar usuarios de
+ * prueba; si el test después hace su propio login.php en este mismo
+ * cliente, esa sesión de Administrador semilla se reemplaza por la
+ * del usuario real que el test está probando, como siempre.
  */
 
 declare(strict_types=1);
@@ -20,6 +30,7 @@ final class ApiClient
 {
     private string $baseUrl;
     private string $cookieJar;
+    private bool $autenticado = false;
 
     public function __construct(?string $baseUrl = null)
     {
@@ -59,6 +70,16 @@ final class ApiClient
 
     private function llamar(string $metodo, string $ruta, ?array $cuerpo): array
     {
+        if ($ruta === '/api-usuarios/registro.php' && !$this->autenticado) {
+            // El propio llamar() recursivo marca $this->autenticado = true
+            // más abajo si este login sale bien (código 200); si falla, se
+            // sigue intentando en la próxima llamada a registro.php.
+            $this->llamar('POST', '/api-usuarios/login.php', [
+                'ci'         => SIGERU_SEMILLA_CI,
+                'contrasena' => SIGERU_SEMILLA_CONTRASENA,
+            ]);
+        }
+
         $ch = curl_init($this->baseUrl . $ruta);
         $opciones = [
             CURLOPT_CUSTOMREQUEST  => $metodo,
@@ -66,7 +87,11 @@ final class ApiClient
             CURLOPT_COOKIEJAR      => $this->cookieJar,
             CURLOPT_COOKIEFILE     => $this->cookieJar,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT        => 10,
+            // 30s: con cientos de corridas de tests acumuladas (cada una
+            // crea su propio Administrador de prueba sin borrarlo),
+            // generarNotificacionesPendientes() recorre cada admin × cada
+            // alerta y se vuelve lenta, no incorrecta — 10s no alcanza.
+            CURLOPT_TIMEOUT        => 30,
         ];
         if ($cuerpo !== null) {
             $opciones[CURLOPT_POSTFIELDS] = json_encode($cuerpo, JSON_UNESCAPED_UNICODE);
@@ -81,6 +106,10 @@ final class ApiClient
         }
         $codigo = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        if ($ruta === '/api-usuarios/login.php' && $codigo === 200) {
+            $this->autenticado = true;
+        }
 
         $decodificado = json_decode($respuesta, true);
 
