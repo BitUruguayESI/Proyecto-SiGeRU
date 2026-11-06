@@ -1,22 +1,29 @@
 services:
   db:
-    image: mariadb:11
+    image: mysql:8
     restart: unless-stopped
+    # log_bin_trust_function_creators: por defecto MySQL 8 exige el
+    # privilegio SUPER para crear triggers/funciones cuando el binary
+    # log esta activo (ver tests/run-tests.ps1, carga del esquema con
+    # el usuario sigeru_app). Con esta opcion no hace falta darle SUPER
+    # a un usuario de aplicacion solo para poder crear los triggers de
+    # sql/sigeru_schema.sql (RN01, generalizacion disjunta de USUARIO).
+    command: ["--log-bin-trust-function-creators=1"]
     environment:
-      MARIADB_ROOT_PASSWORD: rootpass_dev
-      MARIADB_DATABASE: sigeru
-      MARIADB_USER: sigeru_app
-      MARIADB_PASSWORD: sigeru_pass_dev
+      MYSQL_ROOT_PASSWORD: rootpass_dev
+      MYSQL_DATABASE: sigeru
+      MYSQL_USER: sigeru_app
+      MYSQL_PASSWORD: sigeru_pass_dev
     volumes:
       - db_data:/var/lib/mysql
       # Se ejecutan una sola vez, en orden alfabético del nombre DESTINO,
       # la primera vez que se crea el volumen db_data (comportamiento
-      # estándar de la imagen oficial de MariaDB): primero el esquema,
+      # estándar de la imagen oficial de MySQL): primero el esquema,
       # después los datos de prueba.
       - ./sql/sigeru_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./sql/datos_prueba.sql:/docker-entrypoint-initdb.d/02-datos-prueba.sql:ro
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 5s
       timeout: 5s
       retries: 10
