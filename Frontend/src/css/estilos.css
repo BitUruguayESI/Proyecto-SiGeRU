@@ -35,9 +35,13 @@ body.centered-body {
     padding: 20px;
 }
 body.landing-body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     background:
-        linear-gradient(100deg, rgba(6, 5, 17, .92) 0%, rgba(6, 5, 17, .55) 42%, rgba(6, 5, 17, .3) 100%),
-        linear-gradient(rgba(6, 5, 17, 0.75), rgba(13, 10, 33, 0.85)),
+        linear-gradient(100deg, rgba(26, 21, 58, .88) 0%, rgba(13, 10, 33, .65) 42%, rgba(6, 5, 17, .55) 100%),
+        linear-gradient(160deg, rgba(60, 40, 140, .55), rgba(6, 5, 17, .85)),
         url('../img/fondo_landing.webp') center/cover no-repeat fixed;
 }
 
@@ -2293,16 +2297,17 @@ header.banner .logo-banner img {
 }
 .footer-logo {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   color: #f5f7fa;
   font-size: 17px;
   font-weight: 800;
 }
 .footer-logo img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 160px;
+  height: auto;
+  border-radius: 0;
 }
 .footer-marca p {
   margin: 0;
@@ -2335,6 +2340,58 @@ header.banner .logo-banner img {
 }
 .footer-col a:hover {
   color: #4facfe;
+}
+.footer-redes {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.footer-redes a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .15);
+  transition: background .2s;
+}
+.footer-redes a:hover {
+  background: rgba(255, 255, 255, .18);
+}
+.footer-redes a.wa {
+  background: #25D366;
+  border-color: #25D366;
+}
+.footer-redes a.wa:hover {
+  background: #1fab52;
+}
+.footer-redes a.ig {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  border-color: transparent;
+}
+.footer-redes a.ig:hover {
+  filter: brightness(1.1);
+}
+.footer-redes a.fb {
+  background: #1877F2;
+  border-color: #1877F2;
+}
+.footer-redes a.fb:hover {
+  filter: brightness(1.1);
+}
+.footer-redes a.tt {
+  background: #000000;
+  border-color: #444;
+}
+.footer-redes a.tt:hover {
+  filter: brightness(1.4);
+}
+.footer-redes svg {
+  width: 16px;
+  height: 16px;
+  fill: #e6e3fa;
 }
 .footer-legal {
   max-width: 1200px;
