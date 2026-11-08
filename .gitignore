@@ -148,3 +148,4 @@ composer.phar
 .phpunit.result.cache
 resultados_tests.txt
 resultados_tests_utf8.txt
+backups/
