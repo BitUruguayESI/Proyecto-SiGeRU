@@ -6,7 +6,18 @@
 FROM php:8.2-apache
 
 RUN docker-php-ext-install pdo pdo_mysql \
-    && a2enmod rewrite
+    && a2enmod rewrite deflate
+
+# Comprime las respuestas JSON de la API antes de mandarlas (con miles de
+# contenedores reales cargados, el JSON de contenedores.php pesa bastante;
+# comprimido baja varias veces de tamaño y la carga del mapa/dashboard se
+# siente más rápida sin tocar nada del código PHP).
+RUN { \
+      echo '<IfModule mod_deflate.c>'; \
+      echo '  AddOutputFilterByType DEFLATE application/json text/html text/css application/javascript'; \
+      echo '</IfModule>'; \
+    } > /etc/apache2/conf-available/deflate-json.conf \
+    && a2enconf deflate-json
 
 # Evita que warnings/errores de PHP se impriman como HTML dentro de las
 # respuestas JSON de la API (ver errores-produccion.ini para el detalle).

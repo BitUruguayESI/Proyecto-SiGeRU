@@ -230,7 +230,10 @@ function actualizarHoraInfo() {
 
   const [usuarios, contenedores, camiones, cuadrillas, rutas, instalaciones, incidencias] = await Promise.all([
     pedirConAviso(`${BASE_USUARIOS}/usuarios.php`, 'Usuarios'),
-    pedirConAviso(`${BASE_GESTION}/contenedores.php`, 'Contenedores'),
+    // ?resumen=1: con miles de contenedores reales cargados (CSV municipal),
+    // pedir la lista completa solo para contar era lento y de más — este
+    // endpoint devuelve nada más que los totales (ver contenedores.php).
+    pedirConAviso(`${BASE_GESTION}/contenedores.php?resumen=1`, 'Contenedores'),
     pedirConAviso(`${BASE_GESTION}/camiones.php`, 'Camiones'),
     pedirConAviso(`${BASE_GESTION}/cuadrillas.php`, 'Cuadrillas'),
     pedirConAviso(`${BASE_GESTION}/rutas.php`, 'Rutas'),
@@ -239,18 +242,18 @@ function actualizarHoraInfo() {
   ]);
 
   const listaUsuarios = usuarios.exito ? usuarios.usuarios : [];
-  const listaContenedores = contenedores.exito ? contenedores.contenedores : [];
+  const totalContenedores = contenedores.exito ? contenedores.total : 0;
   const listaCamiones = camiones.exito ? camiones.camiones : [];
   const listaCuadrillas = cuadrillas.exito ? cuadrillas.cuadrillas : [];
   const listaRutas = rutas.exito ? rutas.rutas : [];
   const listaInstalaciones = instalaciones.exito ? instalaciones.instalaciones : [];
   const listaIncidencias = incidencias.exito ? incidencias.incidencias : [];
 
-  const desbordados = listaContenedores.filter(c => c.estado === 'DESBORDADO').length;
+  const desbordados = contenedores.exito ? contenedores.por_estado.DESBORDADO : 0;
   const camionesDisponibles = listaCamiones.filter(c => c.estado === 'DISPONIBLE').length;
 
   contenedorTarjetas.appendChild(tarjeta('usuarios', 'Usuarios', listaUsuarios.length));
-  contenedorTarjetas.appendChild(tarjeta('contenedores', 'Contenedores', listaContenedores.length));
+  contenedorTarjetas.appendChild(tarjeta('contenedores', 'Contenedores', totalContenedores));
   contenedorTarjetas.appendChild(tarjeta('contenedores_desbordados', 'Contenedores desbordados', desbordados, desbordados > 0));
   contenedorTarjetas.appendChild(tarjeta('camiones', 'Camiones', `${camionesDisponibles} / ${listaCamiones.length}`));
   contenedorTarjetas.appendChild(tarjeta('incidencias', 'Incidencias', listaIncidencias.length));

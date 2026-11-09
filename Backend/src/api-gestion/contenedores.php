@@ -13,6 +13,12 @@
  * en el mensaje — no bloquea el alta.
  *
  * GET    ?id=1           -> un contenedor (con sus tipos de residuo)
+ * GET    ?resumen=1      -> solo totales (total + cantidad por estado), sin
+ *                           traer la lista completa — para tarjetas/contadores
+ *                           que no necesitan el detalle de cada contenedor
+ *                           (ver Dashboard: con miles de contenedores reales
+ *                           cargados, traer la lista entera solo para contar
+ *                           era un desperdicio de ancho de banda).
  * GET                     -> todos los contenedores
  * POST   { direccion, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
  * PUT    { id_contenedor, direccion?, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
@@ -49,6 +55,16 @@ function contenedorConTipos(PDO $pdo, int $idContenedor): ?array
 
 if ($metodo === 'GET') {
     requerirSesionActiva();
+
+    if (isset($_GET['resumen'])) {
+        $porEstado = ['OPERATIVO' => 0, 'DESBORDADO' => 0, 'FUERA_DE_SERVICIO' => 0];
+        $total = 0;
+        foreach ($pdo->query('SELECT estado, COUNT(*) AS cantidad FROM CONTENEDOR GROUP BY estado') as $fila) {
+            $porEstado[$fila['estado']] = (int) $fila['cantidad'];
+            $total += (int) $fila['cantidad'];
+        }
+        responderJson(['exito' => true, 'total' => $total, 'por_estado' => $porEstado]);
+    }
 
     if (isset($_GET['id'])) {
         $contenedor = contenedorConTipos($pdo, (int) $_GET['id']);
