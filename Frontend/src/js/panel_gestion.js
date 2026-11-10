@@ -728,7 +728,7 @@ document.getElementById('formRuta').addEventListener('submit', async (evento) =>
 // ---------------------------------------------------------------
 // CUADRILLAS (con su "cuadrilla estable": camión + chofer + recolectores)
 // ---------------------------------------------------------------
-async function cargarReferenciasCuadrilla() {
+async function cargarReferenciasCuadrilla(idCuadrillaActual = null) {
   const [camiones, choferes, recolectores] = await Promise.all([
     llamar(`${BASE}/camiones.php`),
     llamar(`${BASE_USUARIOS}/listar_operarios.php?cargo=CHOFER`),
@@ -741,14 +741,35 @@ async function cargarReferenciasCuadrilla() {
   selectChofer.innerHTML = '<option value="">Sin asignar</option>';
   selectRecolectores.innerHTML = '';
 
+  // Camiones/choferes/recolectores que ya integran OTRA cuadrilla estable
+  // quedan afuera de la lista, para no dejar elegir a alguien/algo ya
+  // asignado. La cuadrilla que se está editando (idCuadrillaActual) se
+  // excluye de este cálculo, así sus propios camión/chofer/recolectores
+  // actuales siguen apareciendo.
+  const camionesAsignados = new Set();
+  const choferesAsignados = new Set();
+  const recolectoresAsignados = new Set();
+  cuadTodos.forEach(c => {
+    if (c.id_cuadrilla === idCuadrillaActual) return;
+    if (c.id_camion) camionesAsignados.add(Number(c.id_camion));
+    if (c.id_chofer) choferesAsignados.add(Number(c.id_chofer));
+    c.recolectores.forEach(r => recolectoresAsignados.add(Number(r.id_operario)));
+  });
+
   if (camiones.exito) {
-    camiones.camiones.forEach(c => selectCamion.appendChild(new Option(c.matricula, c.id_camion)));
+    camiones.camiones
+      .filter(c => !camionesAsignados.has(Number(c.id_camion)))
+      .forEach(c => selectCamion.appendChild(new Option(c.matricula, c.id_camion)));
   }
   if (choferes.exito) {
-    choferes.operarios.forEach(o => selectChofer.appendChild(new Option(o.nombre_completo, o.id_operario)));
+    choferes.operarios
+      .filter(o => !choferesAsignados.has(Number(o.id_operario)))
+      .forEach(o => selectChofer.appendChild(new Option(o.nombre_completo, o.id_operario)));
   }
   if (recolectores.exito) {
-    recolectores.operarios.forEach(o => selectRecolectores.appendChild(new Option(o.nombre_completo, o.id_operario)));
+    recolectores.operarios
+      .filter(o => !recolectoresAsignados.has(Number(o.id_operario)))
+      .forEach(o => selectRecolectores.appendChild(new Option(o.nombre_completo, o.id_operario)));
   }
 }
 
@@ -815,8 +836,11 @@ function renderizarTablaCuadrillas() {
   });
 
   cuerpo.querySelectorAll('.btn-editar-cuadrilla').forEach(boton => {
-    boton.addEventListener('click', () => {
+    boton.addEventListener('click', async () => {
       const c = cuadPorId[boton.dataset.id];
+      // Recarga chofer/recolectores dejando visibles los propios de esta
+      // cuadrilla, aunque ya estén "asignados" a ella misma.
+      await cargarReferenciasCuadrilla(c.id_cuadrilla);
       document.getElementById('cuad_id').value = c.id_cuadrilla;
       document.getElementById('cuad_nombre').value = c.nombre_cuadrilla;
       document.getElementById('cuad_cantidad').value = c.cantidad_integrantes;
@@ -843,7 +867,8 @@ function renderizarTablaCuadrillas() {
         body: JSON.stringify({ id_cuadrilla: Number(boton.dataset.id) }),
       });
       mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-      cargarCuadrillas();
+      await cargarCuadrillas();
+      await cargarReferenciasCuadrilla(); // libera el chofer/recolector de la cuadrilla eliminada
     });
   });
 
@@ -852,12 +877,13 @@ function renderizarTablaCuadrillas() {
   document.getElementById('cuad_pagina_siguiente').disabled = cuadPaginaActual >= totalPaginas;
 }
 
-function salirModoEdicionCuadrilla() {
+async function salirModoEdicionCuadrilla() {
   document.getElementById('formCuadrilla').reset();
   document.getElementById('cuad_id').value = '';
   document.getElementById('cuad_titulo_form').textContent = 'Registrar cuadrilla';
   document.getElementById('cuad_boton_submit').textContent = 'Registrar cuadrilla';
   document.getElementById('cuad_cancelar').hidden = true;
+  await cargarReferenciasCuadrilla(); // vuelve a mostrar solo chofer/recolectores libres
 }
 document.getElementById('cuad_cancelar').addEventListener('click', salirModoEdicionCuadrilla);
 
@@ -880,7 +906,10 @@ document.getElementById('formCuadrilla').addEventListener('submit', async (event
     ? await llamar(`${BASE}/cuadrillas.php`, { method: 'PUT', body: JSON.stringify({ id_cuadrilla: Number(idCuadrilla), ...cuerpo }) })
     : await llamar(`${BASE}/cuadrillas.php`, { method: 'POST', body: JSON.stringify(cuerpo) });
   mostrarMensajeGlobal(resultado.mensaje, resultado.exito ? 'exito' : 'error');
-  if (resultado.exito) { salirModoEdicionCuadrilla(); cargarCuadrillas(); }
+  if (resultado.exito) {
+    await cargarCuadrillas();           // refresca cuadTodos primero
+    await salirModoEdicionCuadrilla();  // y recién ahí recalcula chofer/recolectores libres
+  }
 });
 
 // ---------------------------------------------------------------
@@ -1802,8 +1831,8 @@ document.getElementById('aud_limpiar').addEventListener('click', () => {
   await cargarUsuarios();
   await cargarRutas();       // primero, porque llena los <select> que usan otras secciones
   await cargarContenedores();
+  await cargarCuadrillas();           // primero, para saber qué chofer/recolector ya está ocupado
   await cargarReferenciasCuadrilla(); // camión/chofer/recolectores para el form de cuadrillas
-  await cargarCuadrillas();
   await cargarCamiones();
   await cargarInstalaciones();
   await cargarRepuestos();   // antes de maquinaria, porque llena el <select> de repuestos
