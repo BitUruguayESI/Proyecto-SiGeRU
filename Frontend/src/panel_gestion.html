@@ -241,7 +241,11 @@
           <input type="hidden" id="cuad_id">
           <div class="fila-doble">
             <div><label>Nombre</label><input type="text" id="cuad_nombre" required></div>
-            <div><label>Cantidad de integrantes</label><input type="number" id="cuad_cantidad" min="0" value="0"></div>
+            <div>
+              <label>Cantidad de integrantes</label>
+              <input type="number" id="cuad_cantidad" min="0" value="0">
+              <small id="cuad_cupo" style="color:#a0aec0;"></small>
+            </div>
           </div>
           <div class="fila-doble">
             <div>
@@ -266,7 +270,11 @@
           </div>
           <ul id="cuad_recolectores_lista" style="list-style:none; padding:0; margin:8px 0 12px;"></ul>
           <label>Rutas habituales</label>
-          <select id="cuad_rutas" multiple size="4"></select>
+          <div style="display:flex; gap:6px;">
+            <select id="cuad_rutas" style="flex:1;"><option value="">Elegir ruta...</option></select>
+            <button type="button" class="secundario chico" id="cuad_agregar_ruta">Agregar</button>
+          </div>
+          <ul id="cuad_rutas_lista" style="list-style:none; padding:0; margin:8px 0 12px;"></ul>
           <button type="submit" class="principal" id="cuad_boton_submit">Registrar cuadrilla</button>
           <button type="button" class="secundario" id="cuad_cancelar" hidden>Cancelar edición</button>
         </form>

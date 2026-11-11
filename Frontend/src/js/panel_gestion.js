@@ -618,21 +618,24 @@ document.getElementById('ruta_pagina_siguiente').addEventListener('click', () =>
   renderizarTablaRutas();
 });
 
+// Rutas disponibles y rutas habituales de la cuadrilla del formulario
+// (se declaran acá arriba porque cargarRutas() las usa).
+let cuadRutasTodas = [];
+let cuadRutasSel = [];
+
 async function cargarRutas() {
   const datos = await llamar(`${BASE}/rutas.php`);
   const selectContenedor = document.getElementById('cont_id_ruta');
-  const selectCuadrilla = document.getElementById('cuad_rutas');
   selectContenedor.innerHTML = '<option value="">Sin ruta</option>';
-  selectCuadrilla.innerHTML = '';
   if (!datos.exito) return;
 
   rutTodos = datos.rutas;
+  cuadRutasTodas = rutTodos.map(r => ({ id: Number(r.id_ruta), nombre: r.nombre_zona }));
+  renderizarRutasCuadrilla();
 
   rutTodos.forEach(r => {
     const opcion1 = new Option(r.nombre_zona, r.id_ruta);
     selectContenedor.appendChild(opcion1);
-    const opcion2 = new Option(r.nombre_zona, r.id_ruta);
-    selectCuadrilla.appendChild(opcion2);
   });
 
   const selectZona = document.getElementById('ruta_filtro_zona');
@@ -791,6 +794,7 @@ function renderizarRecolectoresCuadrilla() {
     vacio.style.color = '#a0aec0';
     vacio.textContent = 'Sin recolectores asignados.';
     lista.appendChild(vacio);
+    actualizarCupoCuadrilla();
     return;
   }
   cuadRecolectoresSel.forEach(id => {
@@ -810,11 +814,40 @@ function renderizarRecolectoresCuadrilla() {
     li.append(nombre, quitar);
     lista.appendChild(li);
   });
+  actualizarCupoCuadrilla();
 }
+
+// Los integrantes de una cuadrilla son el chofer + los recolectores; el
+// total no puede superar la "Cantidad de integrantes" del formulario.
+function integrantesActualesCuadrilla() {
+  const hayChofer = document.getElementById('cuad_chofer').value ? 1 : 0;
+  return hayChofer + cuadRecolectoresSel.length;
+}
+function maximoIntegrantesCuadrilla() {
+  return Number(document.getElementById('cuad_cantidad').value || 0);
+}
+function mensajeMaximoIntegrantes() {
+  mostrarMensajeGlobal(
+    `Alcanzaste el máximo de integrantes (${maximoIntegrantesCuadrilla()}). Si querés agregar más, aumentá la "Cantidad de integrantes".`,
+    'error'
+  );
+}
+function actualizarCupoCuadrilla() {
+  const actuales = integrantesActualesCuadrilla();
+  const maximo = maximoIntegrantesCuadrilla();
+  const cupo = document.getElementById('cuad_cupo');
+  cupo.textContent = `Asignados: ${actuales} de ${maximo} (chofer + recolectores)`;
+  cupo.style.color = actuales > maximo ? '#fc8181' : '#a0aec0';
+}
+document.getElementById('cuad_cantidad').addEventListener('input', actualizarCupoCuadrilla);
 
 document.getElementById('cuad_agregar_recolector').addEventListener('click', () => {
   const valor = document.getElementById('cuad_recolectores').value;
   if (!valor) return;
+  if (integrantesActualesCuadrilla() >= maximoIntegrantesCuadrilla()) {
+    mensajeMaximoIntegrantes();
+    return;
+  }
   cuadRecolectoresSel.push(Number(valor));
   renderizarRecolectoresCuadrilla();
 });
@@ -823,6 +856,56 @@ document.getElementById('cuad_quitar_camion').addEventListener('click', () => {
 });
 document.getElementById('cuad_quitar_chofer').addEventListener('click', () => {
   document.getElementById('cuad_chofer').value = '';
+  actualizarCupoCuadrilla();
+});
+document.getElementById('cuad_chofer').addEventListener('change', () => {
+  if (integrantesActualesCuadrilla() > maximoIntegrantesCuadrilla()) {
+    document.getElementById('cuad_chofer').value = '';
+    mensajeMaximoIntegrantes();
+  }
+  actualizarCupoCuadrilla();
+});
+
+// Rutas habituales: mismo esquema de selector + Agregar / lista + Quitar.
+function renderizarRutasCuadrilla() {
+  const select = document.getElementById('cuad_rutas');
+  const lista = document.getElementById('cuad_rutas_lista');
+  select.innerHTML = '<option value="">Elegir ruta...</option>';
+  cuadRutasTodas
+    .filter(r => !cuadRutasSel.includes(r.id))
+    .forEach(r => select.appendChild(new Option(r.nombre, r.id)));
+
+  lista.innerHTML = '';
+  if (!cuadRutasSel.length) {
+    const vacio = document.createElement('li');
+    vacio.style.color = '#a0aec0';
+    vacio.textContent = 'Sin rutas habituales.';
+    lista.appendChild(vacio);
+    return;
+  }
+  cuadRutasSel.forEach(id => {
+    const r = cuadRutasTodas.find(x => x.id === id);
+    const li = document.createElement('li');
+    li.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:4px;';
+    const nombre = document.createElement('span');
+    nombre.textContent = r ? r.nombre : `Ruta #${id}`;
+    const quitar = document.createElement('button');
+    quitar.type = 'button';
+    quitar.className = 'peligro chico';
+    quitar.textContent = 'Quitar';
+    quitar.addEventListener('click', () => {
+      cuadRutasSel = cuadRutasSel.filter(x => x !== id);
+      renderizarRutasCuadrilla();
+    });
+    li.append(nombre, quitar);
+    lista.appendChild(li);
+  });
+}
+document.getElementById('cuad_agregar_ruta').addEventListener('click', () => {
+  const valor = document.getElementById('cuad_rutas').value;
+  if (!valor) return;
+  cuadRutasSel.push(Number(valor));
+  renderizarRutasCuadrilla();
 });
 
 let cuadTodos = [];
@@ -900,10 +983,8 @@ function renderizarTablaCuadrillas() {
       document.getElementById('cuad_chofer').value = c.id_chofer || '';
       cuadRecolectoresSel = c.recolectores.map(r => Number(r.id_operario));
       renderizarRecolectoresCuadrilla();
-      const idsHabituales = c.rutas_habituales.map(r => String(r.id_ruta));
-      Array.from(document.getElementById('cuad_rutas').options).forEach(opcion => {
-        opcion.selected = idsHabituales.includes(opcion.value);
-      });
+      cuadRutasSel = c.rutas_habituales.map(r => Number(r.id_ruta));
+      renderizarRutasCuadrilla();
       document.getElementById('cuad_titulo_form').textContent = `Editar cuadrilla #${c.id_cuadrilla}`;
       document.getElementById('cuad_boton_submit').textContent = 'Guardar cambios';
       document.getElementById('cuad_cancelar').hidden = false;
@@ -934,6 +1015,8 @@ async function salirModoEdicionCuadrilla() {
   document.getElementById('cuad_boton_submit').textContent = 'Registrar cuadrilla';
   document.getElementById('cuad_cancelar').hidden = true;
   cuadRecolectoresSel = [];
+  cuadRutasSel = [];
+  renderizarRutasCuadrilla();
   await cargarReferenciasCuadrilla(); // vuelve a mostrar solo chofer/recolectores libres
 }
 document.getElementById('cuad_cancelar').addEventListener('click', salirModoEdicionCuadrilla);
@@ -941,10 +1024,17 @@ document.getElementById('cuad_cancelar').addEventListener('click', salirModoEdic
 document.getElementById('formCuadrilla').addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const idCuadrilla = document.getElementById('cuad_id').value;
-  const rutasSeleccionadas = Array.from(document.getElementById('cuad_rutas').selectedOptions).map(o => Number(o.value));
+  const rutasSeleccionadas = [...cuadRutasSel];
   const recolectoresSeleccionados = [...cuadRecolectoresSel];
   const camion = document.getElementById('cuad_camion').value;
   const chofer = document.getElementById('cuad_chofer').value;
+  if (integrantesActualesCuadrilla() > maximoIntegrantesCuadrilla()) {
+    mostrarMensajeGlobal(
+      `La cuadrilla tiene ${integrantesActualesCuadrilla()} integrantes (chofer + recolectores) y el máximo es ${maximoIntegrantesCuadrilla()}. Aumentá la "Cantidad de integrantes" o quitá a alguien.`,
+      'error'
+    );
+    return;
+  }
   const cuerpo = {
     nombre_cuadrilla: document.getElementById('cuad_nombre').value.trim(),
     cantidad_integrantes: Number(document.getElementById('cuad_cantidad').value || 0),
