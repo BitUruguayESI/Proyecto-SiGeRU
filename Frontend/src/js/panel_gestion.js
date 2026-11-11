@@ -792,6 +792,7 @@ function renderizarRecolectoresCuadrilla() {
   if (!cuadRecolectoresSel.length) {
     const vacio = document.createElement('li');
     vacio.style.color = '#a0aec0';
+    vacio.style.gridColumn = '1 / -1';
     vacio.textContent = 'Sin recolectores asignados.';
     lista.appendChild(vacio);
     actualizarCupoCuadrilla();
@@ -800,7 +801,7 @@ function renderizarRecolectoresCuadrilla() {
   cuadRecolectoresSel.forEach(id => {
     const o = cuadRecolectoresLibres.find(x => x.id === id);
     const li = document.createElement('li');
-    li.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:4px;';
+    li.style.display = 'contents'; // nombre y botón caen en las 2 columnas de la grilla del <ul>
     const nombre = document.createElement('span');
     nombre.textContent = o ? o.nombre : `Operario #${id}`;
     const quitar = document.createElement('button');
@@ -879,6 +880,7 @@ function renderizarRutasCuadrilla() {
   if (!cuadRutasSel.length) {
     const vacio = document.createElement('li');
     vacio.style.color = '#a0aec0';
+    vacio.style.gridColumn = '1 / -1';
     vacio.textContent = 'Sin rutas habituales.';
     lista.appendChild(vacio);
     return;
@@ -886,7 +888,7 @@ function renderizarRutasCuadrilla() {
   cuadRutasSel.forEach(id => {
     const r = cuadRutasTodas.find(x => x.id === id);
     const li = document.createElement('li');
-    li.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:4px;';
+    li.style.display = 'contents'; // nombre y botón caen en las 2 columnas de la grilla del <ul>
     const nombre = document.createElement('span');
     nombre.textContent = r ? r.nombre : `Ruta #${id}`;
     const quitar = document.createElement('button');
