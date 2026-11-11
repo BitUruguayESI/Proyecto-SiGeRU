@@ -736,10 +736,8 @@ async function cargarReferenciasCuadrilla(idCuadrillaActual = null) {
   ]);
   const selectCamion = document.getElementById('cuad_camion');
   const selectChofer = document.getElementById('cuad_chofer');
-  const selectRecolectores = document.getElementById('cuad_recolectores');
   selectCamion.innerHTML = '<option value="">Sin asignar</option>';
   selectChofer.innerHTML = '<option value="">Sin asignar</option>';
-  selectRecolectores.innerHTML = '';
 
   // Camiones/choferes/recolectores que ya integran OTRA cuadrilla estable
   // quedan afuera de la lista, para no dejar elegir a alguien/algo ya
@@ -767,11 +765,65 @@ async function cargarReferenciasCuadrilla(idCuadrillaActual = null) {
       .forEach(o => selectChofer.appendChild(new Option(o.nombre_completo, o.id_operario)));
   }
   if (recolectores.exito) {
-    recolectores.operarios
+    cuadRecolectoresLibres = recolectores.operarios
       .filter(o => !recolectoresAsignados.has(Number(o.id_operario)))
-      .forEach(o => selectRecolectores.appendChild(new Option(o.nombre_completo, o.id_operario)));
+      .map(o => ({ id: Number(o.id_operario), nombre: o.nombre_completo }));
   }
+  renderizarRecolectoresCuadrilla();
 }
+
+// Recolectores libres (no integran OTRA cuadrilla) y los que tiene la
+// cuadrilla que se está creando/editando en el formulario.
+let cuadRecolectoresLibres = [];
+let cuadRecolectoresSel = [];
+
+function renderizarRecolectoresCuadrilla() {
+  const select = document.getElementById('cuad_recolectores');
+  const lista = document.getElementById('cuad_recolectores_lista');
+  select.innerHTML = '<option value="">Elegir recolector...</option>';
+  cuadRecolectoresLibres
+    .filter(o => !cuadRecolectoresSel.includes(o.id))
+    .forEach(o => select.appendChild(new Option(o.nombre, o.id)));
+
+  lista.innerHTML = '';
+  if (!cuadRecolectoresSel.length) {
+    const vacio = document.createElement('li');
+    vacio.style.color = '#a0aec0';
+    vacio.textContent = 'Sin recolectores asignados.';
+    lista.appendChild(vacio);
+    return;
+  }
+  cuadRecolectoresSel.forEach(id => {
+    const o = cuadRecolectoresLibres.find(x => x.id === id);
+    const li = document.createElement('li');
+    li.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:4px;';
+    const nombre = document.createElement('span');
+    nombre.textContent = o ? o.nombre : `Operario #${id}`;
+    const quitar = document.createElement('button');
+    quitar.type = 'button';
+    quitar.className = 'peligro chico';
+    quitar.textContent = 'Quitar';
+    quitar.addEventListener('click', () => {
+      cuadRecolectoresSel = cuadRecolectoresSel.filter(x => x !== id);
+      renderizarRecolectoresCuadrilla();
+    });
+    li.append(nombre, quitar);
+    lista.appendChild(li);
+  });
+}
+
+document.getElementById('cuad_agregar_recolector').addEventListener('click', () => {
+  const valor = document.getElementById('cuad_recolectores').value;
+  if (!valor) return;
+  cuadRecolectoresSel.push(Number(valor));
+  renderizarRecolectoresCuadrilla();
+});
+document.getElementById('cuad_quitar_camion').addEventListener('click', () => {
+  document.getElementById('cuad_camion').value = '';
+});
+document.getElementById('cuad_quitar_chofer').addEventListener('click', () => {
+  document.getElementById('cuad_chofer').value = '';
+});
 
 let cuadTodos = [];
 let cuadPorId = {};
@@ -846,10 +898,8 @@ function renderizarTablaCuadrillas() {
       document.getElementById('cuad_cantidad').value = c.cantidad_integrantes;
       document.getElementById('cuad_camion').value = c.id_camion || '';
       document.getElementById('cuad_chofer').value = c.id_chofer || '';
-      const idsRecolectores = c.recolectores.map(r => String(r.id_operario));
-      Array.from(document.getElementById('cuad_recolectores').options).forEach(opcion => {
-        opcion.selected = idsRecolectores.includes(opcion.value);
-      });
+      cuadRecolectoresSel = c.recolectores.map(r => Number(r.id_operario));
+      renderizarRecolectoresCuadrilla();
       const idsHabituales = c.rutas_habituales.map(r => String(r.id_ruta));
       Array.from(document.getElementById('cuad_rutas').options).forEach(opcion => {
         opcion.selected = idsHabituales.includes(opcion.value);
@@ -883,6 +933,7 @@ async function salirModoEdicionCuadrilla() {
   document.getElementById('cuad_titulo_form').textContent = 'Registrar cuadrilla';
   document.getElementById('cuad_boton_submit').textContent = 'Registrar cuadrilla';
   document.getElementById('cuad_cancelar').hidden = true;
+  cuadRecolectoresSel = [];
   await cargarReferenciasCuadrilla(); // vuelve a mostrar solo chofer/recolectores libres
 }
 document.getElementById('cuad_cancelar').addEventListener('click', salirModoEdicionCuadrilla);
@@ -891,7 +942,7 @@ document.getElementById('formCuadrilla').addEventListener('submit', async (event
   evento.preventDefault();
   const idCuadrilla = document.getElementById('cuad_id').value;
   const rutasSeleccionadas = Array.from(document.getElementById('cuad_rutas').selectedOptions).map(o => Number(o.value));
-  const recolectoresSeleccionados = Array.from(document.getElementById('cuad_recolectores').selectedOptions).map(o => Number(o.value));
+  const recolectoresSeleccionados = [...cuadRecolectoresSel];
   const camion = document.getElementById('cuad_camion').value;
   const chofer = document.getElementById('cuad_chofer').value;
   const cuerpo = {

@@ -235,14 +235,6 @@
     <span id="cuad_pagina_info"></span>
     <button type="button" class="secundario chico" id="cuad_pagina_siguiente">Siguiente »</button>
   </div>
-      <p style="color:#a0aec0; font-size:13px; margin-top:0;">
-        La "cuadrilla estable" (camión + chofer + recolectores) es la que ven
-        el Chofer y los Recolectores en su panel "Mi día".
-      </p>
-      <table class="tabla-datos">
-        <thead><tr><th>ID</th><th>Nombre</th><th>Integrantes</th><th>Camión</th><th>Chofer</th><th>Recolectores</th><th>Rutas habituales</th><th>Acciones</th></tr></thead>
-        <tbody id="tablaCuadrillas"></tbody>
-      </table>
       <div class="formulario-alta">
         <h3 id="cuad_titulo_form">Registrar cuadrilla</h3>
         <form id="formCuadrilla">
@@ -252,11 +244,27 @@
             <div><label>Cantidad de integrantes</label><input type="number" id="cuad_cantidad" min="0" value="0"></div>
           </div>
           <div class="fila-doble">
-            <div><label>Camión</label><select id="cuad_camion"><option value="">Sin asignar</option></select></div>
-            <div><label>Chofer</label><select id="cuad_chofer"><option value="">Sin asignar</option></select></div>
+            <div>
+              <label>Camión</label>
+              <div style="display:flex; gap:6px;">
+                <select id="cuad_camion" style="flex:1;"><option value="">Sin asignar</option></select>
+                <button type="button" class="secundario chico" id="cuad_quitar_camion">Quitar</button>
+              </div>
+            </div>
+            <div>
+              <label>Chofer</label>
+              <div style="display:flex; gap:6px;">
+                <select id="cuad_chofer" style="flex:1;"><option value="">Sin asignar</option></select>
+                <button type="button" class="secundario chico" id="cuad_quitar_chofer">Quitar</button>
+              </div>
+            </div>
           </div>
-          <label>Recolectores (podés elegir varios)</label>
-          <select id="cuad_recolectores" multiple size="4"></select>
+          <label>Recolectores</label>
+          <div style="display:flex; gap:6px;">
+            <select id="cuad_recolectores" style="flex:1;"><option value="">Elegir recolector...</option></select>
+            <button type="button" class="secundario chico" id="cuad_agregar_recolector">Agregar</button>
+          </div>
+          <ul id="cuad_recolectores_lista" style="list-style:none; padding:0; margin:8px 0 12px;"></ul>
           <label>Rutas habituales</label>
           <select id="cuad_rutas" multiple size="4"></select>
           <button type="submit" class="principal" id="cuad_boton_submit">Registrar cuadrilla</button>
