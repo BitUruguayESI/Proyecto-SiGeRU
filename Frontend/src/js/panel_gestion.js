@@ -818,37 +818,21 @@ function renderizarRecolectoresCuadrilla() {
   actualizarCupoCuadrilla();
 }
 
-// Los integrantes de una cuadrilla son el chofer + los recolectores; el
-// total no puede superar la "Cantidad de integrantes" del formulario.
+// La "Cantidad de integrantes" se calcula sola: chofer + recolectores de
+// la lista (el campo es de solo lectura). Se recalcula cada vez que se
+// agrega o quita alguien.
 function integrantesActualesCuadrilla() {
   const hayChofer = document.getElementById('cuad_chofer').value ? 1 : 0;
   return hayChofer + cuadRecolectoresSel.length;
 }
-function maximoIntegrantesCuadrilla() {
-  return Number(document.getElementById('cuad_cantidad').value || 0);
-}
-function mensajeMaximoIntegrantes() {
-  mostrarMensajeGlobal(
-    `Alcanzaste el máximo de integrantes (${maximoIntegrantesCuadrilla()}). Si querés agregar más, aumentá la "Cantidad de integrantes".`,
-    'error'
-  );
-}
 function actualizarCupoCuadrilla() {
-  const actuales = integrantesActualesCuadrilla();
-  const maximo = maximoIntegrantesCuadrilla();
-  const cupo = document.getElementById('cuad_cupo');
-  cupo.textContent = `Asignados: ${actuales} de ${maximo} (chofer + recolectores)`;
-  cupo.style.color = actuales > maximo ? '#fc8181' : '#a0aec0';
+  document.getElementById('cuad_cantidad').value = integrantesActualesCuadrilla();
+  document.getElementById('cuad_cupo').textContent = 'Se calcula solo: chofer + recolectores.';
 }
-document.getElementById('cuad_cantidad').addEventListener('input', actualizarCupoCuadrilla);
 
 document.getElementById('cuad_agregar_recolector').addEventListener('click', () => {
   const valor = document.getElementById('cuad_recolectores').value;
   if (!valor) return;
-  if (integrantesActualesCuadrilla() >= maximoIntegrantesCuadrilla()) {
-    mensajeMaximoIntegrantes();
-    return;
-  }
   cuadRecolectoresSel.push(Number(valor));
   renderizarRecolectoresCuadrilla();
 });
@@ -859,13 +843,7 @@ document.getElementById('cuad_quitar_chofer').addEventListener('click', () => {
   document.getElementById('cuad_chofer').value = '';
   actualizarCupoCuadrilla();
 });
-document.getElementById('cuad_chofer').addEventListener('change', () => {
-  if (integrantesActualesCuadrilla() > maximoIntegrantesCuadrilla()) {
-    document.getElementById('cuad_chofer').value = '';
-    mensajeMaximoIntegrantes();
-  }
-  actualizarCupoCuadrilla();
-});
+document.getElementById('cuad_chofer').addEventListener('change', actualizarCupoCuadrilla);
 
 // Rutas habituales: mismo esquema de selector + Agregar / lista + Quitar.
 function renderizarRutasCuadrilla() {
@@ -1030,13 +1008,6 @@ document.getElementById('formCuadrilla').addEventListener('submit', async (event
   const recolectoresSeleccionados = [...cuadRecolectoresSel];
   const camion = document.getElementById('cuad_camion').value;
   const chofer = document.getElementById('cuad_chofer').value;
-  if (integrantesActualesCuadrilla() > maximoIntegrantesCuadrilla()) {
-    mostrarMensajeGlobal(
-      `La cuadrilla tiene ${integrantesActualesCuadrilla()} integrantes (chofer + recolectores) y el máximo es ${maximoIntegrantesCuadrilla()}. Aumentá la "Cantidad de integrantes" o quitá a alguien.`,
-      'error'
-    );
-    return;
-  }
   const cuerpo = {
     nombre_cuadrilla: document.getElementById('cuad_nombre').value.trim(),
     cantidad_integrantes: Number(document.getElementById('cuad_cantidad').value || 0),
