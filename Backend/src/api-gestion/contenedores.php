@@ -20,6 +20,8 @@
  *                           cargados, traer la lista entera solo para contar
  *                           era un desperdicio de ancho de banda).
  * GET                     -> todos los contenedores
+ * GET    ?id_ruta=1,2     -> solo los contenedores de esas rutas (para el mapa de "Mi día")
+ * GET    ?ids=5,9         -> solo esos contenedores
  * POST   { direccion, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
  * PUT    { id_contenedor, direccion?, estado?, nivel_llenado?, id_ruta?, tipos_residuo?: [] }
  * DELETE { id_contenedor }   -> baja lógica: estado = FUERA_DE_SERVICIO
@@ -80,16 +82,35 @@ if ($metodo === 'GET') {
     // a veces el servidor cortaba la respuesta a la mitad (PHP devolvia
     // un error de "tiempo maximo excedido" pegado al JSON, y el frontend
     // fallaba al parsearlo). Ahora son solo 2 consultas en total.
+    // Filtros opcionales (listas de enteros separadas por coma). Se castean
+    // a int antes de armar el IN (...), así no hay riesgo de inyección.
+    $filtrosSql = [];
+    foreach (['id_ruta' => 'c.id_ruta', 'ids' => 'c.id_contenedor'] as $parametro => $columna) {
+        if (isset($_GET[$parametro])) {
+            $numeros = array_values(array_filter(
+                array_map('intval', explode(',', (string) $_GET[$parametro])),
+                fn($n) => $n > 0
+            ));
+            $filtrosSql[] = $numeros ? "{$columna} IN (" . implode(',', $numeros) . ')' : '1 = 0';
+        }
+    }
+    $donde = $filtrosSql ? ' WHERE ' . implode(' AND ', $filtrosSql) : '';
+
     $filas = $pdo->query(
         'SELECT c.id_contenedor, c.direccion, c.coordenadas, c.estado, c.nivel_llenado, c.id_ruta,
                 r.nombre_zona, r.municipio
          FROM CONTENEDOR c
-         LEFT JOIN RUTA r ON r.id_ruta = c.id_ruta
+         LEFT JOIN RUTA r ON r.id_ruta = c.id_ruta' . $donde . '
          ORDER BY c.id_contenedor'
     )->fetchAll();
 
+    $sqlTipos = 'SELECT id_contenedor, tipo_residuo FROM CONTENEDOR_TIPO_RESIDUO';
+    if ($filtrosSql) {
+        $idsFilas = array_map('intval', array_column($filas, 'id_contenedor'));
+        $sqlTipos .= $idsFilas ? ' WHERE id_contenedor IN (' . implode(',', $idsFilas) . ')' : ' WHERE 1 = 0';
+    }
     $tiposPorContenedor = [];
-    foreach ($pdo->query('SELECT id_contenedor, tipo_residuo FROM CONTENEDOR_TIPO_RESIDUO') as $fila) {
+    foreach ($pdo->query($sqlTipos) as $fila) {
         $tiposPorContenedor[$fila['id_contenedor']][] = $fila['tipo_residuo'];
     }
 
