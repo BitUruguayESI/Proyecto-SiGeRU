@@ -117,7 +117,17 @@ function iniciarMapaJornada() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(mapaJornada);
-  capasMapa.ruta = L.layerGroup().addTo(mapaJornada);
+  // Los contenedores de la ruta se agrupan en clusters (como en el mapa del
+  // panel de gestión): al hacer zoom se van separando hasta verse uno por uno.
+  capasMapa.ruta = (typeof L.markerClusterGroup === 'function')
+    ? L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        maxClusterRadius: 50,
+        iconCreateFunction: crearIconoCluster,
+      })
+    : L.layerGroup();
+  capasMapa.ruta.addTo(mapaJornada);
   capasMapa.incidencias = L.layerGroup().addTo(mapaJornada);
   capasMapa.retiros = L.layerGroup().addTo(mapaJornada);
   L.control.layers(null, {
@@ -125,6 +135,19 @@ function iniciarMapaJornada() {
     'Incidencias': capasMapa.incidencias,
     'Retiros especiales': capasMapa.retiros,
   }, { collapsed: false }).addTo(mapaJornada);
+}
+
+// Mismo tamaño de ícono que el cluster por defecto; si dentro hay algún
+// contenedor desbordado se le suma marker-cluster-alerta (ver estilos.css).
+function crearIconoCluster(cluster) {
+  const cantidad = cluster.getChildCount();
+  const tamano = cantidad < 10 ? 'small' : cantidad < 100 ? 'medium' : 'large';
+  const tieneAlerta = cluster.getAllChildMarkers().some(m => m.options.necesitaAlerta);
+  return L.divIcon({
+    html: `<div><span>${cantidad}</span></div>`,
+    className: `marker-cluster marker-cluster-${tamano}${tieneAlerta ? ' marker-cluster-alerta' : ''}`,
+    iconSize: L.point(40, 40),
+  });
 }
 
 function ajustarVistaMapa() {
@@ -158,7 +181,7 @@ async function actualizarMapaJornada() {
     const pos = parsearCoordenadas(c.coordenadas);
     if (!pos) { contenedoresSinUbicar++; return; }
     const color = COLOR_ESTADO_CONTENEDOR[c.estado] || '#888';
-    L.circleMarker(pos, { radius: 6, color: '#fff', weight: 1, fillColor: color, fillOpacity: 0.85 })
+    L.circleMarker(pos, { radius: 6, color: '#fff', weight: 1, fillColor: color, fillOpacity: 0.85, necesitaAlerta: c.estado === 'DESBORDADO' })
       .bindPopup(`<strong>${escaparHtml(c.direccion || 'Contenedor #' + c.id_contenedor)}</strong><br>Ruta: ${escaparHtml(c.nombre_zona || '—')}<br>Estado: ${escaparHtml(c.estado)}<br>Nivel de llenado: ${Number(c.nivel_llenado)}%`)
       .addTo(capasMapa.ruta);
   });
