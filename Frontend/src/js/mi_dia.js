@@ -111,7 +111,8 @@ function iconoMapa(emoji, color) {
 
 function iniciarMapaJornada() {
   if (mapaJornada || typeof L === 'undefined') return;
-  mapaJornada = L.map('mapaMiDia').setView(MONTEVIDEO_CENTRO, 12);
+  // preferCanvas: una cuadrilla puede tener más de mil contenedores en su ruta.
+  mapaJornada = L.map('mapaMiDia', { preferCanvas: true }).setView(MONTEVIDEO_CENTRO, 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
